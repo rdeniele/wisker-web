@@ -1,70 +1,41 @@
 'use client';
 
-import React, { useState } from 'react';
-import axios from 'axios';
-import { loginWithFormData, loginWithJSON } from '@/lib/fastapi-utils';
+import React, { useState, useEffect } from 'react';
 import PageHeader from '@/components/ui/pageheader';
 import InputBox from '@/components/ui/inputboxes';
 import Button from '@/components/ui/button';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    // Check for success message from signup
+    const message = searchParams.get('message');
+    if (message) {
+      setSuccessMessage(message);
+      // Clear the message after a few seconds
+      const timer = setTimeout(() => setSuccessMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    try {
-      // Make API call to login user (try FormData first for OAuth2 compatibility)
-      let response;
-      try {
-        response = await loginWithFormData(email, password);
-      } catch {
-        // Fallback to JSON if FormData doesn't work (backend expects email/password only)
-        response = await loginWithJSON(email, password);
-      }
-
-      console.log('Login successful:', response.data);
-      
-      // Store auth tokens if provided (FastAPI typically returns access_token)
-      if (response.data.access_token) {
-        localStorage.setItem('access_token', response.data.access_token);
-      }
-      if (response.data.refresh_token) {
-        localStorage.setItem('refresh_token', response.data.refresh_token);
-      }
-      
-      // Handle success - redirect to dashboard or home
-      alert('Login successful!');
-      window.location.href = '/dashboard'; // or wherever you want to redirect
-      
-    } catch (error) {
-      console.error('Login error:', error);
-      
-      // Handle different error scenarios
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // Server responded with error status
-          const errorMessage = error.response.data?.message || 'Invalid credentials';
-          alert(errorMessage);
-        } else if (error.request) {
-          // Network error
-          alert('Network error. Please check your connection and try again.');
-        } else {
-          // Other Axios error
-          alert('Something went wrong. Please try again.');
-        }
-      } else {
-        // Non-Axios error
-        alert('An unexpected error occurred. Please try again.');
-      }
-    } finally {
+    // Simulate login process
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      alert('Login successful! (This is just a demo - no backend connected yet)');
+      window.location.href = '/dashboard'; // or wherever you want to redirect
+    }, 2000);
   };
 
   const handleGoogleSignIn = () => {
@@ -85,6 +56,18 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Success Message Display */}
+          {successMessage && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <p className="text-sm text-green-700 dark:text-green-300">{successMessage}</p>
+              </div>
+            </div>
+          )}
+
           {/* Email Input */}
           <InputBox
             label="Email Address"

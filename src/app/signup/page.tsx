@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import axios from 'axios';
-import { registerUser } from '@/lib/fastapi-utils';
 import PageHeader from '@/components/ui/pageheader';
 import InputBox from '@/components/ui/inputboxes';
 import Button from '@/components/ui/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface PasswordRequirement {
   id: string;
@@ -15,9 +14,12 @@ interface PasswordRequirement {
 }
 
 export default function SignupPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   // Check password requirements in real-time
@@ -34,6 +36,7 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Client-side validation
     if (password !== confirmPassword) {
       alert('Passwords do not match!');
       return;
@@ -45,55 +48,26 @@ export default function SignupPage() {
       return;
     }
 
+    if (!firstName.trim() || !lastName.trim()) {
+      alert('Please provide both first and last name');
+      return;
+    }
+
     setIsLoading(true);
     
-    try {
-      // Make API call to create user using FastAPI utils
-      // FastAPI expects: first_name, last_name, email, password (required fields)
-      const name = email.split('@')[0];
-      const response = await registerUser(
-        name,           // first_name
-        'User',         // last_name (default)
-        email,          // email
-        password        // password
-      );
-
-      console.log('User created successfully:', response.data);
-      
-      // Handle success - redirect or show success message
-      alert('Account created successfully!');
-      
-      // Optional: redirect to login page or dashboard
-      // window.location.href = '/login';
-      
-    } catch (error) {
-      console.error('Signup error:', error);
-      
-      // Handle different error scenarios
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          // Server responded with error status
-          const errorMessage = error.response.data?.message || 'Failed to create account';
-          alert(errorMessage);
-        } else if (error.request) {
-          // Network error
-          alert('Network error. Please check your connection and try again.');
-        } else {
-          // Other Axios error
-          alert('Something went wrong. Please try again.');
-        }
-      } else {
-        // Non-Axios error
-        alert('An unexpected error occurred. Please try again.');
-      }
-    } finally {
+    // Simulate signup process
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      alert('Account created successfully! (This is just a demo - no backend connected yet)');
+      router.push('/login');
+    }, 2000);
   };
 
   const handleGoogleSignUp = () => {
     console.log('Google sign up clicked');
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
@@ -109,6 +83,27 @@ export default function SignupPage() {
 
         {/* Signup Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+
+          {/* First Name Input */}
+          <InputBox
+            label="First Name"
+            type="text"
+            placeholder="Enter your first name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            required
+          />
+
+          {/* Last Name Input */}
+          <InputBox
+            label="Last Name"
+            type="text"
+            placeholder="Enter your last name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            required
+          />
+
           {/* Email Input */}
           <InputBox
             label="Email Address"
@@ -184,6 +179,8 @@ export default function SignupPage() {
           >
             Sign Up
           </Button>
+
+
 
           {/* Divider */}
           <div className="relative my-8">
