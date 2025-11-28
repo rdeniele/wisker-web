@@ -19,7 +19,7 @@ const HistoryCard: React.FC<HistoryCardProps> = ({ imageSrc, title, createdSecon
   }
 
   return (
-    <div className="rounded-xl bg-white p-5 flex flex-col items-center w-56 h-56 justify-between shadow-[0_8px_0_0_rgba(0,0,0,0.18)]">
+    <div className="rounded-xl bg-white p-5 flex flex-col items-center w-56 h-56 justify-between shadow-[0_8px_0_0_rgba(0,0,0,0.18)] border border-gray-200">
       <div className="flex flex-col items-center gap-2">
         <Image src={imageSrc} alt={title} width={48} height={48} className="object-contain" />
       </div>

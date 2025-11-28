@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka`}
+        className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-[#fafafa] text-gray-900 dark:bg-[#5c5c5c] dark:text-gray-100 transition-colors duration-300`}
       >
         {children}
       </body>

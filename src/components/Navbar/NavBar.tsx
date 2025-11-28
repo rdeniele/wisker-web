@@ -25,10 +25,30 @@ const BellIcon = () => (
   </svg>
 );
 
-function NavBar() {
+
+interface NavBarProps {
+  metrics?: {
+    fireCount?: number;
+    pawCount?: number;
+  };
+  profile?: {
+    avatarUrl?: string;
+    displayName?: string;
+    // Add more profile fields as needed
+  };
+}
+
+function NavBar({ metrics, profile }: NavBarProps) {
+  // Default metrics for demo
+  const fireCount = metrics?.fireCount ?? 7;
+  const pawCount = metrics?.pawCount ?? 20000;
+  // Default profile for demo
+  const avatarUrl = profile?.avatarUrl;
+  const displayName = profile?.displayName ?? '';
+
   return (
     <nav className="flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900 shadow">
-      {/* Left: Logo or Brand */}
+      {/* Left: Logo or Brand (locked, not changeable) */}
       <div className="flex items-center gap-2">
         <Image
           src="/images/wiskyer_icon_text.png"
@@ -40,27 +60,37 @@ function NavBar() {
         />
       </div>
 
-      {/* Center: Stats */}
+      {/* Center: Stats (from backend) */}
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-1">
           <FireIcon />
-          <span className="font-semibold text-orange-500">7</span>
+          <span className="font-semibold text-orange-500">{fireCount}</span>
         </div>
         <div className="flex items-center gap-1">
           <PawIcon />
-          <span className="font-semibold text-orange-400">20,000</span>
+          <span className="font-semibold text-orange-400">{pawCount.toLocaleString()}</span>
         </div>
       </div>
 
-      {/* Right: Notification & Avatar */}
+      {/* Right: Notification & Avatar (from backend) */}
       <div className="flex items-center gap-4">
         <div className="relative">
           <BellIcon />
           <span className="absolute top-0 right-0 block w-2 h-2 bg-red-500 rounded-full"></span>
         </div>
-        <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-          <span className="text-xl">🐾</span>
-        </div>
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={displayName || 'User Avatar'}
+            width={32}
+            height={32}
+            className="w-8 h-8 rounded-full object-cover bg-gray-200 dark:bg-gray-700"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+            <span className="text-xl">🐾</span>
+          </div>
+        )}
       </div>
     </nav>
   );
