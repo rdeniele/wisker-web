@@ -2,6 +2,7 @@
 
 import React from 'react';
 import HistoryCard from '@/components/ui/HistoryCard';
+import Link from 'next/link';
 
 // Simulated subjects array (replace with backend data fetch in real app)
 const subjects = [
@@ -66,7 +67,11 @@ import { useState } from 'react';
 
 function SubjectHistory() {
   // Limit to 15 most recent subjects
-  const limitedSubjects = subjects.slice(0, 15);
+  // Add slug for routing preparation
+  const limitedSubjects = subjects.slice(0, 15).map(s => ({
+    ...s,
+    slug: s.title.toLowerCase().replace(/\s+/g, '-')
+  }));
   const [startIdx, setStartIdx] = useState(0);
   const maxVisible = 3;
   const canScrollLeft = startIdx > 0;
@@ -115,19 +120,19 @@ function SubjectHistory() {
               </div>
               {/* Visible cards */}
               {limitedSubjects.slice(startIdx, startIdx + maxVisible).map((subject, idx) => (
-                <button
+                <Link
                   key={subject.title + idx}
+                  href={`/subjects/${subject.slug}`}
                   className="transition-all duration-500 shrink-0 focus:outline-none active:scale-95 hover:scale-105 hover:shadow-lg"
                   style={{ transform: 'scale(1)', opacity: 1 }}
-                  onClick={() => alert(`Clicked on ${subject.title}`)}
-                  type="button"
+                  prefetch={false}
                 >
                   <HistoryCard
                     imageSrc={subject.imageSrc}
                     title={subject.title}
                     createdSecondsAgo={subject.createdSecondsAgo}
                   />
-                </button>
+                </Link>
               ))}
               {/* Next card (faded, if exists) */}
               <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
