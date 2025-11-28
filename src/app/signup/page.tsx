@@ -54,12 +54,11 @@ export default function SignupPage() {
     }
 
     setIsLoading(true);
-    
     // Simulate signup process
     setTimeout(() => {
       setIsLoading(false);
       alert('Account created successfully! (This is just a demo - no backend connected yet)');
-      router.push('/login');
+      router.push('/dashboard');
     }, 2000);
   };
 

@@ -19,22 +19,25 @@ export default function LoginPage() {
     // Check for success message from signup
     const message = searchParams.get('message');
     if (message) {
-      setSuccessMessage(message);
-      // Clear the message after a few seconds
-      const timer = setTimeout(() => setSuccessMessage(''), 5000);
-      return () => clearTimeout(timer);
+      // Schedule setState asynchronously to avoid cascading renders
+      Promise.resolve().then(() => {
+        setSuccessMessage(message);
+        setTimeout(() => setSuccessMessage(''), 5000);
+        // Store timer in ref if you want to clear it on unmount
+      });
     }
+    // Optionally, clear message on unmount
+    return () => setSuccessMessage('');
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
     // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
       alert('Login successful! (This is just a demo - no backend connected yet)');
-      window.location.href = '/dashboard'; // or wherever you want to redirect
+      window.location.href = '/dashboard';
     }, 2000);
   };
 
