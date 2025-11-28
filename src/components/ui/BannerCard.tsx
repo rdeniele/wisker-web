@@ -53,13 +53,48 @@ const BannerCard: React.FC<BannerCardProps> = ({
       <div className="flex flex-col justify-center flex-1">
         <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{title}</h2>
         {description && <p className="text-gray-700 mb-4">{description}</p>}
-        <button
-          className={`mt-2 w-full max-w-xs px-5 py-3 rounded-full text-white font-bold transition-all duration-200 ${buttonColor} hover:scale-105`}
-          onClick={onButtonClick}
-          style={{ boxShadow: '0 8px 0 0 rgba(255,140,0,0.18)' }}
-        >
-          {buttonText}
-        </button>
+        {(() => {
+          // Try to extract a color from buttonColor class string
+          let shadowColor = 'rgba(255,140,0,0.18)'; // default orange
+          if (buttonColor) {
+            // Try to match hex or rgb color in the string
+            const hexMatch = buttonColor.match(/#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})/);
+            if (hexMatch) {
+              // Use hex color with some opacity
+              shadowColor = hexToRgba(hexMatch[0], 0.18);
+            } else {
+              // Try to match rgb or rgba
+              const rgbMatch = buttonColor.match(/rgb[a]?\([^)]*\)/);
+              if (rgbMatch) {
+                shadowColor = rgbMatch[0].replace(/\)$/,'') + ',0.18)';
+              } else if (buttonColor.includes('bg-[#5B5BFF]')) {
+                shadowColor = 'rgba(91,91,255,0.18)';
+              } else if (buttonColor.includes('bg-orange-500')) {
+                shadowColor = 'rgba(255,140,0,0.18)';
+              }
+            }
+          }
+
+          function hexToRgba(hex: string, alpha: number): string {
+            let c = hex.substring(1);
+            if (c.length === 3) c = c.split('').map((x: string) => x + x).join('');
+            const num = parseInt(c, 16);
+            const r = (num >> 16) & 255;
+            const g = (num >> 8) & 255;
+            const b = num & 255;
+            return `rgba(${r},${g},${b},${alpha})`;
+          }
+
+          return (
+            <button
+              className={`mt-2 w-full max-w-xs px-5 py-3 rounded-full text-white font-bold transition-all duration-200 ${buttonColor} hover:scale-105`}
+              onClick={onButtonClick}
+              style={{ boxShadow: `0 8px 0 0 ${shadowColor}` }}
+            >
+              {buttonText}
+            </button>
+          );
+        })()}
       </div>
     </div>
   );
