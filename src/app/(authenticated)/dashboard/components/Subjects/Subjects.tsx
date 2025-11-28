@@ -29,7 +29,7 @@ function formatTimeAgo(seconds: number): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function Subjects() {
   const limitedSubjects = subjects.slice(0, 15).map(s => ({
@@ -37,7 +37,24 @@ function Subjects() {
     slug: s.title.toLowerCase().replace(/\s+/g, '-')
   }));
   const [startIdx, setStartIdx] = useState(0);
-  const maxVisible = 4;
+  const [maxVisible, setMaxVisible] = useState(4);
+
+  // Responsive: adjust maxVisible based on screen size
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth < 640) {
+        setMaxVisible(1); // mobile
+      } else if (window.innerWidth < 1024) {
+        setMaxVisible(2); // tablet
+      } else {
+        setMaxVisible(4); // desktop
+      }
+    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Always show buttons and always loop
   const handleLeft = () => {
     if (startIdx === 0) {
@@ -66,7 +83,7 @@ function Subjects() {
           See all
         </Link>
       </div>
-      <div className="flex items-center w-full">
+      <div className="flex items-center w-full gap-2">
         <button
           onClick={handleLeft}
           className="rounded-full p-2 bg-[#E4DFFF] hover:bg-[#d1c8ff] transition-all duration-300 mr-2"
@@ -76,9 +93,9 @@ function Subjects() {
         >
           <span className="text-2xl text-white">&#8592;</span>
         </button>
-        <div className="flex-1 flex justify-center items-center gap-1">
+        <div className="flex-1 flex justify-center items-center gap-2">
           {/* Previous card (faded, if exists) */}
-          <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
+          <div className="opacity-30 scale-95 transition-all duration-500 shrink-0 hidden sm:block">
             {limitedSubjects[startIdx - 1] && (
               <Link
                 href={`/subjects/${limitedSubjects[startIdx - 1].slug}`}
@@ -108,7 +125,7 @@ function Subjects() {
             <Link
               key={subject.title + idx}
               href={`/subjects/${subject.slug}`}
-              className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-all duration-300 hover:scale-105 hover:shadow-lg max-w-[220px] w-full"
               prefetch={false}
             >
               <div className="flex items-center mb-2">
@@ -129,7 +146,7 @@ function Subjects() {
             </Link>
           ))}
           {/* Next card (faded, if exists) */}
-          <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
+          <div className="opacity-30 scale-95 transition-all duration-500 shrink-0 hidden sm:block">
             {limitedSubjects[startIdx + maxVisible] && (
               <Link
                 href={`/subjects/${limitedSubjects[startIdx + maxVisible].slug}`}

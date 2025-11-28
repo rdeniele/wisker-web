@@ -43,7 +43,7 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
     };
 
     return (
-      <div className={cn('flex flex-col gap-2', fullWidth && 'w-full', className)}>
+      <div className={cn('flex flex-col gap-2', fullWidth && 'w-full', className)} style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}>
         {/* Label */}
         <label className={cn(
           'text-lg md:text-xl font-semibold text-gray-900 dark:text-white',

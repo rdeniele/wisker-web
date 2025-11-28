@@ -103,6 +103,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           widthClass,
           className
         )}
+        style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
         {...props}
       >
         {isLoading ? (

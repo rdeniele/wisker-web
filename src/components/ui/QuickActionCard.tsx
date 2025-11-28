@@ -63,8 +63,8 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: 260,
-        minHeight: 260,
+        width: 260,
+        height: 260,
         position: 'relative',
         cursor: route || onClick ? 'pointer' : 'default',
         transition: 'transform 0.15s cubic-bezier(.4,2,.3,1)',
@@ -88,7 +88,7 @@ const QuickActionCard: React.FC<QuickActionCardProps> = ({
           fontWeight: 700,
           fontSize: 28,
           textAlign: 'center',
-          fontFamily: 'inherit',
+          fontFamily: 'Fredoka, Arial, sans-serif',
         }}
       >
         {text}

@@ -25,13 +25,13 @@ const BannerCard: React.FC<BannerCardProps> = ({
 }) => {
   return (
     <div
-      className={`w-full p-6 rounded-2xl shadow-lg flex items-center justify-between gap-4 relative ${bgColor}`}
-      style={{ background: bgColor?.startsWith('bg-') ? undefined : bgColor }}
+      className={`w-full p-4 sm:p-6 rounded-2xl shadow-lg flex flex-col items-center justify-center gap-4 relative ${bgColor}`}
+      style={{ background: bgColor?.startsWith('bg-') ? undefined : bgColor, fontFamily: 'Fredoka, Arial, sans-serif' }}
     >
-      <div className="shrink-0 flex items-center h-full mr-4">
+      <div className="w-full flex flex-col items-center">
         <div
-          className="flex items-center justify-center rounded-xl"
-          style={{ background: imageBgColor, width: '8.5rem', height: '8.5rem' }}
+          className="flex items-center justify-center rounded-xl mb-4"
+          style={{ background: imageBgColor, width: '7.5rem', height: '7.5rem', maxWidth: '100%' }}
         >
           <style jsx>{`
             @keyframes bannerImageZoom {
@@ -43,17 +43,16 @@ const BannerCard: React.FC<BannerCardProps> = ({
           <Image
             src={imageSrc}
             alt={typeof title === 'string' ? title : 'Banner image'}
-            width={120}
-            height={120}
+            width={100}
+            height={100}
             className="object-contain rounded-xl border-4 border-orange-200 shadow-lg"
-            style={{ width: '7.5rem', height: '7.5rem', animation: 'bannerImageZoom 2.5s infinite' }}
+            style={{ width: '5.5rem', height: '5.5rem', animation: 'bannerImageZoom 2.5s infinite', maxWidth: '100%' }}
           />
         </div>
-      </div>
-      <div className="flex flex-col justify-center flex-1">
-        <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{title}</h2>
-        {description && <p className="text-gray-700 mb-4">{description}</p>}
-        {(() => {
+        <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-2 text-center w-full">{title}</h2>
+        {description && <p className="text-gray-700 mb-4 text-center w-full">{description}</p>}
+        <div className="w-full flex justify-center">
+          {(() => {
           // Try to extract a color from buttonColor class string
           let shadowColor = 'rgba(255,140,0,0.18)'; // default orange
           if (buttonColor) {
@@ -94,7 +93,8 @@ const BannerCard: React.FC<BannerCardProps> = ({
               {buttonText}
             </button>
           );
-        })()}
+          })()}
+        </div>
       </div>
     </div>
   );

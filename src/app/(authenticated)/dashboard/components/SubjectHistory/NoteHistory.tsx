@@ -64,7 +64,7 @@ const subjects = [
   },
 ];
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function NoteHistory() {
   // Limit to 15 most recent subjects
@@ -74,24 +74,37 @@ function NoteHistory() {
     slug: s.title.toLowerCase().replace(/\s+/g, '-')
   }));
   const [startIdx, setStartIdx] = useState(0);
-  const maxVisible = 3;
-  const canScrollLeft = startIdx > 0;
-  const canScrollRight = startIdx + maxVisible < limitedNotes.length;
+  const [maxVisible, setMaxVisible] = useState(3);
 
+  // Responsive: adjust maxVisible based on screen size (Subjects.tsx logic)
+  useEffect(() => {
+    function handleResize() {
+      if (window.innerWidth < 640) {
+        setMaxVisible(1); // mobile
+      } else if (window.innerWidth < 1024) {
+        setMaxVisible(2); // tablet
+      } else {
+        setMaxVisible(3); // desktop
+      }
+    }
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Always show buttons and always loop
   const handleLeft = () => {
-    if (canScrollLeft) {
-      setStartIdx(Math.max(0, startIdx - 1));
-    } else {
-      // Loop to end
+    if (startIdx === 0) {
       setStartIdx(limitedNotes.length - maxVisible);
+    } else {
+      setStartIdx(startIdx - 1);
     }
   };
   const handleRight = () => {
-    if (canScrollRight) {
-      setStartIdx(Math.min(limitedNotes.length - maxVisible, startIdx + 1));
-    } else {
-      // Loop to start
+    if (startIdx + maxVisible >= limitedNotes.length) {
       setStartIdx(0);
+    } else {
+      setStartIdx(startIdx + 1);
     }
   };
 
@@ -99,8 +112,13 @@ function NoteHistory() {
     <div className="w-full">
       {limitedNotes.length > 0 ? (
         <>
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-6">Run It Back</h1>
-          <div className="flex items-center w-full">
+          <h1
+            className="text-3xl font-extrabold text-gray-900 mb-6"
+            style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
+          >
+            Run It Back
+          </h1>
+          <div className="flex items-center w-full gap-2">
             <button
               onClick={handleLeft}
               className="rounded-full p-2 bg-[#E4DFFF] hover:bg-[#d1c8ff] transition-all duration-300 mr-2"
@@ -108,9 +126,9 @@ function NoteHistory() {
             >
               <span className="text-2xl text-white">&#8592;</span>
             </button>
-            <div className="flex-1 flex justify-center items-center gap-1">
+            <div className="flex-1 flex justify-center items-center gap-2">
               {/* Previous card (faded, if exists) */}
-              <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
+              <div className="opacity-30 scale-95 transition-all duration-500 shrink-0 hidden sm:block">
                 {limitedNotes[startIdx - 1] && (
                   <Link
                     href={`/notes/${limitedNotes[startIdx - 1].slug}`}
@@ -130,7 +148,7 @@ function NoteHistory() {
                 <Link
                   key={note.title + idx}
                   href={`/notes/${note.slug}`}
-                  className="transition-all duration-500 shrink-0 focus:outline-none active:scale-95 hover:scale-105 hover:shadow-lg"
+                  className="transition-all duration-500 shrink-0 focus:outline-none active:scale-95 hover:scale-105 hover:shadow-lg w-full max-w-[220px]"
                   style={{ transform: 'scale(1)', opacity: 1 }}
                   prefetch={false}
                 >
@@ -142,7 +160,7 @@ function NoteHistory() {
                 </Link>
               ))}
               {/* Next card (faded, if exists) */}
-              <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
+              <div className="opacity-30 scale-95 transition-all duration-500 shrink-0 hidden sm:block">
                 {limitedNotes[startIdx + maxVisible] && (
                   <Link
                     href={`/notes/${limitedNotes[startIdx + maxVisible].slug}`}
@@ -168,7 +186,12 @@ function NoteHistory() {
           </div>
         </>
       ) : (
-        <h1 className="text-2xl font-bold text-gray-400 text-center py-12">No more recent subjects</h1>
+        <h1
+          className="text-2xl font-bold text-gray-400 text-center py-12"
+          style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
+        >
+          No more recent subjects
+        </h1>
       )}
     </div>
   );

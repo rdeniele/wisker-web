@@ -21,6 +21,7 @@ function SearchBar() {
         type="text"
         placeholder="Find some study materials"
         className="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-400 text-base"
+        style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
       />
     </div>
   );
