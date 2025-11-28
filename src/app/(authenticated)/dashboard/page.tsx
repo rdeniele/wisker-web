@@ -1,17 +1,20 @@
 
 import React from 'react';
 import NavBar from '@/components/Navbar/NavBar';
-import FreeTrialBanner from './components/DashboardBanners/FreeTrialBanner';
-import LearnMoreBanner from './components/DashboardBanners/LearnMoreBanner';
+import CombineBanners from './components/DashboardBanners/CombineBanners';
+import SubjectHistory from './components/SubjectHistory/SubjectHistory';
 
 function DashboardPage() {
   return (
     <>
       <NavBar />
       <div className="p-6">
-        <div className="space-y-6">
-          <FreeTrialBanner />
-          <LearnMoreBanner />
+        <div className="mb-10">
+          <CombineBanners />
+        </div>
+        {/* New section for subject history */}
+        <div className="mt-12">
+          <SubjectHistory />
         </div>
       </div>
     </>

@@ -54,9 +54,9 @@ const BannerCard: React.FC<BannerCardProps> = ({
         <h2 className="text-2xl font-extrabold text-gray-900 mb-2">{title}</h2>
         {description && <p className="text-gray-700 mb-4">{description}</p>}
         <button
-          className={`mt-2 w-full max-w-xs px-5 py-3 rounded-full text-white font-bold transition-all duration-200 ${buttonColor} hover:scale-105 shadow-md`}
+          className={`mt-2 w-full max-w-xs px-5 py-3 rounded-full text-white font-bold transition-all duration-200 ${buttonColor} hover:scale-105`}
           onClick={onButtonClick}
-          style={{ boxShadow: '0 4px 12px rgba(255,140,0,0.12)' }}
+          style={{ boxShadow: '0 8px 0 0 rgba(255,140,0,0.18)' }}
         >
           {buttonText}
         </button>
