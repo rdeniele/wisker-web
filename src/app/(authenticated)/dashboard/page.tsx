@@ -3,7 +3,8 @@
 import NavBar from '@/components/Navbar/NavBar';
 import ProgressProfile from './components/QuickAction/ProgressProfile';
 import CombineBanners from './components/DashboardBanners/CombineBanners';
-import SubjectHistory from './components/SubjectHistory/SubjectHistory';
+import Subjects from './components/Subjects/Subjects';
+import NoteHistory from './components/SubjectHistory/NoteHistory';
 import ClaimReward from './components/QuickAction/ClaimReward';
 import CreateFlasCard from './components/QuickAction/CreateFlasCard';
 import AddSubject from './components/QuickAction/AddSubject';
@@ -18,7 +19,7 @@ function DashboardPage() {
         </div>
         {/* New section for subject history */}
         <div className="mt-12">
-          <SubjectHistory />
+          <NoteHistory />
         </div>
 
         {/* Quick Action Section */}
@@ -39,6 +40,10 @@ function DashboardPage() {
             <CreateFlasCard />
             <AddSubject />
           </div>
+          {/* Subjects section */}
+        <div className="mt-12">
+          <Subjects />
+        </div>
         </div>
       </div>
     </>

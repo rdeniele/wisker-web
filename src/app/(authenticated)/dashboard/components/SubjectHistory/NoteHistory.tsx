@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -65,29 +66,29 @@ const subjects = [
 
 import { useState } from 'react';
 
-function SubjectHistory() {
+function NoteHistory() {
   // Limit to 15 most recent subjects
   // Add slug for routing preparation
-  const limitedSubjects = subjects.slice(0, 15).map(s => ({
+  const limitedNotes = subjects.slice(0, 15).map(s => ({
     ...s,
     slug: s.title.toLowerCase().replace(/\s+/g, '-')
   }));
   const [startIdx, setStartIdx] = useState(0);
   const maxVisible = 3;
   const canScrollLeft = startIdx > 0;
-  const canScrollRight = startIdx + maxVisible < limitedSubjects.length;
+  const canScrollRight = startIdx + maxVisible < limitedNotes.length;
 
   const handleLeft = () => {
     if (canScrollLeft) {
       setStartIdx(Math.max(0, startIdx - 1));
     } else {
       // Loop to end
-      setStartIdx(limitedSubjects.length - maxVisible);
+      setStartIdx(limitedNotes.length - maxVisible);
     }
   };
   const handleRight = () => {
     if (canScrollRight) {
-      setStartIdx(Math.min(limitedSubjects.length - maxVisible, startIdx + 1));
+      setStartIdx(Math.min(limitedNotes.length - maxVisible, startIdx + 1));
     } else {
       // Loop to start
       setStartIdx(0);
@@ -96,9 +97,9 @@ function SubjectHistory() {
 
   return (
     <div className="w-full">
-      {limitedSubjects.length > 0 ? (
+      {limitedNotes.length > 0 ? (
         <>
-          <h1 className="text-3xl font-extrabold text-gray-900 mb-6">Run it back</h1>
+          <h1 className="text-3xl font-extrabold text-gray-900 mb-6">Run It Back</h1>
           <div className="flex items-center w-full">
             <button
               onClick={handleLeft}
@@ -110,38 +111,50 @@ function SubjectHistory() {
             <div className="flex-1 flex justify-center items-center gap-1">
               {/* Previous card (faded, if exists) */}
               <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
-                {limitedSubjects[startIdx - 1] && (
-                  <HistoryCard
-                    imageSrc={limitedSubjects[startIdx - 1].imageSrc}
-                    title={limitedSubjects[startIdx - 1].title}
-                    createdSecondsAgo={limitedSubjects[startIdx - 1].createdSecondsAgo}
-                  />
+                {limitedNotes[startIdx - 1] && (
+                  <Link
+                    href={`/notes/${limitedNotes[startIdx - 1].slug}`}
+                    className="transition-all duration-500 shrink-0"
+                    prefetch={false}
+                  >
+                    <HistoryCard
+                      imageSrc={limitedNotes[startIdx - 1].imageSrc}
+                      title={limitedNotes[startIdx - 1].title}
+                      createdSecondsAgo={limitedNotes[startIdx - 1].createdSecondsAgo}
+                    />
+                  </Link>
                 )}
               </div>
               {/* Visible cards */}
-              {limitedSubjects.slice(startIdx, startIdx + maxVisible).map((subject, idx) => (
+              {limitedNotes.slice(startIdx, startIdx + maxVisible).map((note, idx) => (
                 <Link
-                  key={subject.title + idx}
-                  href={`/subjects/${subject.slug}`}
+                  key={note.title + idx}
+                  href={`/notes/${note.slug}`}
                   className="transition-all duration-500 shrink-0 focus:outline-none active:scale-95 hover:scale-105 hover:shadow-lg"
                   style={{ transform: 'scale(1)', opacity: 1 }}
                   prefetch={false}
                 >
                   <HistoryCard
-                    imageSrc={subject.imageSrc}
-                    title={subject.title}
-                    createdSecondsAgo={subject.createdSecondsAgo}
+                    imageSrc={note.imageSrc}
+                    title={note.title}
+                    createdSecondsAgo={note.createdSecondsAgo}
                   />
                 </Link>
               ))}
               {/* Next card (faded, if exists) */}
               <div className="opacity-30 scale-95 transition-all duration-500 shrink-0">
-                {limitedSubjects[startIdx + maxVisible] && (
-                  <HistoryCard
-                    imageSrc={limitedSubjects[startIdx + maxVisible].imageSrc}
-                    title={limitedSubjects[startIdx + maxVisible].title}
-                    createdSecondsAgo={limitedSubjects[startIdx + maxVisible].createdSecondsAgo}
-                  />
+                {limitedNotes[startIdx + maxVisible] && (
+                  <Link
+                    href={`/notes/${limitedNotes[startIdx + maxVisible].slug}`}
+                    className="transition-all duration-500 shrink-0"
+                    prefetch={false}
+                  >
+                    <HistoryCard
+                      imageSrc={limitedNotes[startIdx + maxVisible].imageSrc}
+                      title={limitedNotes[startIdx + maxVisible].title}
+                      createdSecondsAgo={limitedNotes[startIdx + maxVisible].createdSecondsAgo}
+                    />
+                  </Link>
                 )}
               </div>
             </div>
@@ -161,4 +174,4 @@ function SubjectHistory() {
   );
 }
 
-export default SubjectHistory;
+export default NoteHistory;
