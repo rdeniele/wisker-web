@@ -1,5 +1,6 @@
 import React from 'react';
-import Image from 'next/image';
+
+import SearchBar from '../ui/SearchBar';
 
 // Heroicons SVGs (free, MIT)
 const FireIcon = () => (
@@ -38,59 +39,38 @@ interface NavBarProps {
   };
 }
 
-function NavBar({ metrics, profile }: NavBarProps) {
+function NavBar({ metrics }: NavBarProps) {
   // Default metrics for demo
   const fireCount = metrics?.fireCount ?? 7;
   const pawCount = metrics?.pawCount ?? 20000;
-  // Default profile for demo
-  const avatarUrl = profile?.avatarUrl;
-  const displayName = profile?.displayName ?? '';
 
   return (
-    <nav className="flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900 shadow">
-      {/* Left: Logo or Brand (locked, not changeable) */}
-      <div className="flex items-center gap-2">
-        <Image
-          src="/images/wiskyer_icon_text.png"
-          alt="Wisker Logo"
-          width={180}
-          height={40}
-          className="h-10 w-auto"
-          priority
-        />
-      </div>
-
-      {/* Center: Stats (from backend) */}
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-1">
-          <FireIcon />
-          <span className="font-semibold text-orange-500">{fireCount}</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <PawIcon />
-          <span className="font-semibold text-orange-400">{pawCount.toLocaleString()}</span>
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900">
+      {/* Left: Wide SearchBar */}
+      <div className="flex-1 flex items-center">
+        <div className="w-full max-w-2xl">
+          <SearchBar />
         </div>
       </div>
 
-      {/* Right: Notification & Avatar (from backend) */}
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <BellIcon />
-          <span className="absolute top-0 right-0 block w-2 h-2 bg-red-500 rounded-full"></span>
-        </div>
-        {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt={displayName || 'User Avatar'}
-            width={32}
-            height={32}
-            className="w-8 h-8 rounded-full object-cover bg-gray-200 dark:bg-gray-700"
-          />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-            <span className="text-xl">🐾</span>
+      {/* Right: Metrics and Notification */}
+      <div className="flex items-center gap-8">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-1">
+            <FireIcon />
+            <span className="font-semibold text-orange-500">{fireCount}</span>
           </div>
-        )}
+          <div className="flex items-center gap-1">
+            <PawIcon />
+            <span className="font-semibold text-orange-400">{pawCount.toLocaleString()}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <BellIcon />
+            <span className="absolute top-0 right-0 block w-2 h-2 bg-red-500 rounded-full"></span>
+          </div>
+        </div>
       </div>
     </nav>
   );
