@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fredoka, Poppins } from "next/font/google";
 import "./globals.css";
+import "./editor.css";
 
 const fredoka = Fredoka({
   variable: "--font-fredoka",

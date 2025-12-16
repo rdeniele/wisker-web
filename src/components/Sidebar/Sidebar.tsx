@@ -36,11 +36,11 @@ const FlashcardsIcon = () => (
 );
 
 const navLinks = [
-  { name: 'Dashboard', icon: <DashboardIcon />, href: '/(authenticated)/dashboard' },
-  { name: 'Claim Your Daily Rewards', icon: <RewardsIcon />, href: '/(authenticated)/dashboard?tab=claim-rewards' },
-  { name: 'Quiz', icon: <QuizIcon />, href: '/(authenticated)/quiz' },
-  { name: 'Flashcards', icon: <FlashcardsIcon />, href: '/(authenticated)/dashboard?tab=flashcards' },
-  { name: 'Subjects', icon: <SubjectsIcon />, href: '/(authenticated)/dashboard/components/Subjects' },
+  { name: 'Dashboard', icon: <DashboardIcon />, href: '/dashboard' },
+  { name: 'Claim Your Daily Rewards', icon: <RewardsIcon />, href: '/dashboard?tab=claim-rewards' },
+  { name: 'Quiz', icon: <QuizIcon />, href: '/quiz' },
+  { name: 'Flashcards', icon: <FlashcardsIcon />, href: '/dashboard?tab=flashcards' },
+  { name: 'Subjects', icon: <SubjectsIcon />, href: '/subjects' },
 ];
 
 function Sidebar() {
