@@ -1,7 +1,5 @@
-
-import React from 'react';
-import Image from 'next/image';
-
+import React from "react";
+import Image from "next/image";
 
 interface HorizontalCardProps {
   title: string;
@@ -11,7 +9,6 @@ interface HorizontalCardProps {
   date?: string;
   notes?: number;
 }
-
 
 const HorizontalCard: React.FC<HorizontalCardProps> = ({
   title,
@@ -24,9 +21,12 @@ const HorizontalCard: React.FC<HorizontalCardProps> = ({
   return (
     <div
       className="flex items-center bg-white rounded-2xl shadow-lg p-4 w-full min-h-[90px]"
-      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.10)', fontFamily: 'Fredoka, Arial, sans-serif' }}
+      style={{
+        boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+        fontFamily: "Fredoka, Arial, sans-serif",
+      }}
     >
-      <div className="rounded-xl p-3" style={{ background: '#FEF1CA' }}>
+      <div className="rounded-xl p-3" style={{ background: "#FEF1CA" }}>
         <Image
           src={image}
           alt={title}
@@ -39,17 +39,21 @@ const HorizontalCard: React.FC<HorizontalCardProps> = ({
         <div className="font-bold text-lg text-gray-800">{title}</div>
         <div className="text-base text-gray-500">
           {day}
-          {date ? `, ${date}` : ''}
+          {date ? `, ${date}` : ""}
         </div>
       </div>
       <div className="flex flex-col items-end ml-4">
         {time && (
           <div className="flex items-center mb-1">
-            <span className="bg-red-500 text-white text-base px-3 py-1 rounded-full font-bold">{time}</span>
+            <span className="bg-red-500 text-white text-base px-3 py-1 rounded-full font-bold">
+              {time}
+            </span>
           </div>
         )}
-        {typeof notes === 'number' && (
-          <div className="text-base text-gray-600 font-medium">Notes: {notes}</div>
+        {typeof notes === "number" && (
+          <div className="text-base text-gray-600 font-medium">
+            Notes: {notes}
+          </div>
         )}
       </div>
     </div>

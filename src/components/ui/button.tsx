@@ -1,10 +1,10 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  size?: "sm" | "md" | "lg" | "xl";
   fullWidth?: boolean;
   isLoading?: boolean;
   disabled?: boolean;
@@ -14,15 +14,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       children,
-      variant = 'primary',
-      size = 'md',
+      variant = "primary",
+      size = "md",
       fullWidth = false,
       isLoading = false,
       disabled = false,
       className,
       ...props
     },
-    ref
+    ref,
   ) => {
     const baseStyles = `
       inline-flex items-center justify-center
@@ -90,7 +90,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       `,
     };
 
-    const widthClass = fullWidth ? 'w-full' : 'w-auto min-w-[120px] sm:min-w-[140px]';
+    const widthClass = fullWidth
+      ? "w-full"
+      : "w-auto min-w-[120px] sm:min-w-[140px]";
 
     return (
       <button
@@ -101,9 +103,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           variants[variant],
           sizes[size],
           widthClass,
-          className
+          className,
         )}
-        style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
+        style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
         {...props}
       >
         {isLoading ? (
@@ -135,9 +137,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
       </button>
     );
-  }
+  },
 );
 
-Button.displayName = 'Button';
+Button.displayName = "Button";
 
 export default Button;

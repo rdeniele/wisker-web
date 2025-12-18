@@ -1,6 +1,6 @@
-import React from 'react';
-import FreeTrialBanner from './FreeTrialBanner';
-import LearnMoreBanner from './LearnMoreBanner';
+import React from "react";
+import FreeTrialBanner from "./FreeTrialBanner";
+import LearnMoreBanner from "./LearnMoreBanner";
 
 function CombineBanners() {
   return (

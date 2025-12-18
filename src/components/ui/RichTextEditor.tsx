@@ -1,19 +1,19 @@
-'use client';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import TextAlign from '@tiptap/extension-text-align';
-import { 
-  FiBold, 
-  FiItalic, 
-  FiUnderline, 
-  FiList, 
-  FiAlignLeft, 
-  FiAlignCenter, 
+"use client";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
+import {
+  FiBold,
+  FiItalic,
+  FiUnderline,
+  FiList,
+  FiAlignLeft,
+  FiAlignCenter,
   FiAlignRight,
-  FiAlignJustify
-} from 'react-icons/fi';
-import { BsListOl } from 'react-icons/bs';
+  FiAlignJustify,
+} from "react-icons/fi";
+import { BsListOl } from "react-icons/bs";
 
 interface RichTextEditorProps {
   content: string;
@@ -21,7 +21,11 @@ interface RichTextEditorProps {
   editable?: boolean;
 }
 
-export default function RichTextEditor({ content, onChange, editable = true }: RichTextEditorProps) {
+export default function RichTextEditor({
+  content,
+  onChange,
+  editable = true,
+}: RichTextEditorProps) {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -32,7 +36,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
       }),
       Underline,
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ["heading", "paragraph"],
       }),
     ],
     content,
@@ -42,7 +46,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-lg max-w-none focus:outline-none min-h-[500px] p-8',
+        class: "prose prose-lg max-w-none focus:outline-none min-h-[500px] p-8",
       },
     },
   });
@@ -59,7 +63,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive('bold') ? 'bg-gray-200' : ''
+              editor.isActive("bold") ? "bg-gray-200" : ""
             }`}
             title="Bold (Ctrl+B)"
           >
@@ -68,7 +72,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive('italic') ? 'bg-gray-200' : ''
+              editor.isActive("italic") ? "bg-gray-200" : ""
             }`}
             title="Italic (Ctrl+I)"
           >
@@ -77,7 +81,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
           <button
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive('underline') ? 'bg-gray-200' : ''
+              editor.isActive("underline") ? "bg-gray-200" : ""
             }`}
             title="Underline (Ctrl+U)"
           >
@@ -88,27 +92,33 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
 
           {/* Headings */}
           <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 1 }).run()
+            }
             className={`px-3 py-2 rounded hover:bg-gray-100 transition text-sm font-medium ${
-              editor.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''
+              editor.isActive("heading", { level: 1 }) ? "bg-gray-200" : ""
             }`}
             title="Heading 1"
           >
             H1
           </button>
           <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 2 }).run()
+            }
             className={`px-3 py-2 rounded hover:bg-gray-100 transition text-sm font-medium ${
-              editor.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''
+              editor.isActive("heading", { level: 2 }) ? "bg-gray-200" : ""
             }`}
             title="Heading 2"
           >
             H2
           </button>
           <button
-            onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            onClick={() =>
+              editor.chain().focus().toggleHeading({ level: 3 }).run()
+            }
             className={`px-3 py-2 rounded hover:bg-gray-100 transition text-sm font-medium ${
-              editor.isActive('heading', { level: 3 }) ? 'bg-gray-200' : ''
+              editor.isActive("heading", { level: 3 }) ? "bg-gray-200" : ""
             }`}
             title="Heading 3"
           >
@@ -121,7 +131,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
           <button
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive('bulletList') ? 'bg-gray-200' : ''
+              editor.isActive("bulletList") ? "bg-gray-200" : ""
             }`}
             title="Bullet List"
           >
@@ -130,7 +140,7 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
           <button
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive('orderedList') ? 'bg-gray-200' : ''
+              editor.isActive("orderedList") ? "bg-gray-200" : ""
             }`}
             title="Numbered List"
           >
@@ -141,36 +151,36 @@ export default function RichTextEditor({ content, onChange, editable = true }: R
 
           {/* Text Alignment */}
           <button
-            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            onClick={() => editor.chain().focus().setTextAlign("left").run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200' : ''
+              editor.isActive({ textAlign: "left" }) ? "bg-gray-200" : ""
             }`}
             title="Align Left"
           >
             <FiAlignLeft size={18} />
           </button>
           <button
-            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            onClick={() => editor.chain().focus().setTextAlign("center").run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200' : ''
+              editor.isActive({ textAlign: "center" }) ? "bg-gray-200" : ""
             }`}
             title="Align Center"
           >
             <FiAlignCenter size={18} />
           </button>
           <button
-            onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            onClick={() => editor.chain().focus().setTextAlign("right").run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200' : ''
+              editor.isActive({ textAlign: "right" }) ? "bg-gray-200" : ""
             }`}
             title="Align Right"
           >
             <FiAlignRight size={18} />
           </button>
           <button
-            onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+            onClick={() => editor.chain().focus().setTextAlign("justify").run()}
             className={`p-2 rounded hover:bg-gray-100 transition ${
-              editor.isActive({ textAlign: 'justify' }) ? 'bg-gray-200' : ''
+              editor.isActive({ textAlign: "justify" }) ? "bg-gray-200" : ""
             }`}
             title="Justify"
           >

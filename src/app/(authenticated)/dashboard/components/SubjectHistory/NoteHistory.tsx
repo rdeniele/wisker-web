@@ -1,77 +1,76 @@
+"use client";
 
-'use client';
-
-import React from 'react';
-import HistoryCard from '@/components/ui/HistoryCard';
-import Link from 'next/link';
+import React from "react";
+import HistoryCard from "@/components/ui/HistoryCard";
+import Link from "next/link";
 
 // Simulated subjects array (replace with backend data fetch in real app)
 const subjects = [
   {
-    title: 'Mathematics',
-    imageSrc: '/images/ui/book.png',
+    title: "Mathematics",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 20,
   },
   {
-    title: 'Physics',
-    imageSrc: '/images/ui/book.png',
+    title: "Physics",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 120,
   },
   {
-    title: 'Chemistry',
-    imageSrc: '/images/ui/book.png',
+    title: "Chemistry",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 300,
   },
   {
-    title: 'Biology',
-    imageSrc: '/images/ui/book.png',
+    title: "Biology",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 900,
   },
   {
-    title: 'History',
-    imageSrc: '/images/ui/book.png',
+    title: "History",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 1800,
   },
   {
-    title: 'Geography',
-    imageSrc: '/images/ui/book.png',
+    title: "Geography",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 3600,
   },
   {
-    title: 'English',
-    imageSrc: '/images/ui/book.png',
+    title: "English",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 4000,
   },
   {
-    title: 'Computer Science',
-    imageSrc: '/images/ui/book.png',
+    title: "Computer Science",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 4200,
   },
   {
-    title: 'Art',
-    imageSrc: '/images/ui/book.png',
+    title: "Art",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 4400,
   },
   {
-    title: 'Music',
-    imageSrc: '/images/ui/book.png',
+    title: "Music",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 4600,
   },
   {
-    title: 'Economics',
-    imageSrc: '/images/ui/book.png',
+    title: "Economics",
+    imageSrc: "/images/ui/book.png",
     createdSecondsAgo: 4800,
   },
 ];
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 function NoteHistory() {
   // Limit to 15 most recent subjects
   // Add slug for routing preparation
-  const limitedNotes = subjects.slice(0, 15).map(s => ({
+  const limitedNotes = subjects.slice(0, 15).map((s) => ({
     ...s,
-    slug: s.title.toLowerCase().replace(/\s+/g, '-')
+    slug: s.title.toLowerCase().replace(/\s+/g, "-"),
   }));
   const [startIdx, setStartIdx] = useState(0);
   const [maxVisible, setMaxVisible] = useState(3);
@@ -88,8 +87,8 @@ function NoteHistory() {
       }
     }
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Always show buttons and always loop
@@ -114,7 +113,7 @@ function NoteHistory() {
         <>
           <h1
             className="text-3xl font-extrabold text-gray-900 mb-6"
-            style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
+            style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
           >
             Run It Back
           </h1>
@@ -138,27 +137,31 @@ function NoteHistory() {
                     <HistoryCard
                       imageSrc={limitedNotes[startIdx - 1].imageSrc}
                       title={limitedNotes[startIdx - 1].title}
-                      createdSecondsAgo={limitedNotes[startIdx - 1].createdSecondsAgo}
+                      createdSecondsAgo={
+                        limitedNotes[startIdx - 1].createdSecondsAgo
+                      }
                     />
                   </Link>
                 )}
               </div>
               {/* Visible cards */}
-              {limitedNotes.slice(startIdx, startIdx + maxVisible).map((note, idx) => (
-                <Link
-                  key={note.title + idx}
-                  href={`/notes/${note.slug}`}
-                  className="transition-all duration-500 shrink-0 focus:outline-none active:scale-95 hover:scale-105 hover:shadow-lg w-full max-w-[220px]"
-                  style={{ transform: 'scale(1)', opacity: 1 }}
-                  prefetch={false}
-                >
-                  <HistoryCard
-                    imageSrc={note.imageSrc}
-                    title={note.title}
-                    createdSecondsAgo={note.createdSecondsAgo}
-                  />
-                </Link>
-              ))}
+              {limitedNotes
+                .slice(startIdx, startIdx + maxVisible)
+                .map((note, idx) => (
+                  <Link
+                    key={note.title + idx}
+                    href={`/notes/${note.slug}`}
+                    className="transition-all duration-500 shrink-0 focus:outline-none active:scale-95 hover:scale-105 hover:shadow-lg w-full max-w-[220px]"
+                    style={{ transform: "scale(1)", opacity: 1 }}
+                    prefetch={false}
+                  >
+                    <HistoryCard
+                      imageSrc={note.imageSrc}
+                      title={note.title}
+                      createdSecondsAgo={note.createdSecondsAgo}
+                    />
+                  </Link>
+                ))}
               {/* Next card (faded, if exists) */}
               <div className="opacity-30 scale-95 transition-all duration-500 shrink-0 hidden sm:block">
                 {limitedNotes[startIdx + maxVisible] && (
@@ -170,7 +173,9 @@ function NoteHistory() {
                     <HistoryCard
                       imageSrc={limitedNotes[startIdx + maxVisible].imageSrc}
                       title={limitedNotes[startIdx + maxVisible].title}
-                      createdSecondsAgo={limitedNotes[startIdx + maxVisible].createdSecondsAgo}
+                      createdSecondsAgo={
+                        limitedNotes[startIdx + maxVisible].createdSecondsAgo
+                      }
                     />
                   </Link>
                 )}
@@ -188,7 +193,7 @@ function NoteHistory() {
       ) : (
         <h1
           className="text-2xl font-bold text-gray-400 text-center py-12"
-          style={{ fontFamily: 'Fredoka, Arial, sans-serif' }}
+          style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
         >
           No more recent subjects
         </h1>

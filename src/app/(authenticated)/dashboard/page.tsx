@@ -1,10 +1,10 @@
-import NavBar from '@/components/Navbar/NavBar';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import Subjects from './components/Subjects/Subjects';
-import UpcomingExam from './components/UpcomingExam/UpcomingExam';
-import CombineBanners from './components/DashboardBanners/CombineBanners';
-import NoteHistory from './components/SubjectHistory/NoteHistory';
-import RecentActivity from './components/RecentActivity/RecentAcitivty';
+import NavBar from "@/components/Navbar/NavBar";
+import Sidebar from "@/components/Sidebar/Sidebar";
+import Subjects from "./components/Subjects/Subjects";
+import UpcomingExam from "./components/UpcomingExam/UpcomingExam";
+import CombineBanners from "./components/DashboardBanners/CombineBanners";
+import NoteHistory from "./components/SubjectHistory/NoteHistory";
+import RecentActivity from "./components/RecentActivity/RecentAcitivty";
 
 function DashboardPage() {
   return (

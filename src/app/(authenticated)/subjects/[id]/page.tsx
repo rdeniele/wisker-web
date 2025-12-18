@@ -1,13 +1,12 @@
-
-'use client';
-import { notFound, useRouter } from 'next/navigation';
-import { subjects, subjectNotes } from '@/lib/data/subjects';
-import { use } from 'react';
-import PageLayout from '@/components/layouts/PageLayout';
-import PageHeader from '@/components/ui/pageheader';
-import NoteCard from '@/components/ui/NoteCard';
-import EmptyState from '@/components/ui/EmptyState';
-import { FiArrowLeft } from 'react-icons/fi';
+"use client";
+import { notFound, useRouter } from "next/navigation";
+import { subjects, subjectNotes } from "@/lib/data/subjects";
+import { use } from "react";
+import PageLayout from "@/components/layouts/PageLayout";
+import PageHeader from "@/components/ui/pageheader";
+import NoteCard from "@/components/ui/NoteCard";
+import EmptyState from "@/components/ui/EmptyState";
+import { FiArrowLeft } from "react-icons/fi";
 
 interface SubjectPageProps {
   params: Promise<{ id: string }>;
@@ -28,7 +27,10 @@ function SubjectPage({ params }: SubjectPageProps) {
         onClick={() => router.back()}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition group"
       >
-        <FiArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+        <FiArrowLeft
+          size={20}
+          className="group-hover:-translate-x-1 transition-transform"
+        />
         <span className="font-medium">Back</span>
       </button>
       <PageHeader title={subject.name} centered={false} />
@@ -44,10 +46,12 @@ function SubjectPage({ params }: SubjectPageProps) {
               createdAt={noteCard.createdAt}
               lastOpened={noteCard.lastOpened}
               characterCount={noteCard.characterCount}
-              onClick={() => router.push(`/subjects/${id}/notes/${noteCard.id}`)}
+              onClick={() =>
+                router.push(`/subjects/${id}/notes/${noteCard.id}`)
+              }
               onView={() => router.push(`/subjects/${id}/notes/${noteCard.id}`)}
-              onEdit={() => console.log('Edit note:', noteCard.id)}
-              onDelete={() => console.log('Delete note:', noteCard.id)}
+              onEdit={() => console.log("Edit note:", noteCard.id)}
+              onDelete={() => console.log("Delete note:", noteCard.id)}
             />
           ))
         )}
@@ -55,6 +59,5 @@ function SubjectPage({ params }: SubjectPageProps) {
     </PageLayout>
   );
 }
-
 
 export default SubjectPage;
