@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 import { subjects } from "@/lib/data/subjects";
 import { useState } from "react";
 import CreateSubject from "./components/CreateSubject";
+import OptionWidget from "@/components/ui/OptionWidget";
 
 function SubjectsPage() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
     <div className="flex min-h-screen bg-[#fafafa] font-fredoka">
@@ -52,12 +54,36 @@ function SubjectsPage() {
                     className="w-20 h-20 object-contain -mt-6 -mr-2"
                     draggable={false}
                   />
-                  <button
-                    className="absolute top-4 right-4 text-2xl text-gray-400 bg-white rounded-full w-8 h-8 flex items-center justify-center border border-gray-200"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    &#8942;
-                  </button>
+                  <div className="absolute top-4 right-4">
+                    {openMenuId === String(subject.id) ? (
+                      <OptionWidget
+                        onView={() => {
+                          setOpenMenuId(null);
+                          router.push(`/subjects/${subject.id}`);
+                        }}
+                        onEdit={() => {
+                          setOpenMenuId(null);
+                          // Add edit logic here
+                        }}
+                        onDelete={() => {
+                          setOpenMenuId(null);
+                          // Add delete logic here
+                        }}
+                      />
+                    ) : (
+                      <button
+                        className="text-2xl text-gray-400 bg-white rounded-full w-8 h-8 flex items-center justify-center border border-gray-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(String(subject.id));
+                        }}
+                        aria-label="Options"
+                        type="button"
+                      >
+                        &#8942;
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {/* Card actions */}
                 <div className="flex gap-2 px-4 py-3 rounded-b-2xl mt-auto">
