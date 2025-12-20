@@ -7,14 +7,19 @@ import PageHeader from "@/components/ui/pageheader";
 import NoteCard from "@/components/ui/NoteCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { FiArrowLeft } from "react-icons/fi";
+import { useState } from "react";
+import CreateNoteModal from "./notes/components/CreateNoteModal";
+import UploadPDF from "./notes/components/UploadPDF";
 
 interface SubjectPageProps {
   params: Promise<{ id: string }>;
 }
 
-function SubjectPage({ params }: SubjectPageProps) {
+const SubjectPage = ({ params }: SubjectPageProps) => {
   const { id } = use(params);
   const router = useRouter();
+  const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
+  const [showUploadPDF, setShowUploadPDF] = useState(false);
 
   const subject = subjects.find((s) => s.id === Number(id));
   if (!subject) return notFound();
@@ -56,8 +61,68 @@ function SubjectPage({ params }: SubjectPageProps) {
           ))
         )}
       </div>
+
+      {/* Add Note Floating Button */}
+      <button
+        className="fixed bottom-8 right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-2xl shadow-lg flex items-center gap-2 text-lg z-50 transition active:scale-95"
+        onClick={() => setShowCreateNoteModal(true)}
+      >
+        <span className="text-2xl">+</span> Add Note
+      </button>
+
+      {/* Create Note Modal Popup */}
+      {showCreateNoteModal && !showUploadPDF && (
+        <div
+          className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          onClick={() => setShowCreateNoteModal(false)}
+        >
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <CreateNoteModal
+              onClose={() => setShowCreateNoteModal(false)}
+              onCreateNote={() => {
+                setShowCreateNoteModal(false);
+                // Add create note logic here
+              }}
+              onUpload={() => {
+                setShowUploadPDF(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Upload PDF Modal Popup */}
+      {showUploadPDF && (
+        <div
+          className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          onClick={() => {
+            setShowUploadPDF(false);
+            setShowCreateNoteModal(false);
+          }}
+        >
+          <div className="relative" onClick={e => e.stopPropagation()}>
+            <UploadPDF
+              onClose={() => {
+                setShowUploadPDF(false);
+                setShowCreateNoteModal(true);
+              }}
+              onFileSelect={() => {
+                setShowUploadPDF(false);
+                setShowCreateNoteModal(false);
+                // Handle file upload logic here
+              }}
+              onGoogleDrive={() => {
+                // Handle Google Drive upload logic here
+              }}
+            />
+          </div>
+        </div>
+      )}
     </PageLayout>
   );
-}
+};
+
 
 export default SubjectPage;
