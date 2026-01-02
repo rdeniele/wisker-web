@@ -35,7 +35,7 @@ function SubjectsPage() {
             {/* Card header */}
             <div className="flex items-start justify-between p-4 sm:p-6 pb-2 gap-2">
               <div className="flex-1 min-w-0">
-                <div className="text-xl sm:text-2xl font-extrabold text-gray-900 font-fredoka mb-1 break-words">
+                <div className="text-xl sm:text-2xl font-extrabold text-gray-900 font-fredoka mb-1 wrap-break-word">
                   {subject.name}
                 </div>
                 <div className="text-gray-500 text-xs sm:text-sm font-medium">
@@ -47,7 +47,7 @@ function SubjectsPage() {
                 alt="cat reading"
                 width={80}
                 height={80}
-                className="w-16 h-16 sm:w-20 sm:h-20 object-contain -mt-4 sm:-mt-6 -mr-1 sm:-mr-2 flex-shrink-0"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain -mt-4 sm:-mt-6 -mr-1 sm:-mr-2 shrink-0"
                 draggable={false}
               />
               <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
