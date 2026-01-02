@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { subjects } from "@/lib/data/subjects";
 import { useState } from "react";
 import CreateSubject from "./components/CreateSubject";
+import UpdateSubject from "./components/UpdateSubject";
 import OptionWidget from "@/components/ui/OptionWidget";
 
 function SubjectsPage() {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [, setSelectedSubjectId] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
@@ -26,9 +29,8 @@ function SubjectsPage() {
         {subjects.map((subject) => (
           <div
             key={subject.id}
-            className="bg-white rounded-2xl shadow-md p-0 pb-4 relative overflow-hidden flex flex-col h-full cursor-pointer hover:shadow-lg transition"
+            className="bg-white rounded-2xl shadow-md p-0 pb-4 relative overflow-hidden flex flex-col h-full hover:shadow-lg transition"
             style={{ boxShadow: "0 4px 0 #ececec" }}
-            onClick={() => router.push(`/subjects/${subject.id}`)}
           >
             {/* Card header */}
             <div className="flex items-start justify-between p-6 pb-2">
@@ -57,7 +59,8 @@ function SubjectsPage() {
                     }}
                     onEdit={() => {
                       setOpenMenuId(null);
-                      // Add edit logic here
+                      setSelectedSubjectId(subject.id);
+                      setShowUpdateModal(true);
                     }}
                     onDelete={() => {
                       setOpenMenuId(null);
@@ -124,6 +127,25 @@ function SubjectsPage() {
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
             <CreateSubject onClose={() => setShowModal(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Update Subject Modal Overlay */}
+      {showUpdateModal && (
+        <div
+          className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
+          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          onClick={() => {
+            setShowUpdateModal(false);
+            setSelectedSubjectId(null);
+          }}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <UpdateSubject onClose={() => {
+              setShowUpdateModal(false);
+              setSelectedSubjectId(null);
+            }} />
           </div>
         </div>
       )}

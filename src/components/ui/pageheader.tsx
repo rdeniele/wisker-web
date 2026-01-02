@@ -23,7 +23,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
       >
         {title}
       </h1>
-      {description && (
+      {subtitle && (
         <p
           className="text-lg md:text-xl lg:text-2xl text-gray-600 font-normal leading-relaxed max-w-2xl mx-auto"
           style={{ fontFamily: "Fredoka, Arial, sans-serif" }}

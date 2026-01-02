@@ -3,36 +3,16 @@ import React, { useState } from "react";
 const quizFrequencies = ["Daily", "Weekly", "Bi-Weekly", "Monthly"];
 
 interface UpdateSubjectProps {
-  initialName?: string;
-  initialExamDate?: string;
-  initialQuizFrequency?: string;
   onClose?: () => void;
-  onUpdate?: (data: {
-    name: string;
-    examDate: string;
-    quizFrequency: string;
-  }) => void;
 }
 
-function UpdateSubject({
-  initialName = "",
-  initialExamDate = "",
-  initialQuizFrequency = quizFrequencies[0],
-  onClose,
-  onUpdate,
-}: UpdateSubjectProps) {
-  const [subjectName, setSubjectName] = useState(initialName);
-  const [examDate, setExamDate] = useState(initialExamDate);
-  const [quizFrequency, setQuizFrequency] = useState(initialQuizFrequency);
-
-  const handleUpdate = () => {
-    if (onUpdate) {
-      onUpdate({ name: subjectName, examDate, quizFrequency });
-    }
-  };
+function UpdateSubject({ onClose }: UpdateSubjectProps) {
+  const [subjectName, setSubjectName] = useState("");
+  const [examDate, setExamDate] = useState("");
+  const [quizFrequency, setQuizFrequency] = useState(quizFrequencies[0]);
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans">
+    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans transition-colors">
       {/* Close Button */}
       <button
         className="absolute left-4 top-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -45,13 +25,12 @@ function UpdateSubject({
 
       {/* Header */}
       <div className="flex items-center justify-center mb-2">
-        <h2 className="text-2xl font-bold text-center w-full mt-2 mb-2">
+        <h2 className="text-2xl font-bold text-center w-full mt-2 mb-2 text-gray-900">
           Update Subject
         </h2>
         <button
           className="absolute right-4 top-4 bg-orange-400 hover:bg-orange-500 text-white font-semibold px-5 py-1.5 rounded-lg shadow-md transition-all duration-150"
-          type="button"
-          onClick={handleUpdate}
+          type="submit"
         >
           Update
         </button>
@@ -59,13 +38,13 @@ function UpdateSubject({
 
       {/* Description */}
       <p className="text-gray-700 text-base mb-4 mt-2">
-        Update the subject details below
+        Update your subject details and study schedule
       </p>
 
       {/* Subject Name */}
       <div className="mb-4">
         <label
-          className="block text-sm font-semibold mb-1"
+          className="block text-sm font-semibold mb-1 text-gray-900"
           htmlFor="subjectName"
         >
           Subject Name
@@ -73,7 +52,7 @@ function UpdateSubject({
         <input
           id="subjectName"
           type="text"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base bg-white text-gray-900"
           placeholder="e.g~ Mathematics, Biology"
           value={subjectName}
           onChange={(e) => setSubjectName(e.target.value)}
@@ -82,7 +61,7 @@ function UpdateSubject({
 
       {/* Exam Date */}
       <div className="mb-4">
-        <label className="block text-sm font-semibold mb-1" htmlFor="examDate">
+        <label className="block text-sm font-semibold mb-1 text-gray-900" htmlFor="examDate">
           Exam Date{" "}
           <span className="text-gray-500 font-normal">(Optional)</span>
         </label>
@@ -90,7 +69,7 @@ function UpdateSubject({
           <input
             id="examDate"
             type="date"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base pr-10"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base pr-10 bg-white text-gray-900"
             placeholder="mm/dd/yyyy"
             value={examDate}
             onChange={(e) => setExamDate(e.target.value)}
@@ -117,7 +96,7 @@ function UpdateSubject({
       {/* Quiz Frequency */}
       <div className="mb-2">
         <label
-          className="block text-sm font-semibold mb-1"
+          className="block text-sm font-semibold mb-1 text-gray-900"
           htmlFor="quizFrequency"
         >
           Quiz Frequency
@@ -125,7 +104,7 @@ function UpdateSubject({
         <div className="relative">
           <select
             id="quizFrequency"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base appearance-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base appearance-none bg-white text-gray-900"
             value={quizFrequency}
             onChange={(e) => setQuizFrequency(e.target.value)}
           >
