@@ -16,16 +16,16 @@ function SubjectsPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   return (
-    <div className="px-4 py-8">
+    <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
       {/* Header */}
-      <div className="flex items-center mb-8">
-        <h1 className="text-4xl font-extrabold text-gray-900 font-fredoka">
+      <div className="flex items-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 font-fredoka">
           Subjects
         </h1>
       </div>
 
       {/* Subject Cards as Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
         {subjects.map((subject) => (
           <div
             key={subject.id}
@@ -33,12 +33,12 @@ function SubjectsPage() {
             style={{ boxShadow: "0 4px 0 #ececec" }}
           >
             {/* Card header */}
-            <div className="flex items-start justify-between p-6 pb-2">
-              <div>
-                <div className="text-2xl font-extrabold text-gray-900 font-fredoka mb-1">
+            <div className="flex items-start justify-between p-4 sm:p-6 pb-2 gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="text-xl sm:text-2xl font-extrabold text-gray-900 font-fredoka mb-1 break-words">
                   {subject.name}
                 </div>
-                <div className="text-gray-500 text-sm font-medium">
+                <div className="text-gray-500 text-xs sm:text-sm font-medium">
                   {subject.notes} Notes created &bull; {subject.time}
                 </div>
               </div>
@@ -47,10 +47,10 @@ function SubjectsPage() {
                 alt="cat reading"
                 width={80}
                 height={80}
-                className="w-20 h-20 object-contain -mt-6 -mr-2"
+                className="w-16 h-16 sm:w-20 sm:h-20 object-contain -mt-4 sm:-mt-6 -mr-1 sm:-mr-2 flex-shrink-0"
                 draggable={false}
               />
-              <div className="absolute top-4 right-4">
+              <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
                 {openMenuId === String(subject.id) ? (
                   <OptionWidget
                     onView={() => {
@@ -83,23 +83,23 @@ function SubjectsPage() {
               </div>
             </div>
             {/* Card actions */}
-            <div className="flex gap-2 px-4 py-3 rounded-b-2xl mt-auto">
+            <div className="flex flex-col xs:flex-row gap-2 px-3 sm:px-4 py-3 rounded-b-2xl mt-auto">
               <button
-                className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
+                className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-2 sm:py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <FaRegClone className="text-base" />
                 <span className="text-xs">Flashcards</span>
               </button>
               <button
-                className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
+                className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-2 sm:py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <FaQuestionCircle className="text-base" />
                 <span className="text-xs">Quiz me</span>
               </button>
               <button
-                className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
+                className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-2 sm:py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
                 onClick={(e) => e.stopPropagation()}
               >
                 <FaRegLightbulb className="text-base" />
@@ -112,10 +112,12 @@ function SubjectsPage() {
 
       {/* Add Subject Floating Button */}
       <button
-        className="fixed bottom-8 right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-2xl shadow-lg flex items-center gap-2 text-lg z-50 transition active:scale-95"
+        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-2 px-4 sm:py-3 sm:px-8 rounded-2xl shadow-lg flex items-center gap-2 text-base sm:text-lg z-50 transition active:scale-95"
         onClick={() => setShowModal(true)}
       >
-        <span className="text-2xl">+</span> Add Subject
+        <span className="text-xl sm:text-2xl">+</span> 
+        <span className="hidden xs:inline">Add Subject</span>
+        <span className="inline xs:hidden">Add</span>
       </button>
 
       {/* Modal Overlay */}
