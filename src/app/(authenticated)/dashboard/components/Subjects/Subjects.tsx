@@ -194,7 +194,7 @@ function Subjects() {
             {limitedSubjects[startIdx - 1] && (
               <Link
                 href={`/subjects/${limitedSubjects[startIdx - 1].slug}`}
-                className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3]"
+                className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-colors"
                 prefetch={false}
               >
                 <div className="flex items-center mb-2">
@@ -276,7 +276,7 @@ function Subjects() {
             {limitedSubjects[startIdx + maxVisible] && (
               <Link
                 href={`/subjects/${limitedSubjects[startIdx + maxVisible].slug}`}
-                className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3]"
+                className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-colors"
                 prefetch={false}
               >
                 <div className="flex items-center mb-2">

@@ -18,19 +18,7 @@ const DashboardIcon = () => (
     />
   </svg>
 );
-const QuizIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-);
+
 const SubjectsIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -53,65 +41,14 @@ const SubjectsIcon = () => (
   </svg>
 );
 
-const RewardsIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-    />
-    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-  </svg>
-);
-
-const FlashcardsIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <rect
-      x="4"
-      y="7"
-      width="16"
-      height="10"
-      rx="2"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8 11h8M8 15h4" />
-  </svg>
-);
-
 const navLinks = [
   { name: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" },
-  {
-    name: "Claim Your Daily Rewards",
-    icon: <RewardsIcon />,
-    href: "/dashboard?tab=claim-rewards",
-  },
-  { name: "Quiz", icon: <QuizIcon />, href: "/quiz" },
-  {
-    name: "Flashcards",
-    icon: <FlashcardsIcon />,
-    href: "/dashboard?tab=flashcards",
-  },
   { name: "Subjects", icon: <SubjectsIcon />, href: "/subjects" },
 ];
 
 function Sidebar() {
   return (
-    <aside className="group/sidebar sticky top-0 z-40 h-screen w-16 hover:w-56 bg-white dark:bg-gray-900 flex flex-col py-6 px-2 hover:px-4 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 ease-in-out overflow-x-hidden">
+    <aside className="group/sidebar sticky top-0 z-40 h-screen w-16 hover:w-56 bg-white flex flex-col py-6 px-2 hover:px-4 border-r border-gray-200 transition-all duration-300 ease-in-out overflow-x-hidden shadow-sm">
       {/* Logo */}
       <div className="flex items-center justify-center group-hover/sidebar:justify-start gap-2 mb-4 transition-all duration-300">
         <Image
@@ -134,21 +71,21 @@ function Sidebar() {
 
       {/* User Info (moved to top) */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center transition-colors">
           <span className="text-2xl">🐾</span>
         </div>
         <div className="group-hover/sidebar:flex flex-col hidden">
-          <div className="font-semibold text-gray-800 dark:text-gray-100">
+          <div className="font-semibold text-gray-800 transition-colors">
             Student
           </div>
-          <div className="text-xs text-gray-500 dark:text-gray-400">
+          <div className="text-xs text-gray-500 transition-colors">
             Wisker User
           </div>
         </div>
       </div>
 
       {/* Divider */}
-      <div className="border-t border-gray-200 dark:border-gray-700 mb-6 mx-1" />
+      <div className="border-t border-gray-200 mb-6 mx-1" />
 
       {/* Navigation */}
       <nav className="flex-1 flex flex-col gap-2">
@@ -156,9 +93,9 @@ function Sidebar() {
           <a
             key={link.name}
             href={link.href}
-            className="flex items-center gap-3 px-2 py-2 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-gray-800 font-medium transition-colors group/sidebar"
+            className="flex items-center gap-3 px-2 py-2 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-600 font-medium transition-all duration-200 group/link"
           >
-            <span className="w-6 h-6 shrink-0">{link.icon}</span>
+            <span className="w-6 h-6 shrink-0 transition-colors">{link.icon}</span>
             <span className="ml-2 truncate group-hover/sidebar:inline-block hidden transition-all duration-200">
               {link.name}
             </span>

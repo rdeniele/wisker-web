@@ -1,6 +1,4 @@
 "use client";
-import NavBar from "@/components/Navbar/NavBar";
-import Sidebar from "@/components/Sidebar/Sidebar";
 import { notFound, useRouter } from "next/navigation";
 import { noteContent } from "@/lib/data/subjects";
 import { use, useState } from "react";
@@ -26,11 +24,7 @@ function NotePage({ params }: NotePageProps) {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#f9fbfd] font-fredoka">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <NavBar />
-        <div className="p-4 md:p-8">
+    <div className="p-4 md:p-8">
           <div className="max-w-5xl mx-auto">
             <div className="flex items-center justify-between mb-4">
               <button
@@ -67,7 +61,7 @@ function NotePage({ params }: NotePageProps) {
             </div>
 
             {/* Google Docs style container */}
-            <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-colors">
               {/* Editable Title */}
               <div className="border-b border-gray-200 px-8 pt-8 pb-4">
                 <input
@@ -88,8 +82,6 @@ function NotePage({ params }: NotePageProps) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
   );
 }
 

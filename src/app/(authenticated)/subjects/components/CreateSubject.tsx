@@ -12,7 +12,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
   const [quizFrequency, setQuizFrequency] = useState(quizFrequencies[0]);
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans">
+    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans transition-colors">
       {/* Close Button */}
       <button
         className="absolute left-4 top-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -25,7 +25,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
 
       {/* Header */}
       <div className="flex items-center justify-center mb-2">
-        <h2 className="text-2xl font-bold text-center w-full mt-2 mb-2">
+        <h2 className="text-2xl font-bold text-center w-full mt-2 mb-2 text-gray-900">
           Add Subject
         </h2>
         <button
@@ -44,7 +44,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
       {/* Subject Name */}
       <div className="mb-4">
         <label
-          className="block text-sm font-semibold mb-1"
+          className="block text-sm font-semibold mb-1 text-gray-900"
           htmlFor="subjectName"
         >
           Subject Name
@@ -52,7 +52,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
         <input
           id="subjectName"
           type="text"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base bg-white text-gray-900"
           placeholder="e.g~ Mathematics, Biology"
           value={subjectName}
           onChange={(e) => setSubjectName(e.target.value)}
@@ -61,7 +61,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
 
       {/* Exam Date */}
       <div className="mb-4">
-        <label className="block text-sm font-semibold mb-1" htmlFor="examDate">
+        <label className="block text-sm font-semibold mb-1 text-gray-900" htmlFor="examDate">
           Exam Date{" "}
           <span className="text-gray-500 font-normal">(Optional)</span>
         </label>
@@ -69,7 +69,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
           <input
             id="examDate"
             type="date"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base pr-10"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base pr-10 bg-white text-gray-900"
             placeholder="mm/dd/yyyy"
             value={examDate}
             onChange={(e) => setExamDate(e.target.value)}
@@ -96,7 +96,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
       {/* Quiz Frequency */}
       <div className="mb-2">
         <label
-          className="block text-sm font-semibold mb-1"
+          className="block text-sm font-semibold mb-1 text-gray-900"
           htmlFor="quizFrequency"
         >
           Quiz Frequency
@@ -104,7 +104,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
         <div className="relative">
           <select
             id="quizFrequency"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base appearance-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base appearance-none bg-white text-gray-900"
             value={quizFrequency}
             onChange={(e) => setQuizFrequency(e.target.value)}
           >

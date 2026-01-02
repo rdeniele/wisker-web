@@ -25,7 +25,7 @@ const SubjectsCard: React.FC<SubjectsCardProps> = ({
 }) => {
   return (
     <div
-      className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3]"
+      className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 w-[220px] min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-colors"
       style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
     >
       <div className="flex items-center mb-2">

@@ -56,7 +56,7 @@ export default function RichTextEditor({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 transition-colors">
       {editable && (
         <div className="border-b border-gray-200 p-2 flex items-center gap-1 flex-wrap sticky top-0 bg-white z-10">
           {/* Text Formatting */}

@@ -77,7 +77,7 @@ function NavBar({ metrics }: NavBarProps) {
   const pawCount = metrics?.pawCount ?? 20000;
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-white dark:bg-gray-900">
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 transition-colors">
       {/* Left: Wide SearchBar */}
       <div className="flex-1 flex items-center">
         <div className="w-full max-w-2xl">

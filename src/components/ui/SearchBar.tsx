@@ -2,7 +2,7 @@ import React from "react";
 
 function SearchBar() {
   return (
-    <div className="flex items-center w-full max-w-xl bg-white rounded-full shadow-sm border border-gray-200 px-4 py-2">
+    <div className="flex items-center w-full max-w-xl bg-white rounded-full shadow-sm border border-gray-200 px-4 py-2 transition-colors">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"

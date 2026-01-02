@@ -20,7 +20,7 @@ const HorizontalCard: React.FC<HorizontalCardProps> = ({
 }) => {
   return (
     <div
-      className="flex items-center bg-white rounded-2xl shadow-lg p-4 w-full min-h-[90px]"
+      className="flex items-center bg-white rounded-2xl shadow-lg p-4 w-full min-h-[90px] transition-colors"
       style={{
         boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
         fontFamily: "Fredoka, Arial, sans-serif",

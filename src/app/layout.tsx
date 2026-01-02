@@ -26,9 +26,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning className="light">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Force light mode - prevent system dark mode from being applied
+              document.documentElement.classList.remove('dark');
+              document.documentElement.classList.add('light');
+              document.documentElement.style.colorScheme = 'light';
+            `,
+          }}
+        />
+        <meta name="color-scheme" content="light only" />
+      </head>
       <body
-        className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-[#fafafa] text-gray-900 dark:bg-[#5c5c5c] dark:text-gray-100 transition-colors duration-300`}
+        className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-background text-foreground`}
       >
         {children}
       </body>
