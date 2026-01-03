@@ -1,19 +1,10 @@
 "use client"
 
 import { createClient } from "@/lib/supabase/client";
-import { UserMetaData } from "@/types/auth";
+import { UseAuthReturn, UserMetaData } from "@/types/auth";
 import { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-
-interface UseAuthReturn {
-    user: User | null;
-    session: Session | null;
-    isLoading: boolean;
-    userMetadata: UserMetaData | null;
-    signOut: () => Promise<void>;
-    refreshSession: () => Promise<void>;
-}
 
 export function useAuth(): UseAuthReturn {
     const [user, setUser] = useState<User | null>(null);
@@ -65,7 +56,7 @@ export function useAuth(): UseAuthReturn {
         router.push("/login");
     }, [supabase.auth, router]);
 
-    const userMetadata: UserMetadata | null = user?.user_metadata 
+    const userMetadata: UserMetaData | null = user?.user_metadata 
         ? {
             first_name: user.user_metadata.first_name || "",
             last_name: user.user_metadata.last_name || "",

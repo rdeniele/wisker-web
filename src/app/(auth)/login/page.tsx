@@ -5,42 +5,47 @@ import PageHeader from "@/components/ui/pageheader";
 import InputBox from "@/components/ui/inputboxes";
 import Button from "@/components/ui/button";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
+import { signIn } from "../../../../servers/auth";
+import Toast from "@/components/ui/Toast";
+import { useToast } from "../../../../hook/useToast";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
     // Check for success message from signup
     const message = searchParams.get("message");
     if (message) {
-      // Schedule setState asynchronously to avoid cascading renders
-      Promise.resolve().then(() => {
-        setSuccessMessage(message);
-        setTimeout(() => setSuccessMessage(""), 5000);
-        // Store timer in ref if you want to clear it on unmount
-      });
+      showToast(message, "success");
     }
-    // Optionally, clear message on unmount
-    return () => setSuccessMessage("");
-  }, [searchParams]);
+  }, [searchParams, showToast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate login process
-    setTimeout(() => {
+
+    try {
+      const result = await signIn({ email, password });
+
+      if (result.success) {
+        showToast(result.message, "success");
+        router.push("/dashboard");
+      } else {
+        showToast(result.error || result.message, "error");
+      }
+    } catch (error) {
+      showToast("An unexpected error occurred. Please try again.", "error");
+      console.error("Login error:", error);
+    } finally {
       setIsLoading(false);
-      alert(
-        "Login successful! (This is just a demo - no backend connected yet)",
-      );
-      window.location.href = "/dashboard";
-    }, 2000);
+    }
   };
 
   const handleGoogleSignIn = () => {
@@ -52,6 +57,14 @@ export default function LoginPage() {
       className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4"
       style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
     >
+      {/* Toast Notification */}
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={hideToast}
+      />
+
       <div className="w-full max-w-md mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -64,28 +77,6 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Success Message Display */}
-          {successMessage && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-              <div className="flex items-start">
-                <svg
-                  className="w-5 h-5 text-green-500 mt-0.5 mr-3 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  {successMessage}
-                </p>
-              </div>
-            </div>
-          )}
-
           {/* Email Input */}
           <InputBox
             label="Email Address"

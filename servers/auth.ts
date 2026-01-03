@@ -1,5 +1,10 @@
 "use server"
 
+import { createClient } from "@/lib/supabase/server";
+import { validatePassword } from "@/lib/utils/validation";
+import { AuthCredentials, AuthResponse, SignupCredentials } from "@/types/auth";
+import { redirect } from "next/navigation";
+
 export async function signUp(credentials: SignupCredentials): Promise<AuthResponse> {
     const { email, password, firstName, lastName } = credentials;
     
