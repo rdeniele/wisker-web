@@ -1,44 +1,23 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 
 import SearchBar from "../ui/SearchBar";
 
 // Heroicons SVGs (free, MIT)
-const FireIcon = () => (
+const SearchIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     fill="none"
     viewBox="0 0 24 24"
     strokeWidth={1.5}
     stroke="currentColor"
-    className="w-6 h-6 text-orange-500"
+    className="w-6 h-6 text-gray-700"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M16.5 9.75c0-3.75-4.5-7.5-4.5-7.5s-4.5 3.75-4.5 7.5a4.5 4.5 0 009 0z"
+      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
     />
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M12 22.5a6 6 0 006-6c0-2.25-1.5-4.5-6-9-4.5 4.5-6 6.75-6 9a6 6 0 006 6z"
-    />
-  </svg>
-);
-
-const PawIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6 text-orange-400"
-  >
-    <circle cx="12" cy="12" r="4" fill="currentColor" />
-    <circle cx="6" cy="8" r="2" fill="currentColor" />
-    <circle cx="18" cy="8" r="2" fill="currentColor" />
-    <circle cx="8" cy="18" r="2" fill="currentColor" />
-    <circle cx="16" cy="18" r="2" fill="currentColor" />
   </svg>
 );
 
@@ -59,46 +38,39 @@ const BellIcon = () => (
   </svg>
 );
 
-interface NavBarProps {
-  metrics?: {
-    fireCount?: number;
-    pawCount?: number;
-  };
-  profile?: {
-    avatarUrl?: string;
-    displayName?: string;
-    // Add more profile fields as needed
-  };
-}
 
-function NavBar({ metrics }: NavBarProps) {
-  // Default metrics for demo
-  const fireCount = metrics?.fireCount ?? 7;
-  const pawCount = metrics?.pawCount ?? 20000;
+function NavBar() {
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 transition-colors">
-      {/* Left: Wide SearchBar */}
-      <div className="flex-1 flex items-center">
-        <div className="w-full max-w-2xl">
-          <SearchBar />
-        </div>
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-4 md:px-6 py-3 bg-white border-b border-gray-200 transition-colors">
+      {/* Left: SearchBar that expands when clicked */}
+      <div className="flex-1 flex items-center gap-2 min-w-0">
+        {isSearchOpen ? (
+          <>
+            <div className="w-full max-w-md md:max-w-2xl transition-all duration-300">
+              <SearchBar />
+            </div>
+            <button
+              onClick={() => setIsSearchOpen(false)}
+              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+            >
+              Cancel
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Open search"
+          >
+            <SearchIcon />
+          </button>
+        )}
       </div>
 
-      {/* Right: Metrics and Notification */}
-      <div className="flex items-center gap-8">
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-1">
-            <FireIcon />
-            <span className="font-semibold text-orange-500">{fireCount}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <PawIcon />
-            <span className="font-semibold text-orange-400">
-              {pawCount.toLocaleString()}
-            </span>
-          </div>
-        </div>
+      {/* Right: Notification - slide when search opens */}
+      <div className={`flex items-center gap-3 md:gap-8 ml-2 md:ml-4 transition-all duration-300 ${isSearchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
         <div className="flex items-center gap-4">
           <div className="relative">
             <BellIcon />
