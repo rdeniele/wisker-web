@@ -181,12 +181,12 @@ function Subjects() {
       <div className="flex items-center w-full gap-2">
         <button
           onClick={handleLeft}
-          className="rounded-full p-2 bg-[#E4DFFF] hover:bg-[#d1c8ff] transition-all duration-300 mr-2"
+          className="p-2 hover:opacity-70 transition-all duration-300 mr-2"
           aria-label="Scroll left"
           type="button"
           style={{ opacity: 1, cursor: "pointer" }}
         >
-          <span className="text-2xl text-white">&#8592;</span>
+          <span className="text-2xl text-gray-700">&lt;</span>
         </button>
         <div className="flex-1 flex justify-center items-center gap-2">
           {/* Previous card (faded, if exists) */}
@@ -317,12 +317,12 @@ function Subjects() {
         </div>
         <button
           onClick={handleRight}
-          className="rounded-full p-2 bg-[#E4DFFF] hover:bg-[#d1c8ff] transition-all duration-300 ml-2"
+          className="p-2 hover:opacity-70 transition-all duration-300 ml-2"
           aria-label="Scroll right"
           type="button"
           style={{ opacity: 1, cursor: "pointer" }}
         >
-          <span className="text-2xl text-white">&#8594;</span>
+          <span className="text-2xl text-gray-700">&gt;</span>
         </button>
       </div>
     </div>
