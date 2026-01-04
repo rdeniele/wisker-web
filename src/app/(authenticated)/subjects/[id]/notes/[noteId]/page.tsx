@@ -46,7 +46,7 @@ function NotePage({ params }: NotePageProps) {
                   Summarize
                 </button>
                 <button
-                  onClick={() => console.log("Quiz Me")}
+                  onClick={() => router.push(`/subjects/${id}/notes/${noteId}/quiz`)}
                   className="px-4 py-2 bg-[#615FFF] text-white rounded-[5px] hover:bg-[#524CE5] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF]"
                 >
                   Quiz Me
