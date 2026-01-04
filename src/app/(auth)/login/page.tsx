@@ -6,7 +6,6 @@ import InputBox from "@/components/ui/inputboxes";
 import Button from "@/components/ui/button";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { signIn } from "../../../../servers/auth";
 import Toast from "@/components/ui/Toast";
 import { useToast } from "../../../../hook/useToast";
 
@@ -32,7 +31,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn({ email, password });
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await res.json();
 
       if (result.success) {
         showToast(result.message, "success");

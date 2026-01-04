@@ -6,7 +6,6 @@ import InputBox from "@/components/ui/inputboxes";
 import Button from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signUp } from "../../../../servers/auth";
 import Toast from "@/components/ui/Toast";
 import { useToast } from "../../../../hook/useToast";
 
@@ -71,16 +70,16 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const result = await signUp({
-        email,
-        password,
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, firstName, lastName }),
       });
+
+      const result = await res.json();
 
       if (result.success) {
         showToast(result.message, "success");
-        // Redirect to login with success message
         router.push(`/login?message=${encodeURIComponent(result.message)}`);
       } else {
         showToast(result.error || result.message, "error");
