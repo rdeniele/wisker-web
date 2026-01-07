@@ -38,7 +38,48 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         />
         <span className="font-medium">Back</span>
       </button>
-      <PageHeader title={subject.name} centered={false} />
+      
+      <div className="flex items-center justify-between mb-6">
+        <PageHeader title={subject.name} centered={false} />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push(`/subjects/${id}/summary`)}
+            disabled={noteCards.length === 0}
+            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] ${
+              noteCards.length === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
+                : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
+            }`}
+            title={noteCards.length === 0 ? "Add notes first to generate a summary" : "Generate a summary from your notes"}
+          >
+            Summarize
+          </button>
+          <button
+            onClick={() => router.push(`/subjects/${id}/quiz`)}
+            disabled={noteCards.length === 0}
+            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] ${
+              noteCards.length === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
+                : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
+            }`}
+            title={noteCards.length === 0 ? "Add notes first to take a quiz" : "Take a quiz on your notes"}
+          >
+            Quiz Me
+          </button>
+          <button
+            onClick={() => router.push(`/subjects/${id}/flashcard`)}
+            disabled={noteCards.length === 0}
+            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] ${
+              noteCards.length === 0
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
+                : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
+            }`}
+            title={noteCards.length === 0 ? "Add notes first to create flashcards" : "Create flashcards from your notes"}
+          >
+            Flashcards
+          </button>
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {noteCards.length === 0 ? (
           <EmptyState message="No notes found." />

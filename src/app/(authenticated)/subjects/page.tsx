@@ -86,21 +86,30 @@ function SubjectsPage() {
             <div className="flex flex-col xs:flex-row gap-2 px-3 sm:px-4 py-3 rounded-b-2xl mt-auto">
               <button
                 className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-2 sm:py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/subjects/${subject.id}/flashcard`);
+                }}
               >
                 <FaRegClone className="text-base" />
                 <span className="text-xs">Flashcards</span>
               </button>
               <button
                 className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-2 sm:py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/subjects/${subject.id}/quiz`);
+                }}
               >
                 <FaQuestionCircle className="text-base" />
                 <span className="text-xs">Quiz me</span>
               </button>
               <button
                 className="flex-1 flex flex-col items-center justify-center text-white font-semibold py-2 sm:py-1.5 rounded-md shadow-lg hover:shadow-xl text-sm transition active:scale-95 gap-1 bg-[#6c63ff] hover:bg-[#574fd6]"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/subjects/${subject.id}/summary`);
+                }}
               >
                 <FaRegLightbulb className="text-base" />
                 <span className="text-xs">Summarize</span>
