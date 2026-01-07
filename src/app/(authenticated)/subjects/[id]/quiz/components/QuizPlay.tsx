@@ -41,11 +41,10 @@ export default function QuizPlay({
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const selectedNotes = notes.filter((note) => selectedNoteIds.includes(note.id));
-
   useEffect(() => {
     // Generate quiz questions from selected notes
     const generateQuestions = () => {
+      const selectedNotes = notes.filter((note) => selectedNoteIds.includes(note.id));
       const mockQuestions: QuizQuestion[] = [];
       const questionsPerNote = Math.ceil(config.numberOfQuestions / selectedNotes.length);
 
@@ -72,7 +71,7 @@ export default function QuizPlay({
     };
 
     generateQuestions();
-  }, [selectedNotes, config]);
+  }, [selectedNoteIds, notes, config.numberOfQuestions]);
 
   const question = questions[currentQuestion];
   const isLastQuestion = currentQuestion === questions.length - 1;
