@@ -40,7 +40,7 @@ function NotePage({ params }: NotePageProps) {
 
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => console.log("Summarize")}
+                  onClick={() => router.push(`/subjects/${id}/notes/${noteId}/summary`)}
                   className="px-4 py-2 bg-[#615FFF] text-white rounded-[5px] hover:bg-[#524CE5] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF]"
                 >
                   Summarize
@@ -52,7 +52,7 @@ function NotePage({ params }: NotePageProps) {
                   Quiz Me
                 </button>
                 <button
-                  onClick={() => console.log("Flashcards")}
+                  onClick={() => router.push(`/subjects/${id}/notes/${noteId}/flashcard`)}
                   className="px-4 py-2 bg-[#615FFF] text-white rounded-[5px] hover:bg-[#524CE5] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF]"
                 >
                   Flashcards
