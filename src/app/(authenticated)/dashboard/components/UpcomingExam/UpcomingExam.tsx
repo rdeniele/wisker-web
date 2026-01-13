@@ -1,4 +1,6 @@
+"use client";
 import React from "react";
+import Link from "next/link";
 import HorizontalCard from "@/components/ui/HorizontalCard";
 
 // Example data, replace with backend fetch later
@@ -43,12 +45,13 @@ function UpcomingExam() {
         >
           Upcoming Exam
         </h1>
-        <button
+        <Link
+          href="/subjects"
           className="text-base md:text-xl font-bold text-[#231F20] opacity-60 hover:opacity-100 transition-all"
           style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
         >
           See all
-        </button>
+        </Link>
       </div>
       <div className="space-y-6">
         {topExams.map((exam, idx) => (

@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import BannerCard from "@/components/ui/BannerCard";
 
 function LearnMoreBanner() {
+  const router = useRouter();
+
   return (
     <BannerCard
       title={
@@ -21,7 +24,7 @@ function LearnMoreBanner() {
       imageBgColor="#FEF1CA"
       buttonText="LEARN MORE"
       buttonColor="bg-[#5B5BFF] hover:bg-[#6C6CFF]"
-      onButtonClick={() => alert("Learn more clicked!")}
+      onButtonClick={() => router.push("/subjects")}
     />
   );
 }

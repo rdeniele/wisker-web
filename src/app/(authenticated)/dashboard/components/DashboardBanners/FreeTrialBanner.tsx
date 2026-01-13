@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import BannerCard from "@/components/ui/BannerCard";
 
 function FreeTrialBanner() {
+  const router = useRouter();
+
   return (
     <BannerCard
       title={
@@ -23,7 +26,7 @@ function FreeTrialBanner() {
       imageBgColor="#E4DFFF"
       buttonText="START FREE TRIAL"
       buttonColor="bg-orange-500 hover:bg-orange-600"
-      onButtonClick={() => alert("Free trial started!")}
+      onButtonClick={() => router.push("/upgrade")}
     />
   );
 }

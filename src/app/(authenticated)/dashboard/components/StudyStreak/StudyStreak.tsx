@@ -18,7 +18,7 @@ function StudyStreak() {
         Keep It Going!
       </h2>
       <div
-        className="bg-gradient-to-br from-[#FFE8CC] to-[#FFD699] p-8 rounded-2xl shadow-md relative overflow-hidden"
+        className="bg-linear-to-br from-[#FFE8CC] to-[#FFD699] p-8 rounded-2xl shadow-md relative overflow-hidden"
         style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
       >
         {/* Decorative background elements */}
