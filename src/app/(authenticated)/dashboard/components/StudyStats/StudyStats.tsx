@@ -21,8 +21,8 @@ function StudyStats() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Total Subjects Card */}
         <div
-          className="bg-gradient-to-br from-[#FFE5E5] to-[#FFD0D0] p-6 rounded-2xl shadow-md"
-          style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
+          className="bg-linear-to-br from-[#FFE5E5] to-[#FFD0D0] p-6 rounded-2xl"
+          style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
         >
           <div className="flex flex-col items-center justify-center">
             <p className="text-5xl font-extrabold text-[#FF6B6B] mb-2">
@@ -36,8 +36,8 @@ function StudyStats() {
 
         {/* Total Notes Card */}
         <div
-          className="bg-gradient-to-br from-[#E0F7FF] to-[#B8E6FF] p-6 rounded-2xl shadow-md"
-          style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
+          className="bg-linear-to-br from-[#E0F7FF] to-[#B8E6FF] p-6 rounded-2xl"
+          style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
         >
           <div className="flex flex-col items-center justify-center">
             <p className="text-5xl font-extrabold text-[#4A90E2] mb-2">
@@ -51,8 +51,8 @@ function StudyStats() {
 
         {/* Quizzes This Week Card */}
         <div
-          className="bg-gradient-to-br from-[#F0E5FF] to-[#E0CFFF] p-6 rounded-2xl shadow-md"
-          style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
+          className="bg-linear-to-br from-[#F0E5FF] to-[#E0CFFF] p-6 rounded-2xl"
+          style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
         >
           <div className="flex flex-col items-center justify-center">
             <p className="text-5xl font-extrabold text-[#9B59B6] mb-2">

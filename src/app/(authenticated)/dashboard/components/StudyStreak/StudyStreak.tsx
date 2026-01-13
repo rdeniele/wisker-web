@@ -18,8 +18,8 @@ function StudyStreak() {
         Keep It Going!
       </h2>
       <div
-        className="bg-linear-to-br from-[#FFE8CC] to-[#FFD699] p-8 rounded-2xl shadow-md relative overflow-hidden"
-        style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
+        className="bg-linear-to-br from-[#FFE8CC] to-[#FFD699] p-8 rounded-2xl relative overflow-hidden"
+        style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
       >
         {/* Decorative background elements */}
         <div className="absolute top-2 right-2 text-6xl opacity-20">🔥</div>

@@ -54,8 +54,8 @@ function TodaysFocus() {
         Today&apos;s Focus
       </h2>
       <div
-        className="bg-white p-6 rounded-2xl shadow-md border-2 border-gray-100"
-        style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
+        className="bg-white p-6 rounded-2xl border-2 border-gray-100"
+        style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
       >
         {todaysTasks.length > 0 ? (
           <div className="space-y-3">

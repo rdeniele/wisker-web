@@ -48,7 +48,8 @@ function Subjects() {
               });
             }}
             disabled={navigatingTo === `subject-${subject.id}`}
-            className="rounded-2xl bg-white shadow-[0_4px_0_0_rgba(91,91,255,0.08)] p-5 min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-all duration-300 hover:scale-105 hover:shadow-lg w-full disabled:opacity-50 disabled:cursor-not-allowed text-left"
+            className="rounded-2xl bg-white p-5 min-h-[220px] flex flex-col justify-between items-start relative border border-[#F3F3F3] transition-all duration-300 hover:scale-105 hover:border-purple-200 w-full disabled:opacity-50 disabled:cursor-not-allowed text-left"
+            style={{ boxShadow: '0 4px 0 #ececec' }}
           >
             <div className="flex items-center mb-2">
               <div
