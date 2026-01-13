@@ -10,15 +10,31 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
   const [subjectName, setSubjectName] = useState("");
   const [examDate, setExamDate] = useState("");
   const [quizFrequency, setQuizFrequency] = useState(quizFrequencies[0]);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsCreating(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Add actual API call here
+    console.log("Creating subject:", { subjectName, examDate, quizFrequency });
+    
+    setIsCreating(false);
+    onClose?.();
+  };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans transition-colors">
+    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans transition-colors">
       {/* Close Button */}
       <button
         className="absolute left-4 top-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
         aria-label="Close"
         type="button"
         onClick={onClose}
+        disabled={isCreating}
       >
         &#10005;
       </button>
@@ -29,10 +45,21 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
           Add Subject
         </h2>
         <button
-          className="absolute right-4 top-4 bg-orange-400 hover:bg-orange-500 text-white font-semibold px-5 py-1.5 rounded-lg shadow-md transition-all duration-150"
+          className="absolute right-4 top-4 bg-orange-400 hover:bg-orange-500 text-white font-semibold px-5 py-1.5 rounded-lg shadow-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           type="submit"
+          disabled={isCreating}
         >
-          Create
+          {isCreating ? (
+            <>
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Creating...
+            </>
+          ) : (
+            "Create"
+          )}
         </button>
       </div>
 
@@ -132,7 +159,7 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
           </span>
         </div>
       </div>
-    </div>
+    </form>
   );
 }
 

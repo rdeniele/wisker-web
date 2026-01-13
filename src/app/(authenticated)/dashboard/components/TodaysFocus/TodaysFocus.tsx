@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { subjects } from "@/lib/data/subjects";
 
 // Mock data using actual subject IDs from the data
@@ -33,6 +34,10 @@ const todaysTasks = [
 ];
 
 function TodaysFocus() {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  
   return (
     <div className="w-full">
       <h2
@@ -54,10 +59,16 @@ function TodaysFocus() {
                 : `/subjects/${task.subjectId}/${task.type}`;
               
               return (
-                <Link
+                <button
                   key={task.id}
-                  href={link}
-                  className="flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group"
+                  onClick={() => {
+                    setNavigatingTo(`task-${task.id}`);
+                    startTransition(() => {
+                      router.push(link);
+                    });
+                  }}
+                  disabled={navigatingTo === `task-${task.id}`}
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-3">
                     {/* Icon based on type */}
@@ -70,11 +81,18 @@ function TodaysFocus() {
                           : "bg-green-100"
                       }`}
                     >
-                      {task.type === "review"
-                        ? "📖"
-                        : task.type === "quiz"
-                        ? "📝"
-                        : "🎴"}
+                      {navigatingTo === `task-${task.id}` ? (
+                        <svg className="animate-spin h-5 w-5 text-gray-600" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                      ) : (
+                        task.type === "review"
+                          ? "📖"
+                          : task.type === "quiz"
+                          ? "📝"
+                          : "🎴"
+                      )}
                     </div>
                     <div>
                       <p className="font-bold text-gray-800 group-hover:text-gray-900">
@@ -98,7 +116,7 @@ function TodaysFocus() {
                   <span className="text-gray-400 group-hover:text-gray-600 text-xl">
                     →
                   </span>
-                </Link>
+                </button>
               );
             })}
           </div>

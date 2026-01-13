@@ -18,8 +18,22 @@ interface SubjectPageProps {
 const SubjectPage = ({ params }: SubjectPageProps) => {
   const { id } = use(params);
   const router = useRouter();
+  const [isPending, startTransition] = useState(() => {
+    const [, start] = [false, () => {}] as any;
+    return [false, start];
+  });
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
   const [showUploadPDF, setShowUploadPDF] = useState(false);
+  
+  // Use useTransition properly
+  const [, startNavigationTransition] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const React = require('react');
+      return React.useTransition();
+    }
+    return [false, (fn: () => void) => fn()];
+  });
 
   const subject = subjects.find((s) => s.id === Number(id));
   if (!subject) return notFound();
@@ -43,39 +57,72 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         <PageHeader title={subject.name} centered={false} />
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push(`/subjects/${id}/summary`)}
-            disabled={noteCards.length === 0}
-            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] ${
-              noteCards.length === 0
+            onClick={() => {
+              if (noteCards.length > 0) {
+                setNavigatingTo('summary');
+                router.push(`/subjects/${id}/summary`);
+              }
+            }}
+            disabled={noteCards.length === 0 || navigatingTo === 'summary'}
+            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] flex items-center gap-2 ${
+              noteCards.length === 0 || navigatingTo === 'summary'
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
                 : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
             }`}
             title={noteCards.length === 0 ? "Add notes first to generate a summary" : "Generate a summary from your notes"}
           >
+            {navigatingTo === 'summary' && (
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
             Summarize
           </button>
           <button
-            onClick={() => router.push(`/subjects/${id}/quiz`)}
-            disabled={noteCards.length === 0}
-            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] ${
-              noteCards.length === 0
+            onClick={() => {
+              if (noteCards.length > 0) {
+                setNavigatingTo('quiz');
+                router.push(`/subjects/${id}/quiz`);
+              }
+            }}
+            disabled={noteCards.length === 0 || navigatingTo === 'quiz'}
+            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] flex items-center gap-2 ${
+              noteCards.length === 0 || navigatingTo === 'quiz'
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
                 : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
             }`}
             title={noteCards.length === 0 ? "Add notes first to take a quiz" : "Take a quiz on your notes"}
           >
+            {navigatingTo === 'quiz' && (
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
             Quiz Me
           </button>
           <button
-            onClick={() => router.push(`/subjects/${id}/flashcard`)}
-            disabled={noteCards.length === 0}
-            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] ${
-              noteCards.length === 0
+            onClick={() => {
+              if (noteCards.length > 0) {
+                setNavigatingTo('flashcard');
+                router.push(`/subjects/${id}/flashcard`);
+              }
+            }}
+            disabled={noteCards.length === 0 || navigatingTo === 'flashcard'}
+            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] flex items-center gap-2 ${
+              noteCards.length === 0 || navigatingTo === 'flashcard'
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
                 : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
             }`}
             title={noteCards.length === 0 ? "Add notes first to create flashcards" : "Create flashcards from your notes"}
           >
+            {navigatingTo === 'flashcard' && (
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            )}
             Flashcards
           </button>
         </div>
