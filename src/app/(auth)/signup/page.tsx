@@ -70,7 +70,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, firstName, lastName }),
@@ -238,7 +238,7 @@ export default function SignupPage() {
           </Button>
 
           {/* Divider */}
-          <div className="relative my-8">
+          {/* <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300" />
             </div>
@@ -247,10 +247,10 @@ export default function SignupPage() {
                 or continue with
               </span>
             </div>
-          </div>
+          </div> */}
 
           {/* Google Sign Up Button */}
-          <Button
+          {/* <Button
             type="button"
             variant="outline"
             size="lg"
@@ -277,7 +277,7 @@ export default function SignupPage() {
               />
             </svg>
             Continue with Google
-          </Button>
+          </Button> */}
 
           {/* Sign In Link */}
           <div className="text-center pt-6">
