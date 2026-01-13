@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import PageLoading from "@/components/ui/PageLoading";
 
 export default function FlashcardLoading() {
-  return <LoadingSpinner size="lg" message="Preparing flashcards..." fullScreen />;
+  return <PageLoading />;
 }

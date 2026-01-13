@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import PageLoading from "@/components/ui/PageLoading";
 
 export default function QuizLoading() {
-  return <LoadingSpinner size="lg" message="Preparing quiz..." fullScreen />;
+  return <PageLoading />;
 }

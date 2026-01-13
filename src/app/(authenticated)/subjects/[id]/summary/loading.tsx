@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import PageLoading from "@/components/ui/PageLoading";
 
 export default function SummaryLoading() {
-  return <LoadingSpinner size="lg" message="Generating summary..." fullScreen />;
+  return <PageLoading />;
 }

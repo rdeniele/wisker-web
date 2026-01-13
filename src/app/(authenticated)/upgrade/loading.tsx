@@ -1,9 +1,5 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import PageLoading from "@/components/ui/PageLoading";
 
 export default function UpgradeLoading() {
-  return (
-    <div className="p-6">
-      <LoadingSpinner size="lg" message="Loading upgrade options..." fullScreen />
-    </div>
-  );
+  return <PageLoading />;
 }

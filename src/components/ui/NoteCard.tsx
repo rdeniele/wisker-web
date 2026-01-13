@@ -101,8 +101,9 @@ export default function NoteCard({
   return (
     <div
       key={id}
-      className={`bg-white rounded-xl shadow p-5 flex flex-col justify-between hover:shadow-lg transition border border-gray-100 cursor-pointer relative ${className}`}
+      className={`bg-white rounded-xl p-5 flex flex-col justify-between transition-all duration-300 border border-gray-100 hover:border-purple-200 cursor-pointer relative hover:scale-105 hover:-translate-y-1 ${className}`}
       onClick={onClick}
+      style={{ boxShadow: '0 4px 0 #ececec' }}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1">

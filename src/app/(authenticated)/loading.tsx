@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import PageLoading from "@/components/ui/PageLoading";
 
 export default function AuthenticatedLoading() {
-  return <LoadingSpinner size="lg" message="Loading..." fullScreen />;
+  return <PageLoading />;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { subjects } from "@/lib/data/subjects";
@@ -37,6 +37,13 @@ function TodaysFocus() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  
+  // Clear loading state when navigation completes
+  useEffect(() => {
+    if (!isPending && navigatingTo) {
+      setNavigatingTo(null);
+    }
+  }, [isPending, navigatingTo]);
   
   return (
     <div className="w-full">

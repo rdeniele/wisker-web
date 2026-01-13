@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,13 @@ function Subjects() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  
+  // Clear loading state when navigation completes
+  useEffect(() => {
+    if (!isPending && navigatingTo) {
+      setNavigatingTo(null);
+    }
+  }, [isPending, navigatingTo]);
   
   // Take first 4 subjects from the mock data
   const recentSubjects = subjectsData.slice(0, 4);

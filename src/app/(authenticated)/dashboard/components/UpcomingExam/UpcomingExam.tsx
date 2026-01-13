@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useTransition } from "react";
+import React, { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -42,9 +42,16 @@ const exams = [
 
 function UpcomingExam() {
   const router = useRouter();
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<number | null>(null);
   const topExams = exams.slice(0, 3);
+
+  // Clear loading state when navigation completes
+  useEffect(() => {
+    if (!isPending && navigatingTo) {
+      setNavigatingTo(null);
+    }
+  }, [isPending, navigatingTo]);
 
   return (
     <div className="w-full font-fredoka">

@@ -1,13 +1,12 @@
 "use client";
 import { notFound, useRouter } from "next/navigation";
 import { subjects, subjectNotes } from "@/lib/data/subjects";
-import { use } from "react";
+import { use, useState, useTransition, useEffect } from "react";
 import PageLayout from "@/components/layouts/PageLayout";
 import PageHeader from "@/components/ui/pageheader";
 import NoteCard from "@/components/ui/NoteCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { FiArrowLeft } from "react-icons/fi";
-import { useState } from "react";
 import CreateNoteModal from "./notes/components/CreateNoteModal";
 import UploadPDF from "./notes/components/UploadPDF";
 
@@ -18,27 +17,53 @@ interface SubjectPageProps {
 const SubjectPage = ({ params }: SubjectPageProps) => {
   const { id } = use(params);
   const router = useRouter();
-  const [isPending, startTransition] = useState(() => {
-    const [, start] = [false, () => {}] as any;
-    return [false, start];
-  });
+  const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
   const [showUploadPDF, setShowUploadPDF] = useState(false);
-  
-  // Use useTransition properly
-  const [, startNavigationTransition] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const React = require('react');
-      return React.useTransition();
-    }
-    return [false, (fn: () => void) => fn()];
-  });
 
   const subject = subjects.find((s) => s.id === Number(id));
+
+  // Remove effect that synchronously resets navigatingTo to avoid cascading renders
+
   if (!subject) return notFound();
 
   const noteCards = subjectNotes[subject.id] || [];
+
+  // Action buttons configuration
+  const actionButtons = [
+    {
+      id: 'summary',
+      label: 'Summarize',
+      route: `/subjects/${id}/summary`,
+      disabledTooltip: 'Add notes first to generate a summary',
+      enabledTooltip: 'Generate a summary from your notes',
+    },
+    {
+      id: 'quiz',
+      label: 'Quiz Me',
+      route: `/subjects/${id}/quiz`,
+      disabledTooltip: 'Add notes first to take a quiz',
+      enabledTooltip: 'Take a quiz on your notes',
+    },
+    {
+      id: 'flashcard',
+      label: 'Flashcards',
+      route: `/subjects/${id}/flashcard`,
+      disabledTooltip: 'Add notes first to create flashcards',
+      enabledTooltip: 'Create flashcards from your notes',
+    },
+  ];
+
+  const handleActionClick = (route: string, actionId: string) => {
+    if (noteCards.length > 0) {
+      setNavigatingTo(actionId);
+      startTransition(() => {
+        router.push(route);
+        setNavigatingTo(null); // Reset navigatingTo after navigation
+      });
+    }
+  };
 
   return (
     <PageLayout>
@@ -56,75 +81,33 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
       <div className="flex items-center justify-between mb-6">
         <PageHeader title={subject.name} centered={false} />
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              if (noteCards.length > 0) {
-                setNavigatingTo('summary');
-                router.push(`/subjects/${id}/summary`);
-              }
-            }}
-            disabled={noteCards.length === 0 || navigatingTo === 'summary'}
-            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] flex items-center gap-2 ${
-              noteCards.length === 0 || navigatingTo === 'summary'
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
-                : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
-            }`}
-            title={noteCards.length === 0 ? "Add notes first to generate a summary" : "Generate a summary from your notes"}
-          >
-            {navigatingTo === 'summary' && (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-            )}
-            Summarize
-          </button>
-          <button
-            onClick={() => {
-              if (noteCards.length > 0) {
-                setNavigatingTo('quiz');
-                router.push(`/subjects/${id}/quiz`);
-              }
-            }}
-            disabled={noteCards.length === 0 || navigatingTo === 'quiz'}
-            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] flex items-center gap-2 ${
-              noteCards.length === 0 || navigatingTo === 'quiz'
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
-                : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
-            }`}
-            title={noteCards.length === 0 ? "Add notes first to take a quiz" : "Take a quiz on your notes"}
-          >
-            {navigatingTo === 'quiz' && (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-            )}
-            Quiz Me
-          </button>
-          <button
-            onClick={() => {
-              if (noteCards.length > 0) {
-                setNavigatingTo('flashcard');
-                router.push(`/subjects/${id}/flashcard`);
-              }
-            }}
-            disabled={noteCards.length === 0 || navigatingTo === 'flashcard'}
-            className={`px-4 py-2 rounded-[5px] transition font-medium text-sm text-center shadow-[0_3px_0_#615FFF] flex items-center gap-2 ${
-              noteCards.length === 0 || navigatingTo === 'flashcard'
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
-                : "bg-[#615FFF] text-white hover:bg-[#524CE5]"
-            }`}
-            title={noteCards.length === 0 ? "Add notes first to create flashcards" : "Create flashcards from your notes"}
-          >
-            {navigatingTo === 'flashcard' && (
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-            )}
-            Flashcards
-          </button>
+          {actionButtons.map((action) => {
+            const isDisabled = noteCards.length === 0 || navigatingTo === action.id;
+            const isLoading = navigatingTo === action.id;
+            
+            return (
+              <button
+                key={action.id}
+                onClick={() => handleActionClick(action.route, action.id)}
+                disabled={isDisabled}
+                className={`w-32 h-10 rounded-lg transition-all font-medium text-sm text-center flex items-center justify-center gap-2 ${
+                  isDisabled
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
+                    : "bg-[#615FFF] text-white hover:bg-[#524CE5] active:translate-y-0.5 active:shadow-none"
+                }`}
+                style={{ boxShadow: isDisabled ? 'none' : '0 4px 0 0 rgba(97, 95, 255, 0.3)' }}
+                title={noteCards.length === 0 ? action.disabledTooltip : action.enabledTooltip}
+              >
+                {isLoading && (
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                {action.label}
+              </button>
+            );
+          })}
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -152,8 +135,9 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
 
       {/* Add Note Floating Button */}
       <button
-        className="fixed bottom-8 right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-2xl shadow-lg flex items-center gap-2 text-lg z-50 transition active:scale-95"
+        className="fixed bottom-8 right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-2xl flex items-center gap-2 text-lg z-50 transition active:scale-95"
         onClick={() => setShowCreateNoteModal(true)}
+        style={{ boxShadow: '0 8px 0 0 rgba(251, 146, 60, 0.18)' }}
       >
         <span className="text-2xl">+</span> Add Note
       </button>
@@ -161,8 +145,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
       {/* Create Note Modal Popup */}
       {showCreateNoteModal && !showUploadPDF && (
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
-          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
           onClick={() => setShowCreateNoteModal(false)}
         >
           <div className="relative" onClick={e => e.stopPropagation()}>
@@ -183,8 +166,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
       {/* Upload PDF Modal Popup */}
       {showUploadPDF && (
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center backdrop-blur-sm"
-          style={{ backgroundColor: "rgba(0,0,0,0.25)" }}
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
           onClick={() => {
             setShowUploadPDF(false);
             setShowCreateNoteModal(false);

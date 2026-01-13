@@ -130,6 +130,13 @@ function Sidebar() {
     fetchUser();
   }, []);
 
+  // Clear loading state when navigation completes
+  useEffect(() => {
+    if (navigatingTo && pathname === navigatingTo) {
+      setTimeout(() => setNavigatingTo(null), 0);
+    }
+  }, [navigatingTo, pathname]);
+
   return (
     <>
       {/* Desktop Sidebar - hidden on mobile/tablet */}

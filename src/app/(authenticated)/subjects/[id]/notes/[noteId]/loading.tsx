@@ -1,5 +1,5 @@
-import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import PageLoading from "@/components/ui/PageLoading";
 
-export default function NoteLoading() {
-  return <LoadingSpinner size="lg" message="Loading note..." fullScreen />;
+export default function NoteDetailLoading() {
+  return <PageLoading />;
 }
