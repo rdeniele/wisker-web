@@ -188,11 +188,12 @@ export default function UpgradePage() {
           {currentPlans.map((plan, index) => (
             <div
               key={index}
-              className={`relative bg-white rounded-2xl shadow-lg p-6 sm:p-8 transition-all duration-200 hover:shadow-xl ${
+              className={`relative bg-white rounded-2xl p-6 sm:p-8 transition-all duration-200 ${
                 plan.isMostPopular
                   ? "border-2 border-orange-500 sm:col-span-2 lg:col-span-1 lg:transform lg:scale-105"
                   : "border border-gray-200"
               }`}
+              style={{ boxShadow: '0 4px 0 #ececec' }}
             >
               {/* Badges */}
               <div className="absolute -top-3 sm:-top-4 left-0 right-0 flex justify-center gap-2 flex-wrap px-2">
@@ -259,9 +260,10 @@ export default function UpgradePage() {
                   plan.buttonDisabled
                     ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                     : plan.isMostPopular
-                    ? "bg-orange-500 text-white hover:bg-orange-600 shadow-md hover:shadow-lg active:scale-95"
-                    : "bg-gray-900 text-white hover:bg-gray-800 shadow-md hover:shadow-lg active:scale-95"
+                    ? "bg-orange-500 text-white hover:bg-orange-600 active:scale-95"
+                    : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
                 }`}
+                style={{ boxShadow: plan.buttonDisabled ? 'none' : '0 4px 0 0 rgba(251, 146, 60, 0.18)' }}
               >
                 {plan.buttonText}
               </button>
