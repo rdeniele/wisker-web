@@ -6,6 +6,8 @@ import InputBox from "@/components/ui/inputboxes";
 import Button from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Toast from "@/components/ui/Toast";
+import { useToast } from "../../../../hook/useToast";
 
 interface PasswordRequirement {
   id: string;
@@ -15,6 +17,7 @@ interface PasswordRequirement {
 
 export default function SignupPage() {
   const router = useRouter();
+  const { toast, showToast, hideToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -49,30 +52,44 @@ export default function SignupPage() {
 
     // Client-side validation
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      showToast("Passwords do not match!", "error");
       return;
     }
 
     const allRequirementsMet = passwordRequirements.every((req) => req.met);
     if (!allRequirementsMet) {
-      alert("Please meet all password requirements!");
+      showToast("Please meet all password requirements!", "error");
       return;
     }
 
     if (!firstName.trim() || !lastName.trim()) {
-      alert("Please provide both first and last name");
+      showToast("Please provide both first and last name", "error");
       return;
     }
 
     setIsLoading(true);
-    // Simulate signup process
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, firstName, lastName }),
+      });
+
+      const result = await res.json();
+
+      if (result.success) {
+        showToast(result.message, "success");
+        router.push(`/login?message=${encodeURIComponent(result.message)}`);
+      } else {
+        showToast(result.error || result.message, "error");
+      }
+    } catch (error) {
+      showToast("An unexpected error occurred. Please try again.", "error");
+      console.error("Signup error:", error);
+    } finally {
       setIsLoading(false);
-      alert(
-        "Account created successfully! (This is just a demo - no backend connected yet)",
-      );
-      router.push("/dashboard");
-    }, 2000);
+    }
   };
 
   const handleGoogleSignUp = () => {
@@ -84,6 +101,14 @@ export default function SignupPage() {
       className="min-h-screen bg-gray-50 flex items-center justify-center p-4"
       style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
     >
+      {/* Toast Notification */}
+      <Toast
+        open={toast.open}
+        message={toast.message}
+        severity={toast.severity}
+        onClose={hideToast}
+      />
+
       <div className="w-full max-w-md mx-auto">
         {/* Header */}
         <div className="mb-8">
