@@ -38,13 +38,13 @@ function UpcomingExam() {
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
         <h1
-          className="text-3xl font-extrabold text-gray-900"
+          className="text-2xl md:text-3xl font-extrabold text-gray-900"
           style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
         >
           Upcoming Exam
         </h1>
         <button
-          className="text-xl font-bold text-[#231F20] opacity-60 hover:opacity-100 transition-all"
+          className="text-base md:text-xl font-bold text-[#231F20] opacity-60 hover:opacity-100 transition-all"
           style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
         >
           See all

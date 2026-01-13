@@ -24,7 +24,7 @@ const HistoryCard: React.FC<HistoryCardProps> = ({
 
   return (
     <div
-      className="rounded-2xl bg-white p-5 flex flex-col items-center justify-between shadow-[0_4px_0_0_rgba(91,91,255,0.08)] border border-[#F3F3F3]"
+      className="rounded-2xl bg-white p-5 flex flex-col items-center justify-between shadow-[0_4px_0_0_rgba(91,91,255,0.08)] border border-[#F3F3F3] transition-colors"
       style={{
         width: 220,
         minHeight: 220,

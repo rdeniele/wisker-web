@@ -59,7 +59,7 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4"
+      className="min-h-screen bg-gray-50 flex items-center justify-center p-4"
       style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
     >
       {/* Toast Notification */}
@@ -82,6 +82,28 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Success Message Display */}
+          {successMessage && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <svg
+                  className="w-5 h-5 text-green-500 mt-0.5 mr-3 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p className="text-sm text-green-700">
+                  {successMessage}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Email Input */}
           <InputBox
             label="Email Address"
@@ -117,7 +139,7 @@ export default function LoginPage() {
                   className={`w-6 h-6 rounded-md border-2 transition-all ${
                     rememberMe
                       ? "bg-orange-500 border-orange-500"
-                      : "border-gray-300 dark:border-gray-600"
+                      : "border-gray-300"
                   }`}
                 >
                   {rememberMe && (
@@ -135,14 +157,14 @@ export default function LoginPage() {
                   )}
                 </div>
               </div>
-              <span className="ml-3 text-gray-700 dark:text-gray-300 font-medium">
+              <span className="ml-3 text-gray-700 font-medium">
                 Remember me
               </span>
             </label>
 
             <Link
               href="/forgot-password"
-              className="text-gray-600 dark:text-gray-400 hover:text-orange-500 transition-colors font-medium"
+              className="text-gray-600 hover:text-orange-500 transition-colors font-medium"
             >
               Forgot password
             </Link>
@@ -156,10 +178,10 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+              <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+              <span className="px-4 bg-gray-50 text-gray-500">
                 or continue with
               </span>
             </div>
@@ -172,7 +194,7 @@ export default function LoginPage() {
             size="lg"
             fullWidth
             onClick={handleGoogleSignIn}
-            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -197,7 +219,7 @@ export default function LoginPage() {
 
           {/* Sign Up Link */}
           <div className="text-center pt-6">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Don&apos;t have an account?{" "}
               <Link
                 href="/signup"

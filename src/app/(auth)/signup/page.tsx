@@ -98,7 +98,7 @@ export default function SignupPage() {
 
   return (
     <div
-      className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4"
+      className="min-h-screen bg-gray-50 flex items-center justify-center p-4"
       style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
     >
       {/* Toast Notification */}
@@ -181,7 +181,7 @@ export default function SignupPage() {
           {/* Password Requirements - Only show when user has started typing */}
           {password.length > 0 && (
             <div className="space-y-3 transition-all duration-300 ease-in-out">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-gray-900">
                 Password Requirements
               </h3>
               <div className="space-y-2">
@@ -220,8 +220,8 @@ export default function SignupPage() {
                     <span
                       className={`text-base transition-colors duration-200 ${
                         requirement.met
-                          ? "text-gray-700 dark:text-gray-300"
-                          : "text-gray-600 dark:text-gray-400"
+                          ? "text-gray-700"
+                          : "text-gray-600"
                       }`}
                     >
                       {requirement.text}
@@ -240,10 +240,10 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+              <div className="w-full border-t border-gray-300" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+              <span className="px-4 bg-gray-50 text-gray-500">
                 or continue with
               </span>
             </div>
@@ -256,7 +256,7 @@ export default function SignupPage() {
             size="lg"
             fullWidth
             onClick={handleGoogleSignUp}
-            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="border-gray-300 text-gray-700 hover:bg-gray-50"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
               <path
@@ -281,7 +281,7 @@ export default function SignupPage() {
 
           {/* Sign In Link */}
           <div className="text-center pt-6">
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Already have an account?{" "}
               <Link
                 href="/login"
@@ -294,7 +294,7 @@ export default function SignupPage() {
 
           {/* Terms and Privacy */}
           <div className="text-center pt-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500">
               By continuing, you agree to our{" "}
               <Link
                 href="/terms"

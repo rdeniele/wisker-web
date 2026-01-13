@@ -50,7 +50,7 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
         {/* Label */}
         <label
           className={cn(
-            "text-lg md:text-xl font-semibold text-gray-900 dark:text-white",
+            "text-lg md:text-xl font-semibold text-gray-900",
             labelClassName,
           )}
         >
@@ -67,10 +67,10 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
             disabled={disabled}
             className={cn(
               "w-full px-6 py-4 text-lg md:text-xl",
-              "bg-gray-50 dark:bg-gray-800",
+              "bg-gray-50",
               "border-2 rounded-2xl",
-              "placeholder:text-gray-500 dark:placeholder:text-gray-400",
-              "text-gray-900 dark:text-white",
+              "placeholder:text-gray-500",
+              "text-gray-900",
               "transition-all duration-200 ease-in-out",
               "focus:outline-none focus:ring-2",
               // Border states
@@ -78,10 +78,10 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
                 ? "border-red-400 focus:border-red-500 focus:ring-red-300"
                 : isFocused
                   ? "border-orange-400 focus:border-orange-500 focus:ring-orange-300"
-                  : "border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500",
+                  : "border-gray-300 hover:border-gray-400",
               // Disabled state
               disabled &&
-                "opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-900",
+                "opacity-50 cursor-not-allowed bg-gray-100",
               // Padding adjustment for password toggle
               type === "password" && showPasswordToggle && "pr-14",
             )}
@@ -97,8 +97,8 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
               onClick={togglePasswordVisibility}
               className={cn(
                 "absolute right-4 top-1/2 -translate-y-1/2",
-                "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200",
-                "focus:outline-none focus:text-gray-700 dark:focus:text-gray-200",
+                "text-gray-500 hover:text-gray-700",
+                "focus:outline-none focus:text-gray-700",
                 "transition-colors duration-200",
                 disabled && "cursor-not-allowed opacity-50",
               )}
@@ -150,7 +150,7 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
           <p
             className={cn(
               "text-sm md:text-base",
-              error ? "text-red-500" : "text-gray-600 dark:text-gray-400",
+              error ? "text-red-500" : "text-gray-600",
             )}
           >
             {error || helperText}

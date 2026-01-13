@@ -13,12 +13,6 @@ export default function PageLayout({
   font = "font-fredoka",
 }: PageLayoutProps) {
   return (
-    <div className={`flex min-h-screen bg-[#fafafa] ${font}`}>
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <NavBar />
-        <div className={`p-8 ${className}`}>{children}</div>
-      </div>
-    </div>
+    <div className={`p-8 ${className} ${font}`}>{children}</div>
   );
 }

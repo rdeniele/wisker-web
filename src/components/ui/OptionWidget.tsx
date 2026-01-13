@@ -29,7 +29,7 @@ function OptionWidget({ onView, onEdit, onDelete }: OptionWidgetProps) {
   return (
     <div className="relative inline-block text-left" ref={menuRef}>
       <button
-        className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+        className="p-2 rounded-full hover:bg-gray-100 focus:outline-none transition-colors"
         onClick={() => setOpen((prev) => !prev)}
         aria-label="Options"
         type="button"
