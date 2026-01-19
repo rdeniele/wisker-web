@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Enums
+enum PlanType {
+  FREE
+  PRO
+  PREMIUM
+}
+
+enum LearningToolType {
+  ORGANIZED_NOTE
+  QUIZ
+  FLASHCARDS
+  SUMMARY
+}
+
+enum LearningToolSource {
+  SUBJECT
+  SINGLE_NOTE
+}
+
+// Models
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  planType        PlanType  @default(FREE) @map("plan_type")
+  notesLimit      Int       @default(50) @map("notes_limit")
+  subjectsLimit   Int       @default(10) @map("subjects_limit")
+  aiUsageLimit    Int       @default(100) @map("ai_usage_limit")
+  aiUsageCount    Int       @default(0) @map("ai_usage_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  subjects        Subject[]
+  
+  @@map("users")
+}
+
+model Subject {
+  id              String    @id @default(uuid())
+  userId          String    @map("user_id")
+  title           String
+  description     String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes           Note[]
+  learningTools   LearningTool[]
+  
+  @@index([userId])
+  @@map("subjects")
+}
+
+model Note {
+  id                    String    @id @default(uuid())
+  subjectId             String    @map("subject_id")
+  title                 String
+  rawContent            String    @map("raw_content") @db.Text
+  aiProcessedContent    String?   @map("ai_processed_content") @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  
+  subject               Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  learningTools         LearningTool[]
+  learningToolNotes     LearningToolNote[]
+  
+  @@index([subjectId])
+  @@map("notes")
+}
+
+model LearningTool {
+  id                String              @id @default(uuid())
+  type              LearningToolType
+  source            LearningToolSource
+  subjectId         String?             @map("subject_id")
+  noteId            String?             @map("note_id")
+  generatedContent  String              @map("generated_content") @db.Text
+  createdAt         DateTime            @default(now()) @map("created_at")
+  
+  subject           Subject?            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  note              Note?               @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  notes             LearningToolNote[]
+  
+  @@index([subjectId])
+  @@index([noteId])
+  @@map("learning_tools")
+}
+
+// Junction table for many-to-many relationship between LearningTool and Note
+// Used when generating learning tools from multiple selected notes at subject level
+model LearningToolNote {
+  learningToolId  String   @map("learning_tool_id")
+  noteId          String   @map("note_id")
+  
+  learningTool    LearningTool @relation(fields: [learningToolId], references: [id], onDelete: Cascade)
+  note            Note         @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  @@id([learningToolId, noteId])
+  @@index([learningToolId])
+  @@index([noteId])
+  @@map("learning_tool_notes")
+}
