@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { 
   NotFoundError, 
   SubjectsLimitExceededError, 
@@ -97,7 +97,10 @@ export class SubjectService {
         throw new ForbiddenError('You do not have access to this subject');
       }
 
-      return subject;
+      return {
+        ...subject,
+        description: subject.description ?? undefined,
+      };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
@@ -150,7 +153,10 @@ export class SubjectService {
         },
       });
 
-      return subject;
+      return {
+        ...subject,
+        description: subject.description ?? undefined,
+      };
     } catch (error) {
       if (
         error instanceof SubjectsLimitExceededError ||
@@ -191,7 +197,10 @@ export class SubjectService {
         },
       });
 
-      return subject;
+      return {
+        ...subject,
+        description: subject.description ?? undefined,
+      };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;

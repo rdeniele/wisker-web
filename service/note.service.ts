@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import {
   NotFoundError,
   NotesLimitExceededError,
@@ -99,7 +99,14 @@ export class NoteService {
         throw new ForbiddenError('You do not have access to this note');
       }
 
-      return note;
+      return {
+        ...note,
+        aiProcessedContent: note.aiProcessedContent ?? undefined,
+        fileUrl: note.fileUrl ?? undefined,
+        fileName: note.fileName ?? undefined,
+        fileSize: note.fileSize ?? undefined,
+        fileType: note.fileType ?? undefined,
+      };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
@@ -142,7 +149,7 @@ export class NoteService {
 
       // Calculate total notes across all subjects
       const totalNotes = user.subjects.reduce(
-        (sum, subject) => sum + subject._count.notes,
+        (sum: number, subject: any) => sum + subject._count.notes,
         0
       );
 
@@ -223,7 +230,14 @@ export class NoteService {
         },
       });
 
-      return note;
+      return {
+        ...note,
+        aiProcessedContent: note.aiProcessedContent ?? undefined,
+        fileUrl: note.fileUrl ?? undefined,
+        fileName: note.fileName ?? undefined,
+        fileSize: note.fileSize ?? undefined,
+        fileType: note.fileType ?? undefined,
+      };
     } catch (error) {
       if (
         error instanceof NotesLimitExceededError ||
@@ -258,7 +272,14 @@ export class NoteService {
         },
       });
 
-      return note;
+      return {
+        ...note,
+        aiProcessedContent: note.aiProcessedContent ?? undefined,
+        fileUrl: note.fileUrl ?? undefined,
+        fileName: note.fileName ?? undefined,
+        fileSize: note.fileSize ?? undefined,
+        fileType: note.fileType ?? undefined,
+      };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
@@ -344,7 +365,14 @@ export class NoteService {
         }),
       ]);
 
-      return updatedNote;
+      return {
+        ...updatedNote,
+        aiProcessedContent: updatedNote.aiProcessedContent ?? undefined,
+        fileUrl: updatedNote.fileUrl ?? undefined,
+        fileName: updatedNote.fileName ?? undefined,
+        fileSize: updatedNote.fileSize ?? undefined,
+        fileType: updatedNote.fileType ?? undefined,
+      };
     } catch (error) {
       if (
         error instanceof NotFoundError ||

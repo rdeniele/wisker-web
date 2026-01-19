@@ -25,8 +25,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = validateRequest(createNoteSchema, body);
 
+    // Ensure rawContent has a default value
+    const noteData = {
+      ...validatedData,
+      rawContent: validatedData.rawContent || '',
+    };
+
     // Create note
-    const note = await noteService.createNote(user.id, validatedData);
+    const note = await noteService.createNote(user.id, noteData);
 
     return successResponse(note, 201);
   } catch (error) {

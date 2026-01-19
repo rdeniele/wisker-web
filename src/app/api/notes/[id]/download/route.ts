@@ -2,7 +2,9 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { StorageService } from '@/service/storage.service';
 import { apiResponse, errorResponse } from '@/lib/api-response';
-import { UnauthorizedError } from '@/lib/errors';
+import { UnauthorizedError, NotFoundError, AppError } from '@/lib/errors';
+import { ErrorCode } from '@/types/api';
+import prisma from '@/lib/prisma';
 
 /**
  * GET /api/notes/[id]/download
@@ -27,7 +29,6 @@ export async function GET(
     }
 
     // Get note and verify ownership
-    const { default: prisma } = await import('@/lib/prisma');
     const note = await prisma.note.findFirst({
       where: {
         id,
@@ -43,24 +44,16 @@ export async function GET(
     });
 
     if (!note) {
-      return errorResponse({
-        code: 'NOT_FOUND',
-        message: 'Note not found',
-        statusCode: 404,
-      });
+      throw new NotFoundError('Note');
     }
 
     if (!note.fileUrl) {
-      return errorResponse({
-        code: 'NO_FILE',
-        message: 'This note does not have an attached file',
-        statusCode: 404,
-      });
+      throw new AppError(ErrorCode.NOT_FOUND, 'This note does not have an attached file', 404);
     }
 
     // Extract storage path from URL
     const urlParts = note.fileUrl.split('/');
-    const bucketIndex = urlParts.findIndex((part) => part === 'wisker-files');
+    const bucketIndex = urlParts.findIndex((part: string) => part === 'wisker-files');
     const filePath = urlParts.slice(bucketIndex + 1).join('/');
 
     // Get signed download URL (valid for 1 hour)
@@ -72,10 +65,6 @@ export async function GET(
       fileType: note.fileType,
     });
   } catch (error) {
-    return errorResponse({
-      code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'Failed to get download URL',
-      statusCode: 500,
-    });
+    return errorResponse(error instanceof Error ? error : new Error('Failed to get download URL'));
   }
 }

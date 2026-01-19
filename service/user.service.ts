@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import { NotFoundError, DatabaseError } from '@/lib/errors';
 import { UserDto, UsageStats } from '@/types/api';
 import { PlanType } from '@prisma/client';
@@ -145,7 +145,7 @@ export class UserService {
       }
 
       const totalNotes = user.subjects.reduce(
-        (sum, subject) => sum + subject._count.notes,
+        (sum: number, subject: any) => sum + subject._count.notes,
         0
       );
 

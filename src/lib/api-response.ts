@@ -64,3 +64,6 @@ export function paginatedResponse<T>(
     },
   });
 }
+
+// Alias for backward compatibility
+export const apiResponse = successResponse;

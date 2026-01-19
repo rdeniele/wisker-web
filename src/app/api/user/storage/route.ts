@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { StorageService } from '@/service/storage.service';
 import { apiResponse, errorResponse } from '@/lib/api-response';
 import { UnauthorizedError } from '@/lib/errors';
+import prisma from '@/lib/prisma';
 
 /**
  * GET /api/user/storage
@@ -26,7 +27,6 @@ export async function GET(req: NextRequest) {
     const stats = await StorageService.getUserStorageStats(user.id);
 
     // Get note count with files
-    const { default: prisma } = await import('@/lib/prisma');
     const notesWithFiles = await prisma.note.count({
       where: {
         subject: {
@@ -45,11 +45,7 @@ export async function GET(req: NextRequest) {
       notesWithFiles,
     });
   } catch (error) {
-    return errorResponse({
-      code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'Failed to get storage stats',
-      statusCode: 500,
-    });
+    return errorResponse(error instanceof Error ? error : new Error('Failed to get storage stats'));
   }
 }
 
@@ -75,7 +71,6 @@ export async function DELETE(req: NextRequest) {
     await StorageService.deleteUserFiles(user.id);
 
     // Update database to remove file references
-    const { default: prisma } = await import('@/lib/prisma');
     await prisma.note.updateMany({
       where: {
         subject: {
@@ -94,10 +89,6 @@ export async function DELETE(req: NextRequest) {
       message: 'All files deleted successfully',
     });
   } catch (error) {
-    return errorResponse({
-      code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'Failed to delete files',
-      statusCode: 500,
-    });
+    return errorResponse(error instanceof Error ? error : new Error('Failed to delete files'));
   }
 }
