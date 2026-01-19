@@ -1,19 +1,19 @@
-import prisma from '@/lib/prisma';
+import { prisma } from '../src/lib/prisma';
 import {
   NotFoundError,
   AIUsageLimitExceededError,
   DatabaseError,
   ForbiddenError,
   InvalidInputError,
-} from '@/lib/errors';
+} from '../src/lib/errors';
 import {
   GenerateLearningToolRequest,
   LearningToolDto,
-} from '@/types/api';
+} from '../src/types/api';
 import { subjectService } from './subject.service';
 import { noteService } from './note.service';
 import { aiService } from './ai.service';
-import { LearningToolType, LearningToolSource } from '@prisma/client';
+import { LearningToolType, LearningToolSource, Prisma } from '@prisma/client';
 
 export class LearningToolService {
   /**
@@ -47,7 +47,7 @@ export class LearningToolService {
       const skip = (page - 1) * pageSize;
 
       // Build where clause with user ownership verification
-      const where: any = {
+      const where: Prisma.LearningToolWhereInput = {
         OR: [
           { subject: { userId } },
           { note: { subject: { userId } } },
@@ -105,7 +105,7 @@ export class LearningToolService {
         pageSize,
       };
     } catch (error) {
-      throw new DatabaseError('Failed to fetch learning tools', error);
+      throw new DatabaseError('Failed to fetch learning tools', error instanceof Error ? error : undefined);
     }
   }
 
@@ -154,13 +154,15 @@ export class LearningToolService {
 
       return {
         ...learningTool,
+        subjectId: learningTool.subjectId ?? undefined,
+        noteId: learningTool.noteId ?? undefined,
         notes: learningTool.notes.map((n) => n.note),
       };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch learning tool', error);
+      throw new DatabaseError('Failed to fetch learning tool', error instanceof Error ? error : undefined);
     }
   }
 
@@ -302,7 +304,7 @@ export class LearningToolService {
       ) {
         throw error;
       }
-      throw new DatabaseError('Failed to generate learning tool', error);
+      throw new DatabaseError('Failed to generate learning tool', error instanceof Error ? error : undefined);
     }
   }
 
@@ -325,7 +327,7 @@ export class LearningToolService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to delete learning tool', error);
+      throw new DatabaseError('Failed to delete learning tool', error instanceof Error ? error : undefined);
     }
   }
 }

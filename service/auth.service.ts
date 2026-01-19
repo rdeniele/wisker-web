@@ -33,22 +33,38 @@ export async function signUp(credentials: SignupCredentials): Promise<AuthRespon
                 last_name: lastName.trim(),
                 display_name: `${firstName.trim()} ${lastName.trim()}`,
             },
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
         }
     })
     
     if (error) {
+        let errorMessage = error.message;
+        
+        // Provide more specific error messages
+        if (error.message.includes("User already registered")) {
+            errorMessage = "An account with this email already exists. Please sign in instead.";
+        }
+        
         return {
             success: false,
             message: "Sign up failed.",
-            error: error.message,
+            error: errorMessage,
         }
     }
 
+    // Check if email confirmation is required
     if (data.user && !data.session) {
         return {
             success: true,
-            message: "Please check your email to confirm your account."
+            message: "Success! Please check your email to confirm your account before signing in."
+        }
+    }
+
+    // If session exists, user is auto-confirmed (email confirmation disabled)
+    if (data.user && data.session) {
+        return {
+            success: true,
+            message: "Account created successfully! You can now sign in.",
         }
     }
 
@@ -71,16 +87,34 @@ export async function signIn(credentials: AuthCredentials): Promise<AuthResponse
 
     const supabase = await createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
     })
 
     if (error) {
+        // Provide more specific error messages
+        let errorMessage = error.message;
+        
+        if (error.message.includes("Email not confirmed")) {
+            errorMessage = "Please confirm your email address before signing in. Check your inbox for the confirmation link.";
+        } else if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Invalid email or password. Please try again.";
+        }
+        
         return {
             success: false,
             message: "Sign in failed.",
-            error: error.message,
+            error: errorMessage,
+        }
+    }
+
+    // Check if user session was created successfully
+    if (!data.session) {
+        return {
+            success: false,
+            message: "Sign in failed.",
+            error: "Failed to create session. Please try again.",
         }
     }
 

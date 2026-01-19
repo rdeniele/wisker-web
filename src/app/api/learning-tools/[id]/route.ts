@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { successResponse, errorResponse } from '@/lib/api-response';
-// Update the import path to match the actual file location and name
-import { learningToolService } from '@/services/learningToolService';
+import { learningToolService } from '@/../service/learningtool.service';
 import { createClient } from '@/lib/supabase/server';
 
 type RouteParams = {
