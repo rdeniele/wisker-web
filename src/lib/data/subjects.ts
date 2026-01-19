@@ -1,4 +1,7 @@
-export const subjects = [
+// MOCK DATA - COMMENTED OUT FOR TESTING REAL API
+// Uncomment if you want to test UI without backend
+
+/* export const subjects = [
   {
     id: 1,
     name: "Biology",
@@ -27,10 +30,12 @@ export const subjects = [
     time: "5d ago",
     img: "/images/wisky-read.png",
   },
-];
+]; */
+
+export const subjects: any[] = [];
 
 // Mock notes data for each subject
-export const subjectNotes: Record<number, Array<{ id: number; title: string; createdAt: Date; lastOpened: Date; characterCount: number }>> = {
+/* export const subjectNotes: Record<number, Array<{ id: number; title: string; createdAt: Date; lastOpened: Date; characterCount: number }>> = {
   1: [
     { id: 1, title: "Cell Structure", createdAt: new Date("2024-12-10T09:30:00"), lastOpened: new Date(Date.now() - 20000), characterCount: 1245 },
     { id: 2, title: "Genetics Overview", createdAt: new Date("2024-12-12T14:20:00"), lastOpened: new Date(Date.now() - 7200000), characterCount: 892 },
@@ -63,10 +68,12 @@ export const subjectNotes: Record<number, Array<{ id: number; title: string; cre
     { id: 13, title: "Vectors", createdAt: new Date("2024-12-15T10:20:00"), lastOpened: new Date(Date.now() - 216000000), characterCount: 2567 },
     { id: 14, title: "Matrices", createdAt: new Date("2024-12-16T11:00:00"), lastOpened: new Date(Date.now() - 518400000), characterCount: 2890 },
   ],
-};
+}; */
+
+export const subjectNotes: Record<number, Array<{ id: number; title: string; createdAt: Date; lastOpened: Date; characterCount: number }>> = {};
 
 // Mock note content data
-export const noteContent: Record<string, { title: string; content: string }> = {
+/* export const noteContent: Record<string, { title: string; content: string }> = {
   "1-1": {
     title: "Cell Structure",
     content: `Cells are the basic building blocks of all living things. The cell structure includes various organelles that perform specific functions.
@@ -134,4 +141,6 @@ Internal data managed by the component
 - useContext: Access context
 - Custom hooks: Reusable logic`,
   },
-};
+}; */
+
+export const noteContent: Record<string, { title: string; content: string }> = {};

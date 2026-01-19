@@ -67,6 +67,10 @@ model Note {
   title                 String
   rawContent            String    @map("raw_content") @db.Text
   aiProcessedContent    String?   @map("ai_processed_content") @db.Text
+  fileUrl               String?   @map("file_url")
+  fileName              String?   @map("file_name")
+  fileSize              Int?      @map("file_size")
+  fileType              String?   @map("file_type")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   
