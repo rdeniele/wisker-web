@@ -1,5 +1,4 @@
 "use client";
-import { subjects } from "@/lib/data/subjects";
 import { useState, useTransition, useEffect } from "react";
 import { IoBookSharp } from "react-icons/io5";
 import CreateSubject from "./components/CreateSubject";
@@ -13,7 +12,14 @@ function SubjectsPage() {
   const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
 
-  // Remove useEffect that resets navigatingTo to avoid cascading renders
+  // TODO: Fetch real subjects from backend
+  const subjects: Array<{
+    id: number;
+    name: string;
+    notes: number;
+    time: string;
+    img: string;
+  }> = [];
 
   const handleNavigationStart = (id: string) => {
     setNavigatingTo(id);

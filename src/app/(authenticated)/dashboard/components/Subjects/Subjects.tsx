@@ -3,7 +3,6 @@ import React, { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { subjects as subjectsData } from "@/lib/data/subjects";
 
 function Subjects() {
   const router = useRouter();
@@ -17,8 +16,14 @@ function Subjects() {
     }
   }, [isPending, navigatingTo]);
   
-  // Take first 4 subjects from the mock data
-  const recentSubjects = subjectsData.slice(0, 4);
+  // TODO: Fetch real subjects from backend
+  const recentSubjects: Array<{
+    id: number;
+    name: string;
+    notes: number;
+    time: string;
+    img: string;
+  }> = [];
 
   return (
     <div className="w-full">

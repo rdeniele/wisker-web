@@ -2,13 +2,12 @@
 
 import React from "react";
 
-// Mock data - replace with actual data from your backend
-const streakData = {
-  currentStreak: 7,
-  longestStreak: 15,
-};
-
 function StudyStreak() {
+  // TODO: Fetch real data from backend
+  const streakData = {
+    currentStreak: 0,
+    longestStreak: 0,
+  };
   return (
     <div className="w-full">
       <h2

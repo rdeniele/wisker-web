@@ -3,47 +3,24 @@ import React, { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-// Example data, replace with backend fetch later
-const exams = [
-  {
-    id: 1,
-    title: "Programming",
-    day: "Today",
-    time: "50 mins",
-    notes: 5,
-    emoji: "💻",
-    iconBg: "bg-purple-100",
-    lineColor: "bg-purple-200",
-    urgent: true,
-  },
-  {
-    id: 2,
-    title: "Mathematics",
-    day: "Saturday",
-    time: "5 days",
-    notes: 14,
-    emoji: "📐",
-    iconBg: "bg-blue-100",
-    lineColor: "bg-blue-200",
-    urgent: false,
-  },
-  {
-    id: 3,
-    title: "Biology",
-    day: "Monday",
-    time: "7 days",
-    notes: 0,
-    emoji: "🧬",
-    iconBg: "bg-green-100",
-    lineColor: "bg-green-200",
-    urgent: false,
-  },
-];
-
 function UpcomingExam() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<number | null>(null);
+  
+  // TODO: Fetch real data from backend
+  const exams: Array<{
+    id: number;
+    title: string;
+    day: string;
+    time: string;
+    notes: number;
+    emoji: string;
+    iconBg: string;
+    lineColor: string;
+    urgent: boolean;
+  }> = [];
+  
   const topExams = exams.slice(0, 3);
 
   // Clear loading state when navigation completes

@@ -3,37 +3,17 @@
 import React, { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { subjects } from "@/lib/data/subjects";
-
-// Mock data using actual subject IDs from the data
-const todaysTasks = [
-  {
-    id: 1,
-    title: "Review Biology Notes",
-    type: "review" as const,
-    count: 3,
-    urgent: true,
-    subjectId: subjects[0]?.id || 1, // Biology
-  },
-  {
-    id: 2,
-    title: "Mathematics Quiz",
-    type: "quiz" as const,
-    count: 1,
-    urgent: false,
-    subjectId: subjects[3]?.id || 4, // Mathematics
-  },
-  {
-    id: 3,
-    title: "Programming Flashcards",
-    type: "flashcard" as const,
-    count: 15,
-    urgent: false,
-    subjectId: subjects[1]?.id || 2, // Programming
-  },
-];
 
 function TodaysFocus() {
+  // TODO: Fetch real data from backend
+  const todaysTasks: Array<{
+    id: number;
+    title: string;
+    type: "review" | "quiz" | "flashcard";
+    count: number;
+    urgent: boolean;
+    subjectId: number;
+  }> = [];
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);

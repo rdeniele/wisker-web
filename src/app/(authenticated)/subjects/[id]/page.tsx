@@ -1,6 +1,5 @@
 "use client";
 import { notFound, useRouter } from "next/navigation";
-import { subjects, subjectNotes } from "@/lib/data/subjects";
 import { use, useState, useTransition, useEffect } from "react";
 import PageLayout from "@/components/layouts/PageLayout";
 import PageHeader from "@/components/ui/pageheader";
@@ -22,13 +21,15 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
   const [showUploadPDF, setShowUploadPDF] = useState(false);
 
-  const subject = subjects.find((s) => s.id === Number(id));
-
-  // Remove effect that synchronously resets navigatingTo to avoid cascading renders
-
-  if (!subject) return notFound();
-
-  const noteCards = subjectNotes[subject.id] || [];
+  // TODO: Fetch real subject from backend
+  const subject = { id: Number(id), name: "Subject", notes: 0, time: "", img: "" };
+  const noteCards: Array<{
+    id: number;
+    title: string;
+    createdAt: Date;
+    lastOpened: Date;
+    characterCount: number;
+  }> = [];
 
   // Action buttons configuration
   const actionButtons = [

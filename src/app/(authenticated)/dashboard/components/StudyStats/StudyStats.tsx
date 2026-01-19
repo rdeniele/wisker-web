@@ -2,14 +2,13 @@
 
 import React from "react";
 
-// Mock data - replace with actual data from your backend
-const stats = {
-  totalSubjects: 12,
-  totalNotes: 47,
-  quizzesThisWeek: 8,
-};
-
 function StudyStats() {
+  // TODO: Fetch real data from backend
+  const stats = {
+    totalSubjects: 0,
+    totalNotes: 0,
+    quizzesThisWeek: 0,
+  };
   return (
     <div className="w-full">
       <h2
