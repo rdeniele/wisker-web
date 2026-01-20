@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { subjectService } from '@/service/subject.service';
-import { validateRequest, createSubjectSchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { subjectService } from "@/service/subject.service";
+import { validateRequest, createSubjectSchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * POST /api/subjects/create
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate request body

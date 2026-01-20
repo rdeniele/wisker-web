@@ -73,7 +73,9 @@ export default function NoteSelector({
               Select Notes
             </h1>
             <p className="text-gray-600">
-              Choose notes from <span className="font-semibold">{subjectName}</span> to include in your flashcards
+              Choose notes from{" "}
+              <span className="font-semibold">{subjectName}</span> to include in
+              your flashcards
             </p>
           </div>
 
@@ -84,9 +86,19 @@ export default function NoteSelector({
               className="flex items-center gap-3 text-purple-600 hover:text-purple-700 font-semibold transition"
             >
               {selectedNotes.size === notes.length ? (
-                <FiCheckSquare size={20} className="text-purple-600" aria-checked="true" role="checkbox" />
+                <FiCheckSquare
+                  size={20}
+                  className="text-purple-600"
+                  aria-checked="true"
+                  role="checkbox"
+                />
               ) : (
-                <FiSquare size={20} className="text-gray-400" aria-checked="false" role="checkbox" />
+                <FiSquare
+                  size={20}
+                  className="text-gray-400"
+                  aria-checked="false"
+                  role="checkbox"
+                />
               )}
               <span>
                 {selectedNotes.size === notes.length
@@ -123,7 +135,12 @@ export default function NoteSelector({
                           role="checkbox"
                         />
                       ) : (
-                        <FiSquare className="text-gray-400" size={20} aria-checked="false" role="checkbox" />
+                        <FiSquare
+                          className="text-gray-400"
+                          size={20}
+                          aria-checked="false"
+                          role="checkbox"
+                        />
                       )}
                     </div>
                     <div className="flex-1">
@@ -146,7 +163,8 @@ export default function NoteSelector({
             disabled={selectedNotes.size === 0}
             className="w-full py-4 bg-[#615FFF] text-white rounded-xl hover:bg-[#524CE5] transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Continue with {selectedNotes.size} note{selectedNotes.size !== 1 ? "s" : ""}
+            Continue with {selectedNotes.size} note
+            {selectedNotes.size !== 1 ? "s" : ""}
           </button>
         </div>
       </div>

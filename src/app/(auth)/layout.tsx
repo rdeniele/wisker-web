@@ -3,26 +3,26 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-    title: "Authentication - Wisker",
-    description: "Sign in or create an account",
+  title: "Authentication - Wisker",
+  description: "Sign in or create an account",
 };
 
 interface AuthLayoutProps {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 export default async function AuthLayout({ children }: AuthLayoutProps) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    // If user is already logged in, redirect to dashboard
-    if (user) {
-        redirect("/dashboard");
-    }
+  // If user is already logged in, redirect to dashboard
+  if (user) {
+    redirect("/dashboard");
+  }
 
-    return (
-        <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            {children}
-        </main>
-    );
+  return (
+    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">{children}</main>
+  );
 }

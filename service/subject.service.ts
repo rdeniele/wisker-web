@@ -1,11 +1,15 @@
-import { prisma } from '@/lib/prisma';
-import { 
-  NotFoundError, 
-  SubjectsLimitExceededError, 
-  DatabaseError, 
-  ForbiddenError 
-} from '@/lib/errors';
-import { CreateSubjectRequest, UpdateSubjectRequest, SubjectDto } from '@/types/api';
+import { prisma } from "@/lib/prisma";
+import {
+  NotFoundError,
+  SubjectsLimitExceededError,
+  DatabaseError,
+  ForbiddenError,
+} from "@/lib/errors";
+import {
+  CreateSubjectRequest,
+  UpdateSubjectRequest,
+  SubjectDto,
+} from "@/types/api";
 
 export class SubjectService {
   /**
@@ -17,17 +21,17 @@ export class SubjectService {
       page?: number;
       pageSize?: number;
       search?: string;
-      sortBy?: 'createdAt' | 'updatedAt' | 'title';
-      sortOrder?: 'asc' | 'desc';
-    } = {}
+      sortBy?: "createdAt" | "updatedAt" | "title";
+      sortOrder?: "asc" | "desc";
+    } = {},
   ) {
     try {
       const {
         page = 1,
         pageSize = 20,
         search,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
+        sortBy = "createdAt",
+        sortOrder = "desc",
       } = options;
 
       const skip = (page - 1) * pageSize;
@@ -36,8 +40,8 @@ export class SubjectService {
         userId,
         ...(search && {
           OR: [
-            { title: { contains: search, mode: 'insensitive' as const } },
-            { description: { contains: search, mode: 'insensitive' as const } },
+            { title: { contains: search, mode: "insensitive" as const } },
+            { description: { contains: search, mode: "insensitive" as const } },
           ],
         }),
       };
@@ -67,7 +71,7 @@ export class SubjectService {
         pageSize,
       };
     } catch (error) {
-      throw new DatabaseError('Failed to fetch subjects', error);
+      throw new DatabaseError("Failed to fetch subjects", error);
     }
   }
 
@@ -89,12 +93,12 @@ export class SubjectService {
       });
 
       if (!subject) {
-        throw new NotFoundError('Subject');
+        throw new NotFoundError("Subject");
       }
 
       // Verify ownership
       if (subject.userId !== userId) {
-        throw new ForbiddenError('You do not have access to this subject');
+        throw new ForbiddenError("You do not have access to this subject");
       }
 
       return {
@@ -105,7 +109,7 @@ export class SubjectService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch subject', error);
+      throw new DatabaseError("Failed to fetch subject", error);
     }
   }
 
@@ -114,7 +118,7 @@ export class SubjectService {
    */
   async createSubject(
     userId: string,
-    data: CreateSubjectRequest
+    data: CreateSubjectRequest,
   ): Promise<SubjectDto> {
     try {
       // Check user's subject limit
@@ -129,7 +133,7 @@ export class SubjectService {
       });
 
       if (!user) {
-        throw new NotFoundError('User');
+        throw new NotFoundError("User");
       }
 
       if (user._count.subjects >= user.subjectsLimit) {
@@ -164,7 +168,7 @@ export class SubjectService {
       ) {
         throw error;
       }
-      throw new DatabaseError('Failed to create subject', error);
+      throw new DatabaseError("Failed to create subject", error);
     }
   }
 
@@ -174,7 +178,7 @@ export class SubjectService {
   async updateSubject(
     subjectId: string,
     userId: string,
-    data: UpdateSubjectRequest
+    data: UpdateSubjectRequest,
   ): Promise<SubjectDto> {
     try {
       // Verify ownership
@@ -185,7 +189,9 @@ export class SubjectService {
         where: { id: subjectId },
         data: {
           ...(data.title && { title: data.title }),
-          ...(data.description !== undefined && { description: data.description }),
+          ...(data.description !== undefined && {
+            description: data.description,
+          }),
         },
         include: {
           _count: {
@@ -205,7 +211,7 @@ export class SubjectService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to update subject', error);
+      throw new DatabaseError("Failed to update subject", error);
     }
   }
 
@@ -225,7 +231,7 @@ export class SubjectService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to delete subject', error);
+      throw new DatabaseError("Failed to delete subject", error);
     }
   }
 
@@ -236,20 +242,21 @@ export class SubjectService {
     try {
       await this.getSubjectById(subjectId, userId);
 
-      const [notesCount, learningToolsCount, recentActivity] = await Promise.all([
-        prisma.note.count({ where: { subjectId } }),
-        prisma.learningTool.count({ where: { subjectId } }),
-        prisma.note.findMany({
-          where: { subjectId },
-          orderBy: { updatedAt: 'desc' },
-          take: 5,
-          select: {
-            id: true,
-            title: true,
-            updatedAt: true,
-          },
-        }),
-      ]);
+      const [notesCount, learningToolsCount, recentActivity] =
+        await Promise.all([
+          prisma.note.count({ where: { subjectId } }),
+          prisma.learningTool.count({ where: { subjectId } }),
+          prisma.note.findMany({
+            where: { subjectId },
+            orderBy: { updatedAt: "desc" },
+            take: 5,
+            select: {
+              id: true,
+              title: true,
+              updatedAt: true,
+            },
+          }),
+        ]);
 
       return {
         notesCount,
@@ -260,7 +267,7 @@ export class SubjectService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch subject statistics', error);
+      throw new DatabaseError("Failed to fetch subject statistics", error);
     }
   }
 }

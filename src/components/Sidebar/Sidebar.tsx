@@ -113,20 +113,22 @@ function Sidebar() {
   useEffect(() => {
     const fetchUser = async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (user) {
         const firstName = user.user_metadata?.first_name;
-        
+
         // Use only first name
         setUserName(firstName || "Student");
-        
+
         // Set plan type - default to Free (you can fetch this from your database later)
         const plan = user.user_metadata?.subscription_plan || "Free";
         setUserPlan(`${plan} Plan`);
       }
     };
-    
+
     fetchUser();
   }, []);
 
@@ -141,86 +143,98 @@ function Sidebar() {
     <>
       {/* Desktop Sidebar - hidden on mobile/tablet */}
       <aside className="hidden lg:flex group/sidebar sticky top-0 z-40 h-screen w-16 hover:w-56 bg-white flex-col py-6 px-2 hover:px-4 border-r border-gray-200 rounded-br-2xl transition-all duration-300 ease-in-out overflow-x-hidden">
-      {/* Logo */}
-      <div className="flex items-center justify-center gap-2 mb-4 transition-all duration-300">
-        <Image
-          src="/images/wisker_text_pic_logo.png"
-          alt="Wisker Logo"
-          width={140}
-          height={32}
-          className="h-8 w-auto group-hover/sidebar:block hidden"
-          priority
-        />
-        <Image
-          src="/images/wisker_text_pic_logo.png"
-          alt="Wisker Logo Mini"
-          width={32}
-          height={32}
-          className="h-8 w-8 group-hover/sidebar:hidden block"
-          priority
-        />
-      </div>
-
-      {/* User Info (moved to top) */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center transition-colors">
-          <span className="text-2xl">🐾</span>
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-2 mb-4 transition-all duration-300">
+          <Image
+            src="/images/wisker_text_pic_logo.png"
+            alt="Wisker Logo"
+            width={140}
+            height={32}
+            className="h-8 w-auto group-hover/sidebar:block hidden"
+            priority
+          />
+          <Image
+            src="/images/wisker_text_pic_logo.png"
+            alt="Wisker Logo Mini"
+            width={32}
+            height={32}
+            className="h-8 w-8 group-hover/sidebar:hidden block"
+            priority
+          />
         </div>
-        <div className="group-hover/sidebar:flex flex-col hidden">
-          <div className="font-semibold text-gray-800 transition-colors truncate">
-            {userName || "Loading..."}
+
+        {/* User Info (moved to top) */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center transition-colors">
+            <span className="text-2xl">🐾</span>
           </div>
-          <div className="text-xs text-gray-500 transition-colors truncate">
-            {userPlan || "Free Plan"}
+          <div className="group-hover/sidebar:flex flex-col hidden">
+            <div className="font-semibold text-gray-800 transition-colors truncate">
+              {userName || "Loading..."}
+            </div>
+            <div className="text-xs text-gray-500 transition-colors truncate">
+              {userPlan || "Free Plan"}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Divider */}
-      <div className="border-t border-gray-200 mb-6 mx-1" />
+        {/* Divider */}
+        <div className="border-t border-gray-200 mb-6 mx-1" />
 
-      {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-2">
-        {navLinks.map((link) => {
-          const isActive = pathname === link.href;
-          const isLoading = navigatingTo === link.href;
-          
-          return (
-            <button
-              key={link.name}
-              onClick={() => {
-                if (!isActive) {
-                  setNavigatingTo(link.href);
-                  startTransition(() => {
-                    router.push(link.href);
-                  });
-                }
-              }}
-              disabled={isLoading}
-              className={`flex items-center gap-3 px-2 py-2 rounded-lg font-medium transition-all duration-200 group/link text-left ${
-                isActive
-                  ? "bg-orange-50 text-orange-600"
-                  : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-              } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-            >
-              <span className="w-6 h-6 shrink-0 transition-colors flex items-center justify-center">
-                {isLoading ? (
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                ) : (
-                  link.icon
-                )}
-              </span>
-              <span className="ml-2 truncate group-hover/sidebar:inline-block hidden transition-all duration-200">
-                {link.name}
-              </span>
-            </button>
-          );
-        })}
-      </nav>
-    </aside>
+        {/* Navigation */}
+        <nav className="flex-1 flex flex-col gap-2">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
+            const isLoading = navigatingTo === link.href;
+
+            return (
+              <button
+                key={link.name}
+                onClick={() => {
+                  if (!isActive) {
+                    setNavigatingTo(link.href);
+                    startTransition(() => {
+                      router.push(link.href);
+                    });
+                  }
+                }}
+                disabled={isLoading}
+                className={`flex items-center gap-3 px-2 py-2 rounded-lg font-medium transition-all duration-200 group/link text-left ${
+                  isActive
+                    ? "bg-orange-50 text-orange-600"
+                    : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              >
+                <span className="w-6 h-6 shrink-0 transition-colors flex items-center justify-center">
+                  {isLoading ? (
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                  ) : (
+                    link.icon
+                  )}
+                </span>
+                <span className="ml-2 truncate group-hover/sidebar:inline-block hidden transition-all duration-200">
+                  {link.name}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      </aside>
 
       {/* Mobile/Tablet FAB */}
       <button
@@ -289,7 +303,7 @@ function Sidebar() {
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             const isLoading = navigatingTo === link.href;
-            
+
             return (
               <button
                 key={link.name}
@@ -314,8 +328,20 @@ function Sidebar() {
                 <span className="w-6 h-6 shrink-0 flex items-center justify-center">
                   {isLoading ? (
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                   ) : (
                     link.icon

@@ -3,6 +3,7 @@
 ## Overview
 
 Wisker now uses **Together AI** for all AI-powered features including:
+
 - Note organization and processing
 - Quiz generation
 - Flashcard creation
@@ -36,21 +37,25 @@ TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
 Together AI supports many open-source models. Here are recommended options:
 
 #### Best for Quality (Recommended)
+
 ```env
 TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
 ```
 
 #### Fast and Cost-Effective
+
 ```env
 TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
 ```
 
 #### High Quality Alternative
+
 ```env
 TOGETHER_AI_MODEL="mistralai/Mixtral-8x7B-Instruct-v0.1"
 ```
 
 #### For Longer Content
+
 ```env
 TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo"
 ```
@@ -68,18 +73,18 @@ const organized = await aiService.processNote(rawContent);
 // Generate quiz
 const quiz = await aiService.generateQuiz(content, {
   questionCount: 10,
-  difficulty: 'medium'
+  difficulty: "medium",
 });
 
 // Generate flashcards
 const flashcards = await aiService.generateFlashcards(content, {
-  cardCount: 15
+  cardCount: 15,
 });
 
 // Generate summary
 const summary = await aiService.generateSummary(content, {
   maxLength: 500,
-  includeKeyPoints: true
+  includeKeyPoints: true,
 });
 ```
 
@@ -103,7 +108,7 @@ try {
 } catch (error) {
   if (error instanceof AIProcessingError) {
     // AI service failed
-    console.error('AI Error:', error.message);
+    console.error("AI Error:", error.message);
   }
 }
 ```
@@ -111,12 +116,14 @@ try {
 ## API Endpoints Using AI
 
 ### 1. Process Note
+
 ```http
 POST /api/notes/{noteId}/process
 Authorization: Bearer {token}
 ```
 
 **What it does:**
+
 - Reads raw note content
 - Organizes into sections with key points
 - Extracts highlights
@@ -124,6 +131,7 @@ Authorization: Bearer {token}
 - Stores as `aiProcessedContent`
 
 ### 2. Generate Learning Tool
+
 ```http
 POST /api/learning-tools/generate
 Authorization: Bearer {token}
@@ -137,6 +145,7 @@ Content-Type: application/json
 ```
 
 **Types:**
+
 - `ORGANIZED_NOTE`: Structured, highlighted content
 - `QUIZ`: Multiple-choice questions with explanations
 - `FLASHCARDS`: Front/back study cards
@@ -145,6 +154,7 @@ Content-Type: application/json
 ## Response Formats
 
 ### Organized Note
+
 ```json
 {
   "title": "Cell Biology Basics",
@@ -168,6 +178,7 @@ Content-Type: application/json
 ```
 
 ### Quiz
+
 ```json
 {
   "questions": [
@@ -188,6 +199,7 @@ Content-Type: application/json
 ```
 
 ### Flashcards
+
 ```json
 {
   "cards": [
@@ -201,6 +213,7 @@ Content-Type: application/json
 ```
 
 ### Summary
+
 ```json
 {
   "summary": "Cell biology covers the structure and function of cells...",
@@ -209,11 +222,7 @@ Content-Type: application/json
     "Different types: prokaryotic and eukaryotic",
     "Organelles perform specialized functions"
   ],
-  "mainTopics": [
-    "Cell Structure",
-    "Cell Types",
-    "Organelle Functions"
-  ]
+  "mainTopics": ["Cell Structure", "Cell Types", "Organelle Functions"]
 }
 ```
 
@@ -231,6 +240,7 @@ The service uses different temperatures for different tasks:
 ### Token Limits
 
 Default max tokens per request:
+
 - Note Processing: 3000 tokens
 - Quiz Generation: 3000 tokens
 - Flashcards: 2500 tokens
@@ -242,7 +252,7 @@ To modify AI behavior, edit [service/ai.service.ts](../service/ai.service.ts):
 
 ```typescript
 const response = await this.makeRequest(messages, {
-  maxTokens: 3000,  // Increase for longer responses
+  maxTokens: 3000, // Increase for longer responses
   temperature: 0.7, // 0.0 = deterministic, 1.0 = creative
 });
 ```
@@ -252,6 +262,7 @@ const response = await this.makeRequest(messages, {
 ### Together AI Pricing
 
 Together AI charges based on:
+
 - **Input tokens**: Content sent to the API
 - **Output tokens**: Generated responses
 - **Model used**: Larger models cost more
@@ -259,6 +270,7 @@ Together AI charges based on:
 ### Cost-Saving Tips
 
 1. **Use smaller models for simple tasks**
+
    ```env
    TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
    ```
@@ -317,6 +329,7 @@ curl -X POST http://localhost:3000/api/learning-tools/generate \
 - Summary: 2-6 seconds
 
 Times vary based on:
+
 - Content length
 - Model selected
 - Together AI server load
@@ -330,12 +343,14 @@ Times vary based on:
 ### "Failed to process request with Together AI"
 
 **Possible causes:**
+
 1. Invalid API key
 2. Rate limit exceeded
 3. Model not available
 4. Network issues
 
 **Check:**
+
 ```bash
 # Verify API key
 echo $TOGETHER_API_KEY
@@ -350,6 +365,7 @@ curl https://api.together.xyz/v1/models \
 **Cause:** AI returned invalid JSON
 
 **Solution:** The service automatically handles markdown code blocks, but if issues persist:
+
 1. Try a different model
 2. Adjust temperature (lower = more consistent)
 3. Check content length (may be truncated)
@@ -357,6 +373,7 @@ curl https://api.together.xyz/v1/models \
 ### Rate Limiting
 
 Together AI has rate limits. If you hit them:
+
 1. Implement exponential backoff
 2. Use a rate limiting library
 3. Upgrade your Together AI plan
@@ -388,6 +405,7 @@ try {
 ### 3. User Feedback
 
 Inform users:
+
 - When AI is processing (show loading state)
 - If limits are reached
 - If processing fails (with retry option)
@@ -395,6 +413,7 @@ Inform users:
 ### 4. Monitoring
 
 Track:
+
 - AI processing success/failure rates
 - Average response times
 - Token usage
@@ -424,25 +443,20 @@ Return JSON format: {...}`;
 Add retry for transient failures:
 
 ```typescript
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  retries = 3
-): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, retries = 3): Promise<T> {
   for (let i = 0; i < retries; i++) {
     try {
       return await fn();
     } catch (error) {
       if (i === retries - 1) throw error;
-      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }
   }
-  throw new Error('Retries exhausted');
+  throw new Error("Retries exhausted");
 }
 
 // Usage
-const result = await withRetry(() => 
-  aiService.generateQuiz(content)
-);
+const result = await withRetry(() => aiService.generateQuiz(content));
 ```
 
 ## Production Checklist
@@ -467,6 +481,7 @@ const result = await withRetry(() =>
 ## Future Enhancements
 
 Consider adding:
+
 - **Caching**: Store and reuse AI responses
 - **Batch Processing**: Process multiple notes at once
 - **Streaming**: Real-time response streaming

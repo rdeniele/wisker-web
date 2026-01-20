@@ -1,6 +1,13 @@
 "use client";
 import { useState, useTransition } from "react";
-import { FiArrowLeft, FiTarget, FiSmile, FiMeh, FiZap, FiInfo } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiTarget,
+  FiSmile,
+  FiMeh,
+  FiZap,
+  FiInfo,
+} from "react-icons/fi";
 import { useToast } from "@/../hook/useToast";
 
 interface QuizSetupProps {
@@ -16,41 +23,48 @@ export interface QuizConfig {
   learningToolId: string;
 }
 
-export default function QuizSetup({ noteId, noteTitle, onStart, onBack }: QuizSetupProps) {
+export default function QuizSetup({
+  noteId,
+  noteTitle,
+  onStart,
+  onBack,
+}: QuizSetupProps) {
   const [numberOfQuestions, setNumberOfQuestions] = useState(5);
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+    "medium",
+  );
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
   const handleStart = async () => {
     startTransition(async () => {
       try {
-        const response = await fetch('/api/learning-tools/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/learning-tools/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: 'QUIZ',
-            source: 'SINGLE_NOTE',
+            type: "QUIZ",
+            source: "SINGLE_NOTE",
             noteId,
             questionCount: numberOfQuestions,
-            difficulty
-          })
+            difficulty,
+          }),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to generate quiz');
+          throw new Error("Failed to generate quiz");
         }
 
         const data = await response.json();
-        
+
         onStart({
           numberOfQuestions,
           difficulty,
-          learningToolId: data.data.id
+          learningToolId: data.data.id,
         });
       } catch (error) {
-        console.error('Error generating quiz:', error);
-        showToast('Failed to generate quiz. Please try again.', 'error');
+        console.error("Error generating quiz:", error);
+        showToast("Failed to generate quiz. Please try again.", "error");
       }
     });
   };
@@ -105,7 +119,8 @@ export default function QuizSetup({ noteId, noteTitle, onStart, onBack }: QuizSe
               Quiz Setup
             </h1>
             <p className="text-gray-600">
-              Customize your quiz on <span className="font-semibold">{noteTitle}</span>
+              Customize your quiz on{" "}
+              <span className="font-semibold">{noteTitle}</span>
             </p>
           </div>
 
@@ -165,14 +180,15 @@ export default function QuizSetup({ noteId, noteTitle, onStart, onBack }: QuizSe
             disabled={isPending}
             className="w-full py-4 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending ? 'Generating Quiz...' : 'Start Quiz'}
+            {isPending ? "Generating Quiz..." : "Start Quiz"}
           </button>
 
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
               <FiInfo className="text-blue-600" size={16} />
-              <span className="font-semibold">Tip:</span> The quiz will be AI-generated based on your note content
+              <span className="font-semibold">Tip:</span> The quiz will be
+              AI-generated based on your note content
             </p>
           </div>
         </div>

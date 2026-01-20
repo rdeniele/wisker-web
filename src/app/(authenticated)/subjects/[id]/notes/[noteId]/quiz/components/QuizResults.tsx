@@ -1,5 +1,11 @@
 "use client";
-import { FiArrowLeft, FiAward, FiThumbsUp, FiTrendingUp, FiBook } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiAward,
+  FiThumbsUp,
+  FiTrendingUp,
+  FiBook,
+} from "react-icons/fi";
 
 interface QuizResultsProps {
   score: number;
@@ -19,10 +25,29 @@ export default function QuizResults({
   const percentage = Math.round((score / totalQuestions) * 100);
 
   const getPerformanceMessage = () => {
-    if (percentage >= 90) return { message: "Outstanding!", icon: FiAward, color: "text-green-600" };
-    if (percentage >= 70) return { message: "Great job!", icon: FiThumbsUp, color: "text-blue-600" };
-    if (percentage >= 50) return { message: "Good effort!", icon: FiTrendingUp, color: "text-yellow-600" };
-    return { message: "Keep practicing!", icon: FiBook, color: "text-orange-600" };
+    if (percentage >= 90)
+      return {
+        message: "Outstanding!",
+        icon: FiAward,
+        color: "text-green-600",
+      };
+    if (percentage >= 70)
+      return {
+        message: "Great job!",
+        icon: FiThumbsUp,
+        color: "text-blue-600",
+      };
+    if (percentage >= 50)
+      return {
+        message: "Good effort!",
+        icon: FiTrendingUp,
+        color: "text-yellow-600",
+      };
+    return {
+      message: "Keep practicing!",
+      icon: FiBook,
+      color: "text-orange-600",
+    };
   };
 
   const performance = getPerformanceMessage();
@@ -50,7 +75,8 @@ export default function QuizResults({
               Quiz Complete!
             </h1>
             <p className="text-gray-600">
-              You finished the quiz on <span className="font-semibold">{noteTitle}</span>
+              You finished the quiz on{" "}
+              <span className="font-semibold">{noteTitle}</span>
             </p>
           </div>
 
@@ -73,11 +99,15 @@ export default function QuizResults({
               <p className="text-sm text-gray-600">Correct</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-xl">
-              <p className="text-2xl font-bold text-red-600">{totalQuestions - score}</p>
+              <p className="text-2xl font-bold text-red-600">
+                {totalQuestions - score}
+              </p>
               <p className="text-sm text-gray-600">Incorrect</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-xl">
-              <p className="text-2xl font-bold text-orange-600">{totalQuestions}</p>
+              <p className="text-2xl font-bold text-orange-600">
+                {totalQuestions}
+              </p>
               <p className="text-sm text-gray-600">Total</p>
             </div>
           </div>

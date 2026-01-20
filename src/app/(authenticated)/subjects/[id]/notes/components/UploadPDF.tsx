@@ -17,7 +17,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<string>('');
+  const [uploadProgress, setUploadProgress] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
 
@@ -28,42 +28,44 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       reader.onload = () => {
         const result = reader.result as string;
         // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
-        const base64 = result.split(',')[1];
+        const base64 = result.split(",")[1];
         resolve(base64);
       };
-      reader.onerror = error => reject(error);
+      reader.onerror = (error) => reject(error);
     });
   };
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
     try {
       // Dynamically import pdfjs only when needed (client-side only)
-      const pdfjs = await import('pdfjs-dist');
-      
+      const pdfjs = await import("pdfjs-dist");
+
       // Set up worker
       pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-      
+
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
-      let fullText = '';
+      let fullText = "";
 
       // Extract text from all pages
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const textContent = await page.getTextContent();
-        
+
         // Join all text items with spaces
         const pageText = textContent.items
           .map((item: any) => item.str)
-          .join(' ');
-        
+          .join(" ");
+
         fullText += `\n\n--- Page ${i} ---\n\n${pageText}`;
       }
 
       return fullText.trim();
     } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error extracting text from PDF:", error);
+      throw new Error(
+        `Failed to extract text from PDF: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   };
 
@@ -83,7 +85,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
     }
 
     setIsUploading(true);
-    setUploadProgress('Uploading file...');
+    setUploadProgress("Uploading file...");
 
     try {
       const isPDF = file.type === "application/pdf";
@@ -92,58 +94,66 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       if (!isPDF && !isImage) {
         showToast("Only PDF and image files are supported", "error");
         setIsUploading(false);
-        setUploadProgress('');
+        setUploadProgress("");
         return;
       }
 
       // Generate a title from the filename (remove extension)
       const title = file.name.replace(/\.[^/.]+$/, "");
 
-      let requestBody: any = {
+      const requestBody: any = {
         subjectId,
         title,
       };
 
       if (isPDF) {
-        setUploadProgress('Extracting text from PDF...');
+        setUploadProgress("Extracting text from PDF...");
         const extractedText = await extractTextFromPDF(file);
-        
+
         if (!extractedText || extractedText.trim().length === 0) {
-          throw new Error('No text could be extracted from PDF. It might be empty or image-based.');
+          throw new Error(
+            "No text could be extracted from PDF. It might be empty or image-based.",
+          );
         }
 
         // COST PROTECTION: Warn about large PDFs
         const charCount = extractedText.length;
         const estimatedCredits = Math.max(1, Math.ceil(charCount / 100000));
         const maxAllowedChars = 300000; // Server-side limit
-        
+
         if (charCount > maxAllowedChars) {
           const shouldContinue = confirm(
             `⚠️ Large PDF Warning\n\n` +
-            `This PDF contains ${charCount.toLocaleString()} characters. ` +
-            `It will be truncated to ${maxAllowedChars.toLocaleString()} characters to manage costs.\n\n` +
-            `Estimated AI credits: ${estimatedCredits}\n\n` +
-            `Do you want to continue? (Content from the end of the PDF may be omitted)`
+              `This PDF contains ${charCount.toLocaleString()} characters. ` +
+              `It will be truncated to ${maxAllowedChars.toLocaleString()} characters to manage costs.\n\n` +
+              `Estimated AI credits: ${estimatedCredits}\n\n` +
+              `Do you want to continue? (Content from the end of the PDF may be omitted)`,
           );
           if (!shouldContinue) {
             setIsUploading(false);
-            setUploadProgress('');
+            setUploadProgress("");
             return;
           }
         } else if (charCount > 100000) {
-          showToast(`Large PDF: Will use ~${estimatedCredits} AI credits`, "warning");
+          showToast(
+            `Large PDF: Will use ~${estimatedCredits} AI credits`,
+            "warning",
+          );
         }
 
         requestBody.pdfText = extractedText;
-        
-        showToast(`Extracted ${charCount.toLocaleString()} characters from PDF`, "info");
+
+        showToast(
+          `Extracted ${charCount.toLocaleString()} characters from PDF`,
+          "info",
+        );
       } else {
-        setUploadProgress('Converting image...');
+        setUploadProgress("Converting image...");
         const base64Content = await convertFileToBase64(file);
         requestBody.imageBase64 = base64Content;
       }
 
-      setUploadProgress('Processing with AI...');
+      setUploadProgress("Processing with AI...");
 
       const response = await fetch("/api/notes/create", {
         method: "POST",
@@ -153,30 +163,34 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         body: JSON.stringify(requestBody),
       });
 
-      console.log('Upload response status:', response.status);
-      console.log('Upload response headers:', Object.fromEntries(response.headers.entries()));
-      
+      console.log("Upload response status:", response.status);
+      console.log(
+        "Upload response headers:",
+        Object.fromEntries(response.headers.entries()),
+      );
+
       let data;
       const responseText = await response.text();
-      console.log('Upload response text:', responseText);
-      
+      console.log("Upload response text:", responseText);
+
       try {
         data = JSON.parse(responseText);
       } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
+        console.error("Failed to parse response as JSON:", e);
         throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
 
       if (!response.ok) {
-        console.error('Upload error response:', data);
-        const errorMessage = data.error?.message || data.message || "Failed to upload file";
+        console.error("Upload error response:", data);
+        const errorMessage =
+          data.error?.message || data.message || "Failed to upload file";
         throw new Error(errorMessage);
       }
 
-      setUploadProgress('Creating structured note...');
-      
+      setUploadProgress("Creating structured note...");
+
       showToast("File uploaded and processed successfully!", "success");
-      
+
       // Call the original callback if provided
       if (onFileSelect) {
         onFileSelect(files);
@@ -185,11 +199,11 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       console.error("Error uploading file:", error);
       showToast(
         error instanceof Error ? error.message : "Failed to upload file",
-        "error"
+        "error",
       );
     } finally {
       setIsUploading(false);
-      setUploadProgress('');
+      setUploadProgress("");
     }
   };
 
@@ -219,7 +233,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFileUpload(e.target.files);
     // Reset input value to allow selecting the same file again
-    e.target.value = '';
+    e.target.value = "";
   };
 
   return (
@@ -262,7 +276,9 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
       {/* Upload Section */}
       <div className="flex flex-col items-center mb-2">
-        <span className="text-xl font-bold text-gray-800 mb-1">Upload a PDF or Image</span>
+        <span className="text-xl font-bold text-gray-800 mb-1">
+          Upload a PDF or Image
+        </span>
         <label className="w-full flex justify-center">
           <input
             ref={inputRef}
@@ -273,7 +289,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
             disabled={isUploading}
           />
           <span
-            className={`bg-orange-400 hover:bg-orange-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-base mt-2 mb-1 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`bg-orange-400 hover:bg-orange-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-base mt-2 mb-1 ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {isUploading ? "Processing..." : "select files"}
           </span>
@@ -285,7 +301,9 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         )}
         {!isUploading && (
           <>
-            <span className="text-gray-400 text-xs mt-1 mb-1">or drag & drop files here</span>
+            <span className="text-gray-400 text-xs mt-1 mb-1">
+              or drag & drop files here
+            </span>
             <button
               className="text-blue-500 underline text-sm mt-1 mb-2 hover:text-blue-700"
               type="button"
@@ -300,18 +318,24 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
       {/* File size note */}
       <div className="text-xs text-gray-500 text-center mb-2">
-        Maximum file size: 10MB. AI will extract text and create a well-structured note.
+        Maximum file size: 10MB. AI will extract text and create a
+        well-structured note.
         <br />
-        <span className="text-orange-500 font-medium">PDFs: Text extraction (all pages). Images: AI vision processing</span>
+        <span className="text-orange-500 font-medium">
+          PDFs: Text extraction (all pages). Images: AI vision processing
+        </span>
         <br />
-        <span className="text-blue-500 font-medium">Cost: 1 AI credit per ~100k characters (PDFs), 2 credits (images)</span>
+        <span className="text-blue-500 font-medium">
+          Cost: 1 AI credit per ~100k characters (PDFs), 2 credits (images)
+        </span>
       </div>
 
       {/* Tip */}
       <div className="flex items-center gap-2 bg-[#f7f6fd] rounded-xl px-3 py-2 mt-2">
         <span className="text-yellow-400 text-lg">💡</span>
         <span className="text-xs text-gray-700">
-          Text-based PDFs are processed instantly! Large PDFs (&gt;300k chars) are truncated to manage costs.
+          Text-based PDFs are processed instantly! Large PDFs (&gt;300k chars)
+          are truncated to manage costs.
         </span>
       </div>
     </div>

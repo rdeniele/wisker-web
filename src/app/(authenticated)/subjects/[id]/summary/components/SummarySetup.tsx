@@ -1,6 +1,13 @@
 "use client";
 import { useState, useTransition } from "react";
-import { FiArrowLeft, FiFileText, FiAlignLeft, FiList, FiZap, FiInfo } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiFileText,
+  FiAlignLeft,
+  FiList,
+  FiZap,
+  FiInfo,
+} from "react-icons/fi";
 import { useToast } from "@/../hook/useToast";
 
 interface SummarySetupProps {
@@ -26,22 +33,26 @@ export default function SummarySetup({
   onGenerate,
   onBack,
 }: SummarySetupProps) {
-  const [summaryLength, setSummaryLength] = useState<"short" | "medium" | "detailed">("medium");
-  const [summaryType, setSummaryType] = useState<"paragraph" | "bullet" | "keypoints">("paragraph");
+  const [summaryLength, setSummaryLength] = useState<
+    "short" | "medium" | "detailed"
+  >("medium");
+  const [summaryType, setSummaryType] = useState<
+    "paragraph" | "bullet" | "keypoints"
+  >("paragraph");
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
   const handleGenerate = async () => {
     startTransition(async () => {
       try {
-        const response = await fetch('/api/learning-tools/generate', {
-          method: 'POST',
+        const response = await fetch("/api/learning-tools/generate", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            type: 'SUMMARY',
-            source: 'SUBJECT',
+            type: "SUMMARY",
+            source: "SUBJECT",
             subjectId,
             noteIds: selectedNoteIds,
             summaryLength,
@@ -51,28 +62,33 @@ export default function SummarySetup({
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('API Error:', errorData);
-          throw new Error(errorData.error?.message || 'Failed to generate summary');
+          console.error("API Error:", errorData);
+          throw new Error(
+            errorData.error?.message || "Failed to generate summary",
+          );
         }
 
         const data = await response.json();
-        showToast('Summary generated successfully!', 'success');
-        
+        showToast("Summary generated successfully!", "success");
+
         onGenerate({
           learningToolId: data.data.id,
           summaryLength,
           summaryType,
         });
       } catch (error) {
-        console.error('Error generating summary:', error);
-        const errorMessage = error instanceof Error ? error.message : 'Failed to generate summary';
-        const isServiceUnavailable = errorMessage.includes('503') || errorMessage.includes('Service unavailable');
-        
+        console.error("Error generating summary:", error);
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to generate summary";
+        const isServiceUnavailable =
+          errorMessage.includes("503") ||
+          errorMessage.includes("Service unavailable");
+
         showToast(
-          isServiceUnavailable 
-            ? 'AI service is temporarily unavailable. Please try again in a few moments.' 
+          isServiceUnavailable
+            ? "AI service is temporarily unavailable. Please try again in a few moments."
             : errorMessage,
-          'error'
+          "error",
         );
       }
     });
@@ -146,10 +162,12 @@ export default function SummarySetup({
               Summary Setup
             </h1>
             <p className="text-gray-600">
-              Generate a summary for <span className="font-semibold">{subjectName}</span>
+              Generate a summary for{" "}
+              <span className="font-semibold">{subjectName}</span>
             </p>
             <p className="text-sm text-blue-600 font-medium mt-2">
-              Based on {selectedNotesCount} selected note{selectedNotesCount !== 1 ? "s" : ""}
+              Based on {selectedNotesCount} selected note
+              {selectedNotesCount !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -233,13 +251,22 @@ export default function SummarySetup({
                 <div className="text-gray-900 leading-relaxed">
                   <span className="font-bold">Paragraph:</span> <br />
                   {summaryLength === "short" && (
-                    <>A brief, flowing summary in 2-3 sentences, covering the main ideas from your notes.</>
+                    <>
+                      A brief, flowing summary in 2-3 sentences, covering the
+                      main ideas from your notes.
+                    </>
                   )}
                   {summaryLength === "medium" && (
-                    <>A balanced, narrative summary with key details and transitions between concepts.</>
+                    <>
+                      A balanced, narrative summary with key details and
+                      transitions between concepts.
+                    </>
                   )}
                   {summaryLength === "detailed" && (
-                    <>A comprehensive, multi-paragraph summary with examples and deeper explanations.</>
+                    <>
+                      A comprehensive, multi-paragraph summary with examples and
+                      deeper explanations.
+                    </>
                   )}
                 </div>
               )}
@@ -252,13 +279,17 @@ export default function SummarySetup({
                     )}
                     {summaryLength === "medium" && (
                       <>
-                        <li>Key concepts and supporting details (5-7 bullets)</li>
+                        <li>
+                          Key concepts and supporting details (5-7 bullets)
+                        </li>
                         <li>Organized for clarity</li>
                       </>
                     )}
                     {summaryLength === "detailed" && (
                       <>
-                        <li>Comprehensive breakdown with examples (8+ bullets)</li>
+                        <li>
+                          Comprehensive breakdown with examples (8+ bullets)
+                        </li>
                         <li>Includes sub-points and explanations</li>
                       </>
                     )}
@@ -290,14 +321,15 @@ export default function SummarySetup({
             disabled={isPending}
             className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending ? 'Generating...' : 'Generate Summary'}
+            {isPending ? "Generating..." : "Generate Summary"}
           </button>
 
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
               <FiInfo className="text-blue-600" size={16} />
-              <span className="font-semibold">Tip:</span> The summary will be generated from your selected notes
+              <span className="font-semibold">Tip:</span> The summary will be
+              generated from your selected notes
             </p>
           </div>
         </div>

@@ -18,7 +18,12 @@ interface QuizPlayProps {
   onComplete: (score: number) => void;
 }
 
-export default function QuizPlay({ noteTitle, config, onBack, onComplete }: QuizPlayProps) {
+export default function QuizPlay({
+  noteTitle,
+  config,
+  onBack,
+  onComplete,
+}: QuizPlayProps) {
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,24 +37,26 @@ export default function QuizPlay({ noteTitle, config, onBack, onComplete }: Quiz
       try {
         setIsLoading(true);
         setError(null);
-        
-        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
-        
+
+        const response = await fetch(
+          `/api/learning-tools/${config.learningToolId}`,
+        );
+
         if (!response.ok) {
-          throw new Error('Failed to fetch quiz');
+          throw new Error("Failed to fetch quiz");
         }
-        
+
         const data = await response.json();
         const quizContent = JSON.parse(data.data.generatedContent);
-        
+
         if (quizContent.questions && Array.isArray(quizContent.questions)) {
           setQuestions(quizContent.questions);
         } else {
-          throw new Error('Invalid quiz format');
+          throw new Error("Invalid quiz format");
         }
       } catch (err) {
-        console.error('Error fetching quiz:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load quiz');
+        console.error("Error fetching quiz:", err);
+        setError(err instanceof Error ? err.message : "Failed to load quiz");
       } finally {
         setIsLoading(false);
       }
@@ -95,7 +102,9 @@ export default function QuizPlay({ noteTitle, config, onBack, onComplete }: Quiz
             <span className="font-medium">Back</span>
           </button>
           <div className="flex items-center justify-center h-96">
-            <div className="text-red-500">{error || 'No questions available'}</div>
+            <div className="text-red-500">
+              {error || "No questions available"}
+            </div>
           </div>
         </div>
       </div>
@@ -171,9 +180,7 @@ export default function QuizPlay({ noteTitle, config, onBack, onComplete }: Quiz
           {/* Note Title */}
           <div className="mb-4 pb-4 border-b border-gray-200">
             <p className="text-sm text-gray-500">Quiz on:</p>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {noteTitle}
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">{noteTitle}</h2>
           </div>
 
           {/* Question */}
@@ -188,7 +195,8 @@ export default function QuizPlay({ noteTitle, config, onBack, onComplete }: Quiz
                 const isSelected = selectedAnswer === index;
                 const isCorrect = question.correctAnswer === index;
                 const showCorrectAnswer = isAnswered && isCorrect;
-                const showIncorrectAnswer = isAnswered && isSelected && !isCorrect;
+                const showIncorrectAnswer =
+                  isAnswered && isSelected && !isCorrect;
 
                 return (
                   <button
@@ -199,10 +207,10 @@ export default function QuizPlay({ noteTitle, config, onBack, onComplete }: Quiz
                       showCorrectAnswer
                         ? "border-green-500 bg-green-50"
                         : showIncorrectAnswer
-                        ? "border-red-500 bg-red-50"
-                        : isSelected
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-gray-200 hover:border-orange-300 hover:bg-orange-50/30"
+                          ? "border-red-500 bg-red-50"
+                          : isSelected
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-orange-300 hover:bg-orange-50/30"
                     } ${isAnswered ? "cursor-not-allowed" : "cursor-pointer"}`}
                   >
                     <div className="flex items-center justify-between">
@@ -211,10 +219,10 @@ export default function QuizPlay({ noteTitle, config, onBack, onComplete }: Quiz
                           showCorrectAnswer
                             ? "text-green-900"
                             : showIncorrectAnswer
-                            ? "text-red-900"
-                            : isSelected
-                            ? "text-orange-900"
-                            : "text-gray-900"
+                              ? "text-red-900"
+                              : isSelected
+                                ? "text-orange-900"
+                                : "text-gray-900"
                         }`}
                       >
                         {option}

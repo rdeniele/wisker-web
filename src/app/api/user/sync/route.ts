@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { createClient } from '@/lib/supabase/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 /**
  * POST /api/user/sync
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Check if user exists in Prisma

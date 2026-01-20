@@ -8,7 +8,11 @@ interface CreateNoteModalProps {
   onUpload?: () => void;
 }
 
-const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ onClose, onCreateNote, onUpload }) => {
+const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
+  onClose,
+  onCreateNote,
+  onUpload,
+}) => {
   const router = useRouter();
   const params = useParams();
   // params.id is the subject id
@@ -34,7 +38,9 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ onClose, onCreateNote
       </button>
 
       {/* Header */}
-      <h2 className="text-2xl font-bold text-center w-full mt-2 mb-6 text-orange-400">Create</h2>
+      <h2 className="text-2xl font-bold text-center w-full mt-2 mb-6 text-orange-400">
+        Create
+      </h2>
 
       {/* Options */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -53,8 +59,12 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ onClose, onCreateNote
             draggable={false}
             priority
           />
-          <span className="text-lg font-bold text-orange-400 mb-1">Create notes</span>
-          <span className="text-gray-600 text-sm text-center">No AI needed, free to use</span>
+          <span className="text-lg font-bold text-orange-400 mb-1">
+            Create notes
+          </span>
+          <span className="text-gray-600 text-sm text-center">
+            No AI needed, free to use
+          </span>
         </button>
 
         {/* Upload PDF/Image Button */}
@@ -72,12 +82,16 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({ onClose, onCreateNote
             draggable={false}
             priority
           />
-          <span className="text-lg font-bold text-orange-400 mb-1">Upload PDF/Image</span>
-          <span className="text-gray-600 text-sm text-center">Get materials for free without AI</span>
+          <span className="text-lg font-bold text-orange-400 mb-1">
+            Upload PDF/Image
+          </span>
+          <span className="text-gray-600 text-sm text-center">
+            Get materials for free without AI
+          </span>
         </button>
       </div>
     </div>
   );
-}
+};
 
 export default CreateNoteModal;

@@ -1,15 +1,15 @@
-import { prisma } from '@/lib/prisma';
+import { prisma } from "@/lib/prisma";
 import {
   NotFoundError,
   NotesLimitExceededError,
   DatabaseError,
   ForbiddenError,
   AIUsageLimitExceededError,
-} from '@/lib/errors';
-import { CreateNoteRequest, UpdateNoteRequest, NoteDto } from '@/types/api';
-import { subjectService } from './subject.service';
-import { aiService } from './ai.service';
-import { StorageService } from './storage.service';
+} from "@/lib/errors";
+import { CreateNoteRequest, UpdateNoteRequest, NoteDto } from "@/types/api";
+import { subjectService } from "./subject.service";
+import { aiService } from "./ai.service";
+import { StorageService } from "./storage.service";
 
 export class NoteService {
   /**
@@ -22,9 +22,9 @@ export class NoteService {
       page?: number;
       pageSize?: number;
       search?: string;
-      sortBy?: 'createdAt' | 'updatedAt' | 'title';
-      sortOrder?: 'asc' | 'desc';
-    } = {}
+      sortBy?: "createdAt" | "updatedAt" | "title";
+      sortOrder?: "asc" | "desc";
+    } = {},
   ) {
     try {
       const {
@@ -32,8 +32,8 @@ export class NoteService {
         page = 1,
         pageSize = 20,
         search,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
+        sortBy = "createdAt",
+        sortOrder = "desc",
       } = options;
 
       const skip = (page - 1) * pageSize;
@@ -43,8 +43,8 @@ export class NoteService {
         ...(subjectId && { subjectId }),
         ...(search && {
           OR: [
-            { title: { contains: search, mode: 'insensitive' as const } },
-            { rawContent: { contains: search, mode: 'insensitive' as const } },
+            { title: { contains: search, mode: "insensitive" as const } },
+            { rawContent: { contains: search, mode: "insensitive" as const } },
           ],
         }),
       };
@@ -74,7 +74,7 @@ export class NoteService {
         pageSize,
       };
     } catch (error) {
-      throw new DatabaseError('Failed to fetch notes', error);
+      throw new DatabaseError("Failed to fetch notes", error);
     }
   }
 
@@ -91,12 +91,12 @@ export class NoteService {
       });
 
       if (!note) {
-        throw new NotFoundError('Note');
+        throw new NotFoundError("Note");
       }
 
       // Verify ownership through subject
       if (note.subject.userId !== userId) {
-        throw new ForbiddenError('You do not have access to this note');
+        throw new ForbiddenError("You do not have access to this note");
       }
 
       return {
@@ -112,17 +112,14 @@ export class NoteService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch note', error);
+      throw new DatabaseError("Failed to fetch note", error);
     }
   }
 
   /**
    * Create a new note
    */
-  async createNote(
-    userId: string,
-    data: CreateNoteRequest
-  ): Promise<NoteDto> {
+  async createNote(userId: string, data: CreateNoteRequest): Promise<NoteDto> {
     try {
       // Verify subject ownership
       await subjectService.getSubjectById(data.subjectId, userId);
@@ -145,20 +142,21 @@ export class NoteService {
       });
 
       if (!user) {
-        throw new NotFoundError('User');
+        throw new NotFoundError("User");
       }
 
       // Calculate total notes across all subjects
       const totalNotes = user.subjects.reduce(
-        (sum: number, subject: any) => sum + subject._count.notes,
-        0
+        (sum: number, subject: { _count: { notes: number } }) =>
+          sum + subject._count.notes,
+        0,
       );
 
       if (totalNotes >= user.notesLimit) {
         throw new NotesLimitExceededError(user.notesLimit);
       }
 
-      let rawContent = data.rawContent || '';
+      let rawContent = data.rawContent || "";
       let knowledgeBase: string | undefined;
       let fileUrl: string | undefined;
       let fileName: string | undefined;
@@ -171,17 +169,17 @@ export class NoteService {
         // COST PROTECTION: Enforce hard limits on PDF size
         const MAX_PDF_CHARS = 500000; // Absolute maximum: 500k chars
         const MAX_CHUNKS = 5; // Maximum 5 chunks = 5 AI credits per PDF
-        
+
         if (data.pdfText && data.pdfText.length > MAX_PDF_CHARS) {
           throw new DatabaseError(
             `PDF is too large (${data.pdfText.length.toLocaleString()} characters). ` +
-            `Maximum allowed: ${MAX_PDF_CHARS.toLocaleString()} characters. ` +
-            `Please upload a smaller PDF or split it into multiple files.`
+              `Maximum allowed: ${MAX_PDF_CHARS.toLocaleString()} characters. ` +
+              `Please upload a smaller PDF or split it into multiple files.`,
           );
         }
 
         // Estimate AI credits needed (will be refined after processing)
-        const estimatedCredits = data.pdfText 
+        const estimatedCredits = data.pdfText
           ? Math.min(MAX_CHUNKS, Math.ceil(data.pdfText.length / 100000)) // Cap at max chunks
           : 2; // Images use 2 credits
 
@@ -189,23 +187,28 @@ export class NoteService {
         if (user.aiUsageCount + estimatedCredits > user.aiUsageLimit) {
           throw new AIUsageLimitExceededError(user.aiUsageLimit);
         }
-        
-        console.log(`Estimated AI credits for this upload: ${estimatedCredits}`);
+
+        console.log(
+          `Estimated AI credits for this upload: ${estimatedCredits}`,
+        );
 
         try {
           if (data.pdfText) {
             // Process PDF text: Use extracted text to generate structured note
-            console.log('Processing PDF text with AI...');
-            const { knowledgeBase: extractedKnowledge, structuredNote } = 
+            console.log("Processing PDF text with AI...");
+            const { knowledgeBase: extractedKnowledge, structuredNote } =
               await aiService.processPDFWithKnowledge(data.pdfText);
-            
+
             knowledgeBase = extractedKnowledge; // Store raw extracted text as knowledge
             rawContent = structuredNote; // Store AI-generated structured note as content
 
             // Calculate actual credits used (1 per chunk processed)
             // Rough estimate: each 100k chars = 1 chunk
-            const actualCredits = Math.max(1, Math.ceil(data.pdfText.length / 100000));
-            
+            const actualCredits = Math.max(
+              1,
+              Math.ceil(data.pdfText.length / 100000),
+            );
+
             // Increment AI usage for note generation
             await prisma.user.update({
               where: { id: userId },
@@ -213,43 +216,47 @@ export class NoteService {
             });
           } else if (data.pdfBase64) {
             // Legacy support: Handle base64 PDF (not used anymore but kept for compatibility)
-            console.log('Processing PDF base64 with AI (legacy)...');
+            console.log("Processing PDF base64 with AI (legacy)...");
             rawContent = data.pdfBase64; // Store as-is
 
             // Upload PDF to storage
-            console.log('Uploading PDF to storage...');
+            console.log("Uploading PDF to storage...");
             const uploadResult = await StorageService.uploadFile(
               data.pdfBase64,
               `${data.title}.pdf`,
               userId,
-              'application/pdf'
+              "application/pdf",
             );
             fileUrl = uploadResult.url;
             fileName = `${data.title}.pdf`;
             fileSize = uploadResult.size;
-            fileType = 'application/pdf';
+            fileType = "application/pdf";
           } else if (data.imageBase64) {
             // Process image: extract knowledge base and generate structured note
-            console.log('Processing image with AI...');
-            const { knowledgeBase: extractedKnowledge, structuredNote } = 
+            console.log("Processing image with AI...");
+            const { knowledgeBase: extractedKnowledge, structuredNote } =
               await aiService.processImageWithKnowledge(data.imageBase64);
-            
+
             knowledgeBase = extractedKnowledge; // Store raw extracted content as knowledge
             rawContent = structuredNote; // Store AI-generated structured note as content
 
             // Determine image type from base64 header
-            const imageType = data.imageBase64.startsWith('/9j/') ? 'image/jpeg' :
-                             data.imageBase64.startsWith('iVBORw') ? 'image/png' :
-                             data.imageBase64.startsWith('R0lGOD') ? 'image/gif' : 'image/jpeg';
-            const extension = imageType.split('/')[1];
+            const imageType = data.imageBase64.startsWith("/9j/")
+              ? "image/jpeg"
+              : data.imageBase64.startsWith("iVBORw")
+                ? "image/png"
+                : data.imageBase64.startsWith("R0lGOD")
+                  ? "image/gif"
+                  : "image/jpeg";
+            const extension = imageType.split("/")[1];
 
             // Upload image to storage
-            console.log('Uploading image to storage...');
+            console.log("Uploading image to storage...");
             const uploadResult = await StorageService.uploadFile(
               data.imageBase64,
               `${data.title}.${extension}`,
               userId,
-              imageType
+              imageType,
             );
             fileUrl = uploadResult.url;
             fileName = `${data.title}.${extension}`;
@@ -263,10 +270,10 @@ export class NoteService {
             });
           }
         } catch (aiError) {
-          console.error('AI processing error:', aiError);
+          console.error("AI processing error:", aiError);
           throw new DatabaseError(
-            `Failed to process file with AI: ${aiError instanceof Error ? aiError.message : 'Unknown error'}`,
-            aiError instanceof Error ? aiError : undefined
+            `Failed to process file with AI: ${aiError instanceof Error ? aiError.message : "Unknown error"}`,
+            aiError instanceof Error ? aiError : undefined,
           );
         }
       }
@@ -282,6 +289,9 @@ export class NoteService {
           fileName,
           fileSize,
           fileType,
+        },
+        include: {
+          subject: true,
         },
       });
 
@@ -303,7 +313,7 @@ export class NoteService {
       ) {
         throw error;
       }
-      throw new DatabaseError('Failed to create note', error);
+      throw new DatabaseError("Failed to create note", error);
     }
   }
 
@@ -313,7 +323,7 @@ export class NoteService {
   async updateNote(
     noteId: string,
     userId: string,
-    data: UpdateNoteRequest
+    data: UpdateNoteRequest,
   ): Promise<NoteDto> {
     try {
       // Verify ownership
@@ -325,6 +335,9 @@ export class NoteService {
         data: {
           ...(data.title && { title: data.title }),
           ...(data.rawContent && { rawContent: data.rawContent }),
+        },
+        include: {
+          subject: true,
         },
       });
 
@@ -341,7 +354,7 @@ export class NoteService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to update note', error);
+      throw new DatabaseError("Failed to update note", error);
     }
   }
 
@@ -357,15 +370,17 @@ export class NoteService {
       if (note.fileUrl) {
         try {
           // Extract storage path from URL
-          const urlParts = note.fileUrl.split('/');
-          const bucketIndex = urlParts.findIndex((part) => part === 'wisker-files');
+          const urlParts = note.fileUrl.split("/");
+          const bucketIndex = urlParts.findIndex(
+            (part) => part === "wisker-files",
+          );
           if (bucketIndex !== -1) {
-            const filePath = urlParts.slice(bucketIndex + 1).join('/');
+            const filePath = urlParts.slice(bucketIndex + 1).join("/");
             await StorageService.deleteFile(filePath);
           }
         } catch (storageError) {
           // Log but don't fail the deletion if storage cleanup fails
-          console.error('Failed to delete file from storage:', storageError);
+          console.error("Failed to delete file from storage:", storageError);
         }
       }
 
@@ -377,7 +392,7 @@ export class NoteService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to delete note', error);
+      throw new DatabaseError("Failed to delete note", error);
     }
   }
 
@@ -399,7 +414,7 @@ export class NoteService {
       });
 
       if (!user) {
-        throw new NotFoundError('User');
+        throw new NotFoundError("User");
       }
 
       if (user.aiUsageCount >= user.aiUsageLimit) {
@@ -432,7 +447,7 @@ export class NoteService {
       ) {
         throw error;
       }
-      throw new DatabaseError('Failed to process note', error);
+      throw new DatabaseError("Failed to process note", error);
     }
   }
 
@@ -446,7 +461,7 @@ export class NoteService {
       page?: number;
       pageSize?: number;
       search?: string;
-    } = {}
+    } = {},
   ) {
     try {
       // Verify subject ownership
@@ -457,7 +472,7 @@ export class NoteService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch subject notes', error);
+      throw new DatabaseError("Failed to fetch subject notes", error);
     }
   }
 }

@@ -80,8 +80,7 @@ const InputBox = forwardRef<HTMLInputElement, InputBoxProps>(
                   ? "border-orange-400 focus:border-orange-500 focus:ring-orange-300"
                   : "border-gray-300 hover:border-gray-400",
               // Disabled state
-              disabled &&
-                "opacity-50 cursor-not-allowed bg-gray-100",
+              disabled && "opacity-50 cursor-not-allowed bg-gray-100",
               // Padding adjustment for password toggle
               type === "password" && showPasswordToggle && "pr-14",
             )}

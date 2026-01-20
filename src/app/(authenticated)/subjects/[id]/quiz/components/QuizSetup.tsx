@@ -1,6 +1,13 @@
 "use client";
 import { useState } from "react";
-import { FiArrowLeft, FiTarget, FiSmile, FiMeh, FiZap, FiInfo } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiTarget,
+  FiSmile,
+  FiMeh,
+  FiZap,
+  FiInfo,
+} from "react-icons/fi";
 import { useToast } from "@/../hook/useToast";
 
 interface QuizSetupProps {
@@ -27,7 +34,9 @@ export default function QuizSetup({
   onBack,
 }: QuizSetupProps) {
   const [numberOfQuestions, setNumberOfQuestions] = useState(5);
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+    "medium",
+  );
   const [isGenerating, setIsGenerating] = useState(false);
   const { showToast } = useToast();
 
@@ -35,14 +44,14 @@ export default function QuizSetup({
     setIsGenerating(true);
     try {
       // Call API to generate quiz
-      const response = await fetch('/api/learning-tools/generate', {
-        method: 'POST',
+      const response = await fetch("/api/learning-tools/generate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          type: 'QUIZ',
-          source: 'SUBJECT',
+          type: "QUIZ",
+          source: "SUBJECT",
           subjectId: subjectId,
           noteIds: selectedNoteIds,
           questionCount: numberOfQuestions,
@@ -52,21 +61,23 @@ export default function QuizSetup({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Failed to generate quiz');
+        throw new Error(error.message || "Failed to generate quiz");
       }
 
       const data = await response.json();
-      showToast('Quiz generated successfully!', 'success');
-      onStart({ 
-        numberOfQuestions, 
+      showToast("Quiz generated successfully!", "success");
+      onStart({
+        numberOfQuestions,
         difficulty,
         learningToolId: data.data.id,
       });
     } catch (error) {
-      console.error('Error generating quiz:', error);
+      console.error("Error generating quiz:", error);
       showToast(
-        error instanceof Error ? error.message : 'Failed to generate quiz. Please try again.',
-        'error'
+        error instanceof Error
+          ? error.message
+          : "Failed to generate quiz. Please try again.",
+        "error",
       );
     } finally {
       setIsGenerating(false);
@@ -123,10 +134,12 @@ export default function QuizSetup({
               Quiz Setup
             </h1>
             <p className="text-gray-600">
-              Customize your quiz on <span className="font-semibold">{subjectName}</span>
+              Customize your quiz on{" "}
+              <span className="font-semibold">{subjectName}</span>
             </p>
             <p className="text-sm text-orange-500 font-medium mt-2">
-              Based on {selectedNotesCount} selected note{selectedNotesCount !== 1 ? "s" : ""}
+              Based on {selectedNotesCount} selected note
+              {selectedNotesCount !== 1 ? "s" : ""}
             </p>
           </div>
 
@@ -167,8 +180,8 @@ export default function QuizSetup({
                       ? option.color === "green"
                         ? "border-green-500 bg-green-50 shadow-md scale-105"
                         : option.color === "yellow"
-                        ? "border-yellow-500 bg-yellow-50 shadow-md scale-105"
-                        : "border-red-500 bg-red-50 shadow-md scale-105"
+                          ? "border-yellow-500 bg-yellow-50 shadow-md scale-105"
+                          : "border-red-500 bg-red-50 shadow-md scale-105"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
@@ -179,8 +192,8 @@ export default function QuizSetup({
                           ? option.color === "green"
                             ? "text-green-600"
                             : option.color === "yellow"
-                            ? "text-yellow-600"
-                            : "text-red-600"
+                              ? "text-yellow-600"
+                              : "text-red-600"
                           : "text-gray-600"
                       }`}
                       size={24}
@@ -204,13 +217,25 @@ export default function QuizSetup({
             {isGenerating ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
                 </svg>
                 Generating Quiz...
               </span>
             ) : (
-              'Start Quiz'
+              "Start Quiz"
             )}
           </button>
 
@@ -218,7 +243,9 @@ export default function QuizSetup({
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
               <FiInfo className="text-blue-600" size={16} />
-              <span className="font-semibold">Tip:</span> AI will generate {numberOfQuestions} {difficulty} questions from your selected notes
+              <span className="font-semibold">Tip:</span> AI will generate{" "}
+              {numberOfQuestions} {difficulty} questions from your selected
+              notes
             </p>
           </div>
         </div>

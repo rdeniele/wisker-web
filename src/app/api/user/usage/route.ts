@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { userService } from '@/service/user.service';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { userService } from "@/service/user.service";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/user/usage
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Get usage stats

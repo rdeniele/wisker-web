@@ -6,10 +6,10 @@ interface LoadingSpinnerProps {
   fullScreen?: boolean;
 }
 
-export default function LoadingSpinner({ 
-  size = "md", 
+export default function LoadingSpinner({
+  size = "md",
   message = "Loading...",
-  fullScreen = false 
+  fullScreen = false,
 }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: "w-8 h-8",
@@ -17,7 +17,7 @@ export default function LoadingSpinner({
     lg: "w-16 h-16",
   };
 
-  const container = fullScreen 
+  const container = fullScreen
     ? "fixed inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-50"
     : "flex flex-col items-center justify-center py-12";
 
@@ -34,9 +34,7 @@ export default function LoadingSpinner({
         </div>
       </div>
       {message && (
-        <p className="mt-4 text-gray-600 font-medium font-fredoka">
-          {message}
-        </p>
+        <p className="mt-4 text-gray-600 font-medium font-fredoka">{message}</p>
       )}
     </div>
   );

@@ -32,7 +32,7 @@ export default function SubjectCard({
   const [showMenu, setShowMenu] = useState(false);
 
   return (
-    <div 
+    <div
       className="group bg-white rounded-3xl p-5 border border-gray-100 hover:border-purple-200 transition-all duration-300 flex flex-col h-full"
       style={{ boxShadow: "0 4px 0 #ececec" }}
     >

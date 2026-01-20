@@ -18,6 +18,7 @@ TOGETHER_API_KEY="paste_your_api_key_here"
 ```
 
 Optional - specify a different model:
+
 ```env
 TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
 ```
@@ -37,6 +38,7 @@ The AI features are now fully functional:
 ### Test It Out
 
 1. **Create a subject**
+
    ```bash
    POST /api/subjects/create
    {
@@ -46,6 +48,7 @@ The AI features are now fully functional:
    ```
 
 2. **Create a note**
+
    ```bash
    POST /api/notes/create
    {
@@ -56,6 +59,7 @@ The AI features are now fully functional:
    ```
 
 3. **Process with AI**
+
    ```bash
    POST /api/notes/{noteId}/process
    ```
@@ -73,23 +77,27 @@ The AI features are now fully functional:
 ## 📊 What You Get
 
 ### Note Processing
+
 - Organized sections with headings
 - Key points extracted
 - Important concepts highlighted
 - Concise summary
 
 ### Quiz Generation
+
 - Multiple-choice questions
 - 4 options per question
 - Correct answer marked
 - Detailed explanations
 
 ### Flashcards
+
 - Clear front-side questions
 - Complete back-side answers
 - One concept per card
 
 ### Summaries
+
 - Concise overview
 - Key points list
 - Main topics identified
@@ -98,19 +106,21 @@ The AI features are now fully functional:
 
 Your plan determines AI usage:
 
-| Plan | AI Operations/Month |
-|------|---------------------|
-| FREE | 100 |
-| PRO | 1,000 |
-| PREMIUM | 5,000 |
+| Plan    | AI Operations/Month |
+| ------- | ------------------- |
+| FREE    | 100                 |
+| PRO     | 1,000               |
+| PREMIUM | 5,000               |
 
 Each operation counts:
+
 - ✅ Note processing = 1 operation
 - ✅ Quiz generation = 1 operation
 - ✅ Flashcard generation = 1 operation
 - ✅ Summary generation = 1 operation
 
 Check usage:
+
 ```bash
 GET /api/user/usage
 ```
@@ -141,15 +151,19 @@ GET /api/user/usage
 ## 🆘 Troubleshooting
 
 ### "API key not configured"
+
 → Add `TOGETHER_API_KEY` to `.env` and restart
 
 ### "AI usage limit exceeded"
+
 → User has reached their plan limit. Upgrade plan or wait for reset.
 
 ### Slow responses
+
 → Normal for first request. Subsequent requests are faster.
 
 ### Rate limit errors
+
 → Too many requests. Implement retry with backoff.
 
 ## 🎉 Ready to Build!

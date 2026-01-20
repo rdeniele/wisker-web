@@ -20,7 +20,7 @@ type QuizState = "setup" | "playing" | "results";
 export default function QuizPage({ params }: QuizPageProps) {
   const { noteId } = use(params);
   const router = useRouter();
-  
+
   const [note, setNote] = useState<Note | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quizState, setQuizState] = useState<QuizState>("setup");
@@ -32,12 +32,12 @@ export default function QuizPage({ params }: QuizPageProps) {
       try {
         const response = await fetch(`/api/notes/${noteId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch note');
+          throw new Error("Failed to fetch note");
         }
         const data = await response.json();
         setNote(data.data);
       } catch (error) {
-        console.error('Error fetching note:', error);
+        console.error("Error fetching note:", error);
       } finally {
         setIsLoading(false);
       }

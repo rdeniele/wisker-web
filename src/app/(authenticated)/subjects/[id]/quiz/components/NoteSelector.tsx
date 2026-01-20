@@ -73,7 +73,9 @@ export default function NoteSelector({
               Select Notes
             </h1>
             <p className="text-gray-600">
-              Choose notes from <span className="font-semibold">{subjectName}</span> to include in your quiz
+              Choose notes from{" "}
+              <span className="font-semibold">{subjectName}</span> to include in
+              your quiz
             </p>
           </div>
 
@@ -116,10 +118,7 @@ export default function NoteSelector({
                   <div className="flex items-start gap-3">
                     <div className="mt-1">
                       {selectedNotes.has(note.id) ? (
-                        <FiCheckSquare
-                          className="text-orange-500"
-                          size={20}
-                        />
+                        <FiCheckSquare className="text-orange-500" size={20} />
                       ) : (
                         <FiSquare className="text-gray-400" size={20} />
                       )}
@@ -144,7 +143,8 @@ export default function NoteSelector({
             disabled={selectedNotes.size === 0}
             className="w-full py-4 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Continue with {selectedNotes.size} note{selectedNotes.size !== 1 ? "s" : ""}
+            Continue with {selectedNotes.size} note
+            {selectedNotes.size !== 1 ? "s" : ""}
           </button>
         </div>
       </div>

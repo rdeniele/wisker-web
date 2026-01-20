@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { subjectService } from '@/service/subject.service';
-import { validateRequest, subjectQuerySchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { subjectService } from "@/service/subject.service";
+import { validateRequest, subjectQuerySchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/subjects
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate query parameters
@@ -26,7 +26,10 @@ export async function GET(request: NextRequest) {
     const validatedParams = validateRequest(subjectQuerySchema, searchParams);
 
     // Get subjects
-    const result = await subjectService.getUserSubjects(user.id, validatedParams);
+    const result = await subjectService.getUserSubjects(
+      user.id,
+      validatedParams,
+    );
 
     return successResponse(result);
   } catch (error) {

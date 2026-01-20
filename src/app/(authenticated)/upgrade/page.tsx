@@ -22,17 +22,18 @@ export default function UpgradePage() {
   // Base monthly prices (before any discounts)
   const BASE_PRO_MONTHLY = 100;
   const BASE_PREMIUM_MONTHLY = 150;
-  
+
   // Discount rates
   const EARLY_USER_DISCOUNT = 0.5; // 50% off
   const ANNUAL_DISCOUNT = 0.2; // 20% off for annual billing
-  
+
   // Calculate Pro pricing
   const proMonthlyPrice = BASE_PRO_MONTHLY * (1 - EARLY_USER_DISCOUNT); // ₱50
   const proMonthlyOriginal = BASE_PRO_MONTHLY; // ₱100
   const proYearlyOriginal = BASE_PRO_MONTHLY * 12; // ₱1,200
-  const proYearlyPrice = proYearlyOriginal * (1 - EARLY_USER_DISCOUNT) * (1 - ANNUAL_DISCOUNT); // ₱480
-  
+  const proYearlyPrice =
+    proYearlyOriginal * (1 - EARLY_USER_DISCOUNT) * (1 - ANNUAL_DISCOUNT); // ₱480
+
   // Calculate Premium pricing
   const premiumMonthlyPrice = BASE_PREMIUM_MONTHLY; // ₱150 (no early user discount)
   const premiumYearlyOriginal = BASE_PREMIUM_MONTHLY * 12; // ₱1,800
@@ -193,7 +194,7 @@ export default function UpgradePage() {
                   ? "border-2 border-orange-500 sm:col-span-2 lg:col-span-1 lg:transform lg:scale-105"
                   : "border border-gray-200"
               }`}
-              style={{ boxShadow: '0 4px 0 #ececec' }}
+              style={{ boxShadow: "0 4px 0 #ececec" }}
             >
               {/* Badges */}
               <div className="absolute -top-3 sm:-top-4 left-0 right-0 flex justify-center gap-2 flex-wrap px-2">
@@ -234,7 +235,9 @@ export default function UpgradePage() {
                   <span className="text-3xl sm:text-4xl font-bold text-gray-900">
                     {plan.price}
                   </span>
-                  <span className="text-gray-600 ml-1 text-sm sm:text-base">{plan.period}</span>
+                  <span className="text-gray-600 ml-1 text-sm sm:text-base">
+                    {plan.period}
+                  </span>
                 </div>
                 {plan.name !== "Free" && billingPeriod === "yearly" && (
                   <p className="text-sm text-gray-500 mt-1">
@@ -247,8 +250,12 @@ export default function UpgradePage() {
               <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
                 {plan.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-orange-500 font-bold mt-1 text-sm sm:text-base">•</span>
-                    <span className="text-gray-700 text-sm sm:text-base">{feature}</span>
+                    <span className="text-orange-500 font-bold mt-1 text-sm sm:text-base">
+                      •
+                    </span>
+                    <span className="text-gray-700 text-sm sm:text-base">
+                      {feature}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -260,10 +267,14 @@ export default function UpgradePage() {
                   plan.buttonDisabled
                     ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                     : plan.isMostPopular
-                    ? "bg-orange-500 text-white hover:bg-orange-600 active:scale-95"
-                    : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
+                      ? "bg-orange-500 text-white hover:bg-orange-600 active:scale-95"
+                      : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
                 }`}
-                style={{ boxShadow: plan.buttonDisabled ? 'none' : '0 4px 0 0 rgba(251, 146, 60, 0.18)' }}
+                style={{
+                  boxShadow: plan.buttonDisabled
+                    ? "none"
+                    : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
+                }}
               >
                 {plan.buttonText}
               </button>

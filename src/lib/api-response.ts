@@ -1,23 +1,23 @@
-import { NextResponse } from 'next/server';
-import { ApiResponse } from '@/types/api';
-import { AppError } from './errors';
+import { NextResponse } from "next/server";
+import { ApiResponse } from "@/types/api";
+import { AppError } from "./errors";
 
 export function successResponse<T>(
   data: T,
-  status: number = 200
+  status: number = 200,
 ): NextResponse<ApiResponse<T>> {
   return NextResponse.json(
     {
       success: true,
       data,
     },
-    { status }
+    { status },
   );
 }
 
 export function errorResponse(
   error: Error | AppError,
-  status?: number
+  status?: number,
 ): NextResponse<ApiResponse> {
   if (error instanceof AppError) {
     return NextResponse.json(
@@ -29,21 +29,21 @@ export function errorResponse(
           details: error.details,
         },
       },
-      { status: error.statusCode }
+      { status: error.statusCode },
     );
   }
 
   // Unknown error
-  console.error('Unhandled error:', error);
+  console.error("Unhandled error:", error);
   return NextResponse.json(
     {
       success: false,
       error: {
-        code: 'INTERNAL_ERROR',
-        message: 'An unexpected error occurred',
+        code: "INTERNAL_ERROR",
+        message: "An unexpected error occurred",
       },
     },
-    { status: status || 500 }
+    { status: status || 500 },
   );
 }
 
@@ -51,7 +51,7 @@ export function paginatedResponse<T>(
   items: T[],
   total: number,
   page: number,
-  pageSize: number
+  pageSize: number,
 ): NextResponse<ApiResponse> {
   return NextResponse.json({
     success: true,

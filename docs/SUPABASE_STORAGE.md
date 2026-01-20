@@ -3,6 +3,7 @@
 ## Overview
 
 Your backend now stores PDF and image files in **Supabase Storage** while extracting text using AI vision models. This gives you the best of both worlds:
+
 - ✅ Original files preserved for viewing/downloading
 - ✅ Text extracted for note content and processing
 - ✅ Automatic file management and cleanup
@@ -26,6 +27,7 @@ model Note {
 ### Storage Structure
 
 Files are organized by user:
+
 ```
 wisker-files/
   ├── user-id-1/
@@ -47,6 +49,7 @@ npx tsx scripts/init-storage.ts
 ```
 
 This creates a bucket named `wisker-files` with:
+
 - **Public access** (for file downloads)
 - **10MB size limit** per file
 - **Allowed types**: PDF, JPEG, PNG, GIF, WebP
@@ -66,13 +69,15 @@ This creates a bucket named `wisker-files` with:
 **2. Frontend converts to base64 →**  
 **3. API receives base64 →**  
 **4. Parallel operations:**
-   - Vision AI extracts text
-   - File uploaded to Supabase Storage
-   
+
+- Vision AI extracts text
+- File uploaded to Supabase Storage
+
 **5. Database saves:**
-   - Extracted text as `rawContent`
-   - File URL for downloads
-   - File metadata (name, size, type)
+
+- Extracted text as `rawContent`
+- File URL for downloads
+- File metadata (name, size, type)
 
 ### File Storage
 
@@ -403,8 +408,8 @@ Consider adding storage limits per plan:
 
 ```typescript
 const STORAGE_LIMITS = {
-  FREE: 100 * 1024 * 1024,      // 100MB
-  PRO: 1024 * 1024 * 1024,      // 1GB
+  FREE: 100 * 1024 * 1024, // 100MB
+  PRO: 1024 * 1024 * 1024, // 1GB
   PREMIUM: 5 * 1024 * 1024 * 1024, // 5GB
 };
 ```
@@ -427,6 +432,7 @@ if (stats.totalSize + buffer.length > limit) {
 ### Automatic Cleanup
 
 Files are automatically deleted when:
+
 - ✅ Note is deleted
 - ✅ User calls DELETE `/api/user/storage`
 
@@ -436,8 +442,8 @@ Delete orphaned files:
 
 ```typescript
 // scripts/cleanup-storage.ts
-import { StorageService } from '@/service/storage.service';
-import prisma from '@/lib/prisma';
+import { StorageService } from "@/service/storage.service";
+import prisma from "@/lib/prisma";
 
 async function cleanupOrphanedFiles() {
   // Get all file URLs from database
@@ -447,7 +453,7 @@ async function cleanupOrphanedFiles() {
   });
 
   const dbFiles = new Set(
-    notes.map((n) => n.fileUrl!.split('/').slice(-2).join('/'))
+    notes.map((n) => n.fileUrl!.split("/").slice(-2).join("/")),
   );
 
   // Get all files from storage
@@ -457,9 +463,9 @@ async function cleanupOrphanedFiles() {
     const storageFiles = await StorageService.listUserFiles(user.id);
 
     for (const filePath of storageFiles) {
-      const shortPath = filePath.split('/').slice(-2).join('/');
+      const shortPath = filePath.split("/").slice(-2).join("/");
       if (!dbFiles.has(shortPath)) {
-        console.log('Deleting orphaned file:', filePath);
+        console.log("Deleting orphaned file:", filePath);
         await StorageService.deleteFile(filePath);
       }
     }
@@ -480,22 +486,22 @@ async function cleanupOrphanedFiles() {
 ```typescript
 // In storage.service.ts
 const ALLOWED_MIME_TYPES = [
-  'application/pdf',
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 // Validate before upload
 if (!ALLOWED_MIME_TYPES.includes(fileType)) {
-  throw new Error('Invalid file type');
+  throw new Error("Invalid file type");
 }
 
 if (buffer.length > MAX_FILE_SIZE) {
-  throw new Error('File too large');
+  throw new Error("File too large");
 }
 ```
 
@@ -504,10 +510,12 @@ if (buffer.length > MAX_FILE_SIZE) {
 ### Supabase Storage Pricing
 
 **Free tier:**
+
 - 1GB storage
 - 2GB bandwidth/month
 
 **Pro tier ($25/month):**
+
 - 100GB storage
 - 200GB bandwidth/month
 - $0.021/GB additional storage
@@ -574,7 +582,7 @@ npx tsx scripts/init-storage.ts
 Signed URLs expire after 1 hour. Request new URL:
 
 ```typescript
-GET /api/notes/{id}/download
+GET / api / notes / { id } / download;
 // Returns fresh signed URL
 ```
 
@@ -584,7 +592,10 @@ GET /api/notes/{id}/download
 
 ```typescript
 // Use chunked upload for large files
-const uploadWithProgress = async (file: File, onProgress: (p: number) => void) => {
+const uploadWithProgress = async (
+  file: File,
+  onProgress: (p: number) => void,
+) => {
   const chunkSize = 1024 * 1024; // 1MB chunks
   // ... implementation
 };
@@ -594,7 +605,7 @@ const uploadWithProgress = async (file: File, onProgress: (p: number) => void) =
 
 ```typescript
 // Use pdfjs to compress PDFs
-import { getDocument } from 'pdfjs-dist';
+import { getDocument } from "pdfjs-dist";
 
 async function compressPDF(pdfData: ArrayBuffer): Promise<ArrayBuffer> {
   // Compression logic
@@ -605,7 +616,7 @@ async function compressPDF(pdfData: ArrayBuffer): Promise<ArrayBuffer> {
 
 ```typescript
 // Show extracted text for user verification
-const [extractedText, setExtractedText] = useState('');
+const [extractedText, setExtractedText] = useState("");
 const [showPreview, setShowPreview] = useState(true);
 
 // After extraction
@@ -620,9 +631,7 @@ setShowPreview(true);
 ```typescript
 // Upload multiple files
 const uploadMultiple = async (files: File[]) => {
-  const results = await Promise.all(
-    files.map((file) => uploadFile(file))
-  );
+  const results = await Promise.all(files.map((file) => uploadFile(file)));
   return results;
 };
 ```
@@ -646,6 +655,6 @@ Your backend now provides:
 ✅ **File downloads** - Users can view original files  
 ✅ **Storage management** - Track usage, delete files  
 ✅ **Automatic cleanup** - Files deleted with notes  
-✅ **Secure access** - Signed URLs, authentication required  
+✅ **Secure access** - Signed URLs, authentication required
 
 All working and ready to use! 🎉

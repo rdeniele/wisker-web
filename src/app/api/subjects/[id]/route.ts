@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { subjectService } from '@/service/subject.service';
-import { validateRequest, updateSubjectSchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { subjectService } from "@/service/subject.service";
+import { validateRequest, updateSubjectSchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 type RouteParams = {
   params: Promise<{
@@ -17,7 +17,7 @@ type RouteParams = {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    
+
     // Get authenticated user
     const supabase = await createClient();
     const {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Get subject
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    
+
     // Get authenticated user
     const supabase = await createClient();
     const {
@@ -54,7 +54,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate request body
@@ -62,7 +62,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const validatedData = validateRequest(updateSubjectSchema, body);
 
     // Update subject
-    const subject = await subjectService.updateSubject(id, user.id, validatedData);
+    const subject = await subjectService.updateSubject(
+      id,
+      user.id,
+      validatedData,
+    );
 
     return successResponse(subject);
   } catch (error) {
@@ -77,7 +81,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    
+
     // Get authenticated user
     const supabase = await createClient();
     const {
@@ -86,13 +90,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Delete subject
     await subjectService.deleteSubject(id, user.id);
 
-    return successResponse({ message: 'Subject deleted successfully' });
+    return successResponse({ message: "Subject deleted successfully" });
   } catch (error) {
     return errorResponse(error as Error);
   }

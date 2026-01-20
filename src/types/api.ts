@@ -1,4 +1,4 @@
-import { PlanType, LearningToolType, LearningToolSource } from '@prisma/client';
+import { PlanType, LearningToolType, LearningToolSource } from "@prisma/client";
 
 // API Response Types
 export interface ApiResponse<T = any> {
@@ -117,12 +117,12 @@ export interface GenerateLearningToolRequest {
   noteIds?: string[]; // For subject-level generation with selected notes
   // Quiz-specific options
   questionCount?: number;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  difficulty?: "easy" | "medium" | "hard";
   // Flashcard-specific options
   cardCount?: number;
   // Summary-specific options
-  summaryLength?: 'short' | 'medium' | 'detailed';
-  summaryType?: 'paragraph' | 'bullet' | 'keypoints';
+  summaryLength?: "short" | "medium" | "detailed";
+  summaryType?: "paragraph" | "bullet" | "keypoints";
 }
 
 // AI Processing Types
@@ -174,25 +174,25 @@ export interface UsageStats {
 // Error Codes
 export enum ErrorCode {
   // Auth errors
-  UNAUTHORIZED = 'UNAUTHORIZED',
-  FORBIDDEN = 'FORBIDDEN',
-  
+  UNAUTHORIZED = "UNAUTHORIZED",
+  FORBIDDEN = "FORBIDDEN",
+
   // Validation errors
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  INVALID_INPUT = 'INVALID_INPUT',
-  
+  VALIDATION_ERROR = "VALIDATION_ERROR",
+  INVALID_INPUT = "INVALID_INPUT",
+
   // Resource errors
-  NOT_FOUND = 'NOT_FOUND',
-  ALREADY_EXISTS = 'ALREADY_EXISTS',
-  
+  NOT_FOUND = "NOT_FOUND",
+  ALREADY_EXISTS = "ALREADY_EXISTS",
+
   // Limit errors
-  LIMIT_EXCEEDED = 'LIMIT_EXCEEDED',
-  SUBJECTS_LIMIT_EXCEEDED = 'SUBJECTS_LIMIT_EXCEEDED',
-  NOTES_LIMIT_EXCEEDED = 'NOTES_LIMIT_EXCEEDED',
-  AI_USAGE_LIMIT_EXCEEDED = 'AI_USAGE_LIMIT_EXCEEDED',
-  
+  LIMIT_EXCEEDED = "LIMIT_EXCEEDED",
+  SUBJECTS_LIMIT_EXCEEDED = "SUBJECTS_LIMIT_EXCEEDED",
+  NOTES_LIMIT_EXCEEDED = "NOTES_LIMIT_EXCEEDED",
+  AI_USAGE_LIMIT_EXCEEDED = "AI_USAGE_LIMIT_EXCEEDED",
+
   // Server errors
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
-  DATABASE_ERROR = 'DATABASE_ERROR',
-  AI_PROCESSING_ERROR = 'AI_PROCESSING_ERROR',
+  INTERNAL_ERROR = "INTERNAL_ERROR",
+  DATABASE_ERROR = "DATABASE_ERROR",
+  AI_PROCESSING_ERROR = "AI_PROCESSING_ERROR",
 }

@@ -38,7 +38,6 @@ const BellIcon = () => (
   </svg>
 );
 
-
 function NavBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
@@ -70,7 +69,9 @@ function NavBar() {
       </div>
 
       {/* Right: Notification - slide when search opens */}
-      <div className={`flex items-center gap-3 md:gap-8 ml-2 md:ml-4 transition-all duration-300 ${isSearchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
+      <div
+        className={`flex items-center gap-3 md:gap-8 ml-2 md:ml-4 transition-all duration-300 ${isSearchOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}`}
+      >
         <div className="flex items-center gap-4">
           <div className="relative">
             <BellIcon />

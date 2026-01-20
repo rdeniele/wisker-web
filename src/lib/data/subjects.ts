@@ -70,7 +70,16 @@ export const subjects: any[] = [];
   ],
 }; */
 
-export const subjectNotes: Record<number, Array<{ id: number; title: string; createdAt: Date; lastOpened: Date; characterCount: number }>> = {};
+export const subjectNotes: Record<
+  number,
+  Array<{
+    id: number;
+    title: string;
+    createdAt: Date;
+    lastOpened: Date;
+    characterCount: number;
+  }>
+> = {};
 
 // Mock note content data
 /* export const noteContent: Record<string, { title: string; content: string }> = {
@@ -143,4 +152,5 @@ Internal data managed by the component
   },
 }; */
 
-export const noteContent: Record<string, { title: string; content: string }> = {};
+export const noteContent: Record<string, { title: string; content: string }> =
+  {};

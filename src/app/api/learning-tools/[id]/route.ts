@@ -1,7 +1,7 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { learningToolService } from '@/../service/learningtool.service';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { learningToolService } from "@/../service/learningtool.service";
+import { createClient } from "@/lib/supabase/server";
 
 type RouteParams = {
   params: Promise<{
@@ -16,7 +16,7 @@ type RouteParams = {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    
+
     // Get authenticated user
     const supabase = await createClient();
     const {
@@ -25,11 +25,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Get learning tool
-    const learningTool = await learningToolService.getLearningToolById(id, user.id);
+    const learningTool = await learningToolService.getLearningToolById(
+      id,
+      user.id,
+    );
 
     return successResponse(learningTool);
   } catch (error) {
@@ -44,7 +47,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    
+
     // Get authenticated user
     const supabase = await createClient();
     const {
@@ -53,13 +56,13 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Delete learning tool
     await learningToolService.deleteLearningTool(id, user.id);
 
-    return successResponse({ message: 'Learning tool deleted successfully' });
+    return successResponse({ message: "Learning tool deleted successfully" });
   } catch (error) {
     return errorResponse(error as Error);
   }

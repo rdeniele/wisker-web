@@ -1,6 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FiRotateCw, FiChevronLeft, FiChevronRight, FiArrowLeft } from "react-icons/fi";
+import {
+  FiRotateCw,
+  FiChevronLeft,
+  FiChevronRight,
+  FiArrowLeft,
+} from "react-icons/fi";
 import { FlashcardConfig } from "./FlashcardSetup";
 
 interface Flashcard {
@@ -33,23 +38,27 @@ export default function FlashcardView({
       try {
         setIsLoading(true);
         setError(null);
-        
-        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
-        
+
+        const response = await fetch(
+          `/api/learning-tools/${config.learningToolId}`,
+        );
+
         if (!response.ok) {
-          throw new Error('Failed to fetch flashcards');
+          throw new Error("Failed to fetch flashcards");
         }
-        
+
         const data = await response.json();
         const flashcardContent = JSON.parse(data.data.generatedContent);
         if (flashcardContent.cards && Array.isArray(flashcardContent.cards)) {
           setFlashcards(flashcardContent.cards);
         } else {
-          throw new Error('Invalid flashcard format');
+          throw new Error("Invalid flashcard format");
         }
       } catch (err) {
-        console.error('Error fetching flashcards:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load flashcards');
+        console.error("Error fetching flashcards:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to load flashcards",
+        );
       } finally {
         setIsLoading(false);
       }
@@ -116,16 +125,16 @@ export default function FlashcardView({
         </button>
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {error ? 'Error Loading Flashcards' : 'No Flashcards Available'}
+            {error ? "Error Loading Flashcards" : "No Flashcards Available"}
           </h3>
           <p className="text-gray-600">
-            {error || 'Could not load flashcards. Please try again.'}
+            {error || "Could not load flashcards. Please try again."}
           </p>
         </div>
       </div>
     );
   }
-// ...existing code...
+  // ...existing code...
 
   const currentCard = flashcards[currentIndex];
 
@@ -153,14 +162,18 @@ export default function FlashcardView({
             Card {currentIndex + 1} of {flashcards.length}
           </p>
           <span className="text-gray-400">•</span>
-          <p className={`font-semibold ${
-            config.difficulty === "easy"
-              ? "text-green-600"
-              : config.difficulty === "medium"
-              ? "text-yellow-600"
-              : "text-red-600"
-          }`}>
-            {config.difficulty.charAt(0).toUpperCase() + config.difficulty.slice(1)} Mode
+          <p
+            className={`font-semibold ${
+              config.difficulty === "easy"
+                ? "text-green-600"
+                : config.difficulty === "medium"
+                  ? "text-yellow-600"
+                  : "text-red-600"
+            }`}
+          >
+            {config.difficulty.charAt(0).toUpperCase() +
+              config.difficulty.slice(1)}{" "}
+            Mode
           </p>
         </div>
       </div>

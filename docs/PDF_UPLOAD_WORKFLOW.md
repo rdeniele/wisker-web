@@ -1,22 +1,26 @@
 # PDF Upload Workflow Documentation
 
 ## Overview
+
 This document explains the PDF/Image upload feature with AI-powered content extraction and note generation.
 
 ## Workflow Steps
 
 ### 1. User Uploads PDF/Image
+
 - User selects a PDF or image file through the UploadPDF component
 - Maximum file size: 10MB
 - Supported formats: PDF, JPEG, PNG, GIF
 
 ### 2. File Storage to Supabase
+
 - File is converted to base64 format
 - Uploaded to Supabase Storage bucket `wisker-files`
 - Stored with user-specific path: `userId/timestamp-filename`
 - Returns public URL for file access
 
 ### 3. AI Vision Processing (Knowledge Extraction)
+
 - **For PDFs:** `aiService.extractTextFromPDF()` uses Together AI's vision model
 - **For Images:** `aiService.extractTextFromImage()` uses Together AI's vision model
 - Vision model reads both text and image content from the document
@@ -24,12 +28,14 @@ This document explains the PDF/Image upload feature with AI-powered content extr
 - **This raw extracted content is stored as `knowledgeBase`**
 
 ### 4. Knowledge Base Storage
+
 - The raw extracted content from step 3 is stored in the `knowledgeBase` field
 - This preserves the original content exactly as extracted from the PDF/image
 - Used as the source of truth for learning tools generation
 - Never modified or altered after extraction
 
 ### 5. AI Note Generation
+
 - **Method:** `aiService.generateStructuredNoteFromKnowledge()`
 - Takes the `knowledgeBase` content as input
 - AI processes and transforms it into a well-structured study note
@@ -41,12 +47,14 @@ This document explains the PDF/Image upload feature with AI-powered content extr
   - Markdown formatting for readability
 
 ### 6. Note Content Display
+
 - The AI-generated structured note is stored in `rawContent` field
 - This is what users see when viewing the note
 - Optimized for learning and comprehension
 - Better formatted than the raw extracted content
 
 ### 7. Learning Tools Generation
+
 - When generating quizzes, flashcards, summaries, etc.
 - **Uses `knowledgeBase` field as the source**
 - Ensures learning tools are based on complete original content
@@ -98,6 +106,7 @@ model Note {
 ### Note Service
 
 **`createNote(userId, data)`**
+
 - Checks user limits (notes and AI usage)
 - Processes PDF/image if provided:
   - Calls `processPDFWithKnowledge()` or `processImageWithKnowledge()`
@@ -110,6 +119,7 @@ model Note {
 ## AI Usage Tracking
 
 Each PDF/image upload consumes **2 AI credits**:
+
 1. One for content extraction (vision model)
 2. One for structured note generation (text model)
 
@@ -124,6 +134,7 @@ Each PDF/image upload consumes **2 AI credits**:
 ## User Experience
 
 ### Upload Flow
+
 1. Click "Add Note" button
 2. Choose "Upload PDF/Image"
 3. Select or drag-drop file
@@ -135,6 +146,7 @@ Each PDF/image upload consumes **2 AI credits**:
 6. Note appears in list
 
 ### What Users See
+
 - **In note list:** Title and metadata
 - **When viewing note:** AI-generated structured note (optimized for learning)
 - **When generating tools:** System uses original knowledge base

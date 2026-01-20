@@ -26,7 +26,10 @@ const HorizontalCard: React.FC<HorizontalCardProps> = ({
         fontFamily: "Fredoka, Arial, sans-serif",
       }}
     >
-      <div className="rounded-xl p-2 md:p-3 shrink-0" style={{ background: "#FEF1CA" }}>
+      <div
+        className="rounded-xl p-2 md:p-3 shrink-0"
+        style={{ background: "#FEF1CA" }}
+      >
         <Image
           src={image}
           alt={title}
@@ -36,7 +39,9 @@ const HorizontalCard: React.FC<HorizontalCardProps> = ({
         />
       </div>
       <div className="flex-1 ml-3 md:ml-4 min-w-0">
-        <div className="font-bold text-base md:text-lg text-gray-800 truncate">{title}</div>
+        <div className="font-bold text-base md:text-lg text-gray-800 truncate">
+          {title}
+        </div>
         <div className="text-sm md:text-base text-gray-500 truncate">
           {day}
           {date ? `, ${date}` : ""}

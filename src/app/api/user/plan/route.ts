@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { userService } from '@/service/user.service';
-import { validateRequest, updateUserPlanSchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { userService } from "@/service/user.service";
+import { validateRequest, updateUserPlanSchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * PATCH /api/user/plan
@@ -18,7 +18,7 @@ export async function PATCH(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate request body
@@ -26,7 +26,10 @@ export async function PATCH(request: NextRequest) {
     const validatedData = validateRequest(updateUserPlanSchema, body);
 
     // Update user plan
-    const updatedUser = await userService.updateUserPlan(user.id, validatedData.planType);
+    const updatedUser = await userService.updateUserPlan(
+      user.id,
+      validatedData.planType,
+    );
 
     return successResponse(updatedUser);
   } catch (error) {

@@ -7,6 +7,7 @@ Row Level Security (RLS) is a PostgreSQL feature that restricts which rows users
 ## Current Setup
 
 ✅ **RLS is now ENABLED** on all tables:
+
 - `users`
 - `subjects`
 - `notes`
@@ -16,19 +17,21 @@ Row Level Security (RLS) is a PostgreSQL feature that restricts which rows users
 ## How to Use
 
 ### Option 1: Use Default Prisma Client (Bypasses RLS)
+
 ```typescript
-import { prisma } from '@/lib/prisma';
+import { prisma } from "@/lib/prisma";
 
 // This bypasses RLS - use only when you need admin operations
 // Make sure to manually filter by userId!
 const subjects = await prisma.subject.findMany({
-  where: { userId: session.user.id }  // ⚠️ MUST filter manually
+  where: { userId: session.user.id }, // ⚠️ MUST filter manually
 });
 ```
 
 ### Option 2: Use RLS-Enabled Client (Recommended)
+
 ```typescript
-import { getPrismaWithRLS } from '@/lib/prisma';
+import { getPrismaWithRLS } from "@/lib/prisma";
 
 // This respects RLS policies - database enforces user isolation
 const prismaWithRLS = await getPrismaWithRLS();
@@ -56,12 +59,14 @@ Migration `20260120075713_enable_rls` has been applied, which:
 ## Important Notes
 
 ### Using `getPrismaWithRLS()`:
+
 - Requires authenticated user (uses Supabase JWT)
 - Creates a new connection per call - use sparingly
 - Best for read operations where you want automatic user filtering
 - **DO NOT** use in loops - create once and reuse
 
 ### Using default `prisma` client:
+
 - Bypasses RLS (uses service role credentials)
 - **MUST** manually filter by `userId` in all queries
 - Best for admin operations or when you need full database access
@@ -70,21 +75,23 @@ Migration `20260120075713_enable_rls` has been applied, which:
 ## Example API Route
 
 ```typescript
-import { prisma, getPrismaWithRLS } from '@/lib/prisma';
-import { createServerClient } from '@/lib/supabase/server';
+import { prisma, getPrismaWithRLS } from "@/lib/prisma";
+import { createServerClient } from "@/lib/supabase/server";
 
 export async function GET() {
   // Authenticate user
   const supabase = await createServerClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Option 1: Manual filtering (current approach)
   const subjects = await prisma.subject.findMany({
-    where: { userId: session.user.id }
+    where: { userId: session.user.id },
   });
 
   // Option 2: RLS-enabled (database enforces)
@@ -115,6 +122,7 @@ To verify RLS is working:
 ## Performance Note
 
 RLS policies use `EXISTS` subqueries which are generally fast, but for high-traffic routes consider:
+
 - Using the default `prisma` client with manual filtering (what you're doing now)
 - Adding indexes on foreign keys (already present)
 - Monitoring query performance
@@ -122,6 +130,7 @@ RLS policies use `EXISTS` subqueries which are generally fast, but for high-traf
 ## Rollback (if needed)
 
 To disable RLS:
+
 ```sql
 ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 ALTER TABLE subjects DISABLE ROW LEVEL SECURITY;

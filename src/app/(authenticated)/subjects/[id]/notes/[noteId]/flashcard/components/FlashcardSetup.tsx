@@ -1,6 +1,13 @@
 "use client";
 import { useState, useTransition } from "react";
-import { FiArrowLeft, FiLayers, FiSmile, FiMeh, FiZap, FiInfo } from "react-icons/fi";
+import {
+  FiArrowLeft,
+  FiLayers,
+  FiSmile,
+  FiMeh,
+  FiZap,
+  FiInfo,
+} from "react-icons/fi";
 import { useToast } from "@/../hook/useToast";
 
 interface FlashcardSetupProps {
@@ -16,41 +23,48 @@ export interface FlashcardConfig {
   learningToolId: string;
 }
 
-export default function FlashcardSetup({ noteId, noteTitle, onStart, onBack }: FlashcardSetupProps) {
+export default function FlashcardSetup({
+  noteId,
+  noteTitle,
+  onStart,
+  onBack,
+}: FlashcardSetupProps) {
   const [numberOfCards, setNumberOfCards] = useState(10);
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+    "medium",
+  );
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
 
   const handleStart = async () => {
     startTransition(async () => {
       try {
-        const response = await fetch('/api/learning-tools/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("/api/learning-tools/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            type: 'FLASHCARDS',
-            source: 'SINGLE_NOTE',
+            type: "FLASHCARDS",
+            source: "SINGLE_NOTE",
             noteId,
             cardCount: numberOfCards,
-            difficulty
-          })
+            difficulty,
+          }),
         });
 
         if (!response.ok) {
-          throw new Error('Failed to generate flashcards');
+          throw new Error("Failed to generate flashcards");
         }
 
         const data = await response.json();
-        
+
         onStart({
           numberOfCards,
           difficulty,
-          learningToolId: data.data.id
+          learningToolId: data.data.id,
         });
       } catch (error) {
-        console.error('Error generating flashcards:', error);
-        showToast('Failed to generate flashcards. Please try again.', 'error');
+        console.error("Error generating flashcards:", error);
+        showToast("Failed to generate flashcards. Please try again.", "error");
       }
     });
   };
@@ -105,7 +119,8 @@ export default function FlashcardSetup({ noteId, noteTitle, onStart, onBack }: F
               Flashcard Setup
             </h1>
             <p className="text-gray-600">
-              Customize your flashcards for <span className="font-semibold">{noteTitle}</span>
+              Customize your flashcards for{" "}
+              <span className="font-semibold">{noteTitle}</span>
             </p>
           </div>
 
@@ -146,20 +161,20 @@ export default function FlashcardSetup({ noteId, noteTitle, onStart, onBack }: F
                       ? option.color === "green"
                         ? "border-green-500 bg-green-50 shadow-md scale-105"
                         : option.color === "yellow"
-                        ? "border-yellow-500 bg-yellow-50 shadow-md scale-105"
-                        : "border-red-500 bg-red-50 shadow-md scale-105"
+                          ? "border-yellow-500 bg-yellow-50 shadow-md scale-105"
+                          : "border-red-500 bg-red-50 shadow-md scale-105"
                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <option.icon 
+                    <option.icon
                       className={`text-2xl ${
                         difficulty === option.value
                           ? option.color === "green"
                             ? "text-green-600"
                             : option.color === "yellow"
-                            ? "text-yellow-600"
-                            : "text-red-600"
+                              ? "text-yellow-600"
+                              : "text-red-600"
                           : "text-gray-600"
                       }`}
                       size={24}
@@ -180,14 +195,15 @@ export default function FlashcardSetup({ noteId, noteTitle, onStart, onBack }: F
             disabled={isPending}
             className="w-full py-4 bg-[#615FFF] text-white rounded-xl hover:bg-[#524CE5] transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isPending ? 'Generating Flashcards...' : 'Generate Flashcards'}
+            {isPending ? "Generating Flashcards..." : "Generate Flashcards"}
           </button>
 
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
               <FiInfo className="text-blue-600" size={16} />
-              <span className="font-semibold">Tip:</span> Flashcards will be AI-generated based on your note content
+              <span className="font-semibold">Tip:</span> Flashcards will be
+              AI-generated based on your note content
             </p>
           </div>
         </div>

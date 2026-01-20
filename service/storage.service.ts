@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * Storage Service
  * Handles file uploads and downloads to/from Supabase Storage
  */
 
-const BUCKET_NAME = 'wisker-files';
+const BUCKET_NAME = "wisker-files";
 
 export interface UploadFileResult {
   url: string;
@@ -19,22 +19,22 @@ export class StorageService {
    */
   static async initializeBucket(): Promise<void> {
     const supabase = await createClient();
-    
+
     // Check if bucket exists
     const { data: buckets } = await supabase.storage.listBuckets();
     const bucketExists = buckets?.some((b) => b.name === BUCKET_NAME);
-    
+
     if (!bucketExists) {
       // Create bucket with public access for file downloads
       await supabase.storage.createBucket(BUCKET_NAME, {
         public: true,
         fileSizeLimit: 10485760, // 10MB
         allowedMimeTypes: [
-          'application/pdf',
-          'image/jpeg',
-          'image/png',
-          'image/gif',
-          'image/webp',
+          "application/pdf",
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
         ],
       });
     }
@@ -51,17 +51,17 @@ export class StorageService {
     base64Data: string,
     fileName: string,
     userId: string,
-    fileType: string
+    fileType: string,
   ): Promise<UploadFileResult> {
     const supabase = await createClient();
 
     // Convert base64 to buffer
-    const buffer = Buffer.from(base64Data, 'base64');
+    const buffer = Buffer.from(base64Data, "base64");
     const fileSize = buffer.length;
 
     // Generate unique file path: userId/timestamp-filename
     const timestamp = Date.now();
-    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9.-]/g, "_");
     const filePath = `${userId}/${timestamp}-${sanitizedFileName}`;
 
     // Upload to Supabase Storage
@@ -111,7 +111,7 @@ export class StorageService {
    */
   static async getDownloadUrl(
     filePath: string,
-    expiresIn: number = 3600
+    expiresIn: number = 3600,
   ): Promise<string> {
     const supabase = await createClient();
 
@@ -156,9 +156,7 @@ export class StorageService {
 
     if (files.length > 0) {
       // Delete all files
-      const { error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .remove(files);
+      const { error } = await supabase.storage.from(BUCKET_NAME).remove(files);
 
       if (error) {
         throw new Error(`Failed to delete user files: ${error.message}`);
@@ -185,7 +183,8 @@ export class StorageService {
     }
 
     const totalFiles = data?.length || 0;
-    const totalSize = data?.reduce((sum, file) => sum + (file.metadata?.size || 0), 0) || 0;
+    const totalSize =
+      data?.reduce((sum, file) => sum + (file.metadata?.size || 0), 0) || 0;
 
     return { totalFiles, totalSize };
   }

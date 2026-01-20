@@ -1,10 +1,10 @@
-import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { StorageService } from '@/service/storage.service';
-import { apiResponse, errorResponse } from '@/lib/api-response';
-import { UnauthorizedError, NotFoundError, AppError } from '@/lib/errors';
-import { ErrorCode } from '@/types/api';
-import prisma from '@/lib/prisma';
+import { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { StorageService } from "@/service/storage.service";
+import { apiResponse, errorResponse } from "@/lib/api-response";
+import { UnauthorizedError, NotFoundError, AppError } from "@/lib/errors";
+import { ErrorCode } from "@/types/api";
+import prisma from "@/lib/prisma";
 
 /**
  * GET /api/notes/[id]/download
@@ -12,7 +12,7 @@ import prisma from '@/lib/prisma';
  */
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -44,17 +44,23 @@ export async function GET(
     });
 
     if (!note) {
-      throw new NotFoundError('Note');
+      throw new NotFoundError("Note");
     }
 
     if (!note.fileUrl) {
-      throw new AppError(ErrorCode.NOT_FOUND, 'This note does not have an attached file', 404);
+      throw new AppError(
+        ErrorCode.NOT_FOUND,
+        "This note does not have an attached file",
+        404,
+      );
     }
 
     // Extract storage path from URL
-    const urlParts = note.fileUrl.split('/');
-    const bucketIndex = urlParts.findIndex((part: string) => part === 'wisker-files');
-    const filePath = urlParts.slice(bucketIndex + 1).join('/');
+    const urlParts = note.fileUrl.split("/");
+    const bucketIndex = urlParts.findIndex(
+      (part: string) => part === "wisker-files",
+    );
+    const filePath = urlParts.slice(bucketIndex + 1).join("/");
 
     // Get signed download URL (valid for 1 hour)
     const downloadUrl = await StorageService.getDownloadUrl(filePath, 3600);
@@ -65,6 +71,8 @@ export async function GET(
       fileType: note.fileType,
     });
   } catch (error) {
-    return errorResponse(error instanceof Error ? error : new Error('Failed to get download URL'));
+    return errorResponse(
+      error instanceof Error ? error : new Error("Failed to get download URL"),
+    );
   }
 }

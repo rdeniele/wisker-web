@@ -1,7 +1,7 @@
-import { prisma } from '@/lib/prisma';
-import { NotFoundError, DatabaseError } from '@/lib/errors';
-import { UserDto, UsageStats } from '@/types/api';
-import { PlanType } from '@prisma/client';
+import { prisma } from "@/lib/prisma";
+import { NotFoundError, DatabaseError } from "@/lib/errors";
+import { UserDto, UsageStats } from "@/types/api";
+import { PlanType } from "@prisma/client";
 
 const PLAN_LIMITS = {
   FREE: {
@@ -32,7 +32,7 @@ export class UserService {
       });
 
       if (!user) {
-        throw new NotFoundError('User');
+        throw new NotFoundError("User");
       }
 
       return user;
@@ -40,7 +40,7 @@ export class UserService {
       if (error instanceof NotFoundError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch user', error);
+      throw new DatabaseError("Failed to fetch user", error);
     }
   }
 
@@ -55,14 +55,18 @@ export class UserService {
 
       return user;
     } catch (error) {
-      throw new DatabaseError('Failed to fetch user', error);
+      throw new DatabaseError("Failed to fetch user", error);
     }
   }
 
   /**
    * Create a new user
    */
-  async createUser(email: string, planType: PlanType = 'FREE', userId?: string): Promise<UserDto> {
+  async createUser(
+    email: string,
+    planType: PlanType = "FREE",
+    userId?: string,
+  ): Promise<UserDto> {
     try {
       const limits = PLAN_LIMITS[planType];
 
@@ -79,7 +83,7 @@ export class UserService {
 
       return user;
     } catch (error) {
-      throw new DatabaseError('Failed to create user', error);
+      throw new DatabaseError("Failed to create user", error);
     }
   }
 
@@ -108,7 +112,7 @@ export class UserService {
       if (error instanceof NotFoundError) {
         throw error;
       }
-      throw new DatabaseError('Failed to update user plan', error);
+      throw new DatabaseError("Failed to update user plan", error);
     }
   }
 
@@ -142,12 +146,12 @@ export class UserService {
       });
 
       if (!user) {
-        throw new NotFoundError('User');
+        throw new NotFoundError("User");
       }
 
       const totalNotes = user.subjects.reduce(
         (sum: number, subject: any) => sum + subject._count.notes,
-        0
+        0,
       );
 
       return {
@@ -162,7 +166,7 @@ export class UserService {
       if (error instanceof NotFoundError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch user usage stats', error);
+      throw new DatabaseError("Failed to fetch user usage stats", error);
     }
   }
 
@@ -176,7 +180,7 @@ export class UserService {
         data: { aiUsageCount: 0 },
       });
     } catch (error) {
-      throw new DatabaseError('Failed to reset AI usage', error);
+      throw new DatabaseError("Failed to reset AI usage", error);
     }
   }
 
@@ -195,7 +199,7 @@ export class UserService {
       if (error instanceof NotFoundError) {
         throw error;
       }
-      throw new DatabaseError('Failed to delete user', error);
+      throw new DatabaseError("Failed to delete user", error);
     }
   }
 }

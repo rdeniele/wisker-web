@@ -12,7 +12,5 @@ export default function PageLayout({
   className = "",
   font = "font-fredoka",
 }: PageLayoutProps) {
-  return (
-    <div className={`p-8 ${className} ${font}`}>{children}</div>
-  );
+  return <div className={`p-8 ${className} ${font}`}>{children}</div>;
 }

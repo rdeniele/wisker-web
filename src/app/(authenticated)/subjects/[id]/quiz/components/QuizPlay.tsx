@@ -38,25 +38,29 @@ export default function QuizPlay({
     // Fetch AI-generated quiz questions
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
-        
+        const response = await fetch(
+          `/api/learning-tools/${config.learningToolId}`,
+        );
+
         if (!response.ok) {
-          throw new Error('Failed to fetch quiz questions');
+          throw new Error("Failed to fetch quiz questions");
         }
 
         const data = await response.json();
         const quizContent = JSON.parse(data.data.generatedContent);
-        
+
         if (!quizContent.questions || quizContent.questions.length === 0) {
-          throw new Error('No questions found in quiz');
+          throw new Error("No questions found in quiz");
         }
 
         setQuestions(quizContent.questions);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching quiz:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load quiz');
-        showToast('Failed to load quiz questions', 'error');
+        console.error("Error fetching quiz:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to load quiz",
+        );
+        showToast("Failed to load quiz questions", "error");
         setIsLoading(false);
       }
     };
@@ -99,11 +103,28 @@ export default function QuizPlay({
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-center h-96">
             <div className="flex flex-col items-center gap-4">
-              <svg className="animate-spin h-10 w-10 text-orange-500" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              <svg
+                className="animate-spin h-10 w-10 text-orange-500"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
-              <div className="text-gray-500 font-medium">Loading quiz questions...</div>
+              <div className="text-gray-500 font-medium">
+                Loading quiz questions...
+              </div>
             </div>
           </div>
         </div>
@@ -119,13 +140,16 @@ export default function QuizPlay({
             onClick={onBack}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group mb-6"
           >
-            <FiArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <FiArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
             <span className="font-medium">Back</span>
           </button>
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
               <div className="text-red-500 text-lg font-semibold mb-2">
-                {error || 'No questions available'}
+                {error || "No questions available"}
               </div>
               <button
                 onClick={onBack}
@@ -197,7 +221,8 @@ export default function QuizPlay({
                 const isSelected = selectedAnswer === index;
                 const isCorrect = question.correctAnswer === index;
                 const showCorrectAnswer = isAnswered && isCorrect;
-                const showIncorrectAnswer = isAnswered && isSelected && !isCorrect;
+                const showIncorrectAnswer =
+                  isAnswered && isSelected && !isCorrect;
 
                 return (
                   <button
@@ -208,10 +233,10 @@ export default function QuizPlay({
                       showCorrectAnswer
                         ? "border-green-500 bg-green-50"
                         : showIncorrectAnswer
-                        ? "border-red-500 bg-red-50"
-                        : isSelected
-                        ? "border-orange-500 bg-orange-50"
-                        : "border-gray-200 hover:border-orange-300 hover:bg-orange-50/30"
+                          ? "border-red-500 bg-red-50"
+                          : isSelected
+                            ? "border-orange-500 bg-orange-50"
+                            : "border-gray-200 hover:border-orange-300 hover:bg-orange-50/30"
                     } ${isAnswered ? "cursor-not-allowed" : "cursor-pointer"}`}
                   >
                     <div className="flex items-center justify-between">
@@ -220,10 +245,10 @@ export default function QuizPlay({
                           showCorrectAnswer
                             ? "text-green-900"
                             : showIncorrectAnswer
-                            ? "text-red-900"
-                            : isSelected
-                            ? "text-orange-900"
-                            : "text-gray-900"
+                              ? "text-red-900"
+                              : isSelected
+                                ? "text-orange-900"
+                                : "text-gray-900"
                         }`}
                       >
                         {option}

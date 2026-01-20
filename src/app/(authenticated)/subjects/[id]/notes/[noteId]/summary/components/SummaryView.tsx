@@ -25,25 +25,27 @@ export default function SummaryView({
       try {
         setIsLoading(true);
         setError(null);
-        
-        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
-        
+
+        const response = await fetch(
+          `/api/learning-tools/${config.learningToolId}`,
+        );
+
         if (!response.ok) {
-          throw new Error('Failed to fetch summary');
+          throw new Error("Failed to fetch summary");
         }
-        
+
         const data = await response.json();
         const summaryContent = JSON.parse(data.data.generatedContent);
-        
+
         // Extract the summary text
         if (summaryContent.summary) {
           setSummary(summaryContent.summary);
         } else {
-          throw new Error('Invalid summary format');
+          throw new Error("Invalid summary format");
         }
       } catch (err) {
-        console.error('Error fetching summary:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load summary');
+        console.error("Error fetching summary:", err);
+        setError(err instanceof Error ? err.message : "Failed to load summary");
       } finally {
         setIsLoading(false);
       }
@@ -173,8 +175,8 @@ export default function SummaryView({
             {config.summaryType === "paragraph"
               ? "Paragraph"
               : config.summaryType === "bullet"
-              ? "Bullet Points"
-              : "Key Points"}{" "}
+                ? "Bullet Points"
+                : "Key Points"}{" "}
             Format
           </p>
         </div>
@@ -189,19 +191,25 @@ export default function SummaryView({
             </div>
           ) : config.summaryType === "bullet" ? (
             <ul className="list-disc pl-5 space-y-2 text-gray-900">
-              {summary.split('\n').filter(line => line.trim()).map((point, idx) => (
-                <li key={idx} className="leading-relaxed">
-                  {point.replace(/^[•\-*]\s*/, '')}
-                </li>
-              ))}
+              {summary
+                .split("\n")
+                .filter((line) => line.trim())
+                .map((point, idx) => (
+                  <li key={idx} className="leading-relaxed">
+                    {point.replace(/^[•\-*]\s*/, "")}
+                  </li>
+                ))}
             </ul>
           ) : (
             <ol className="list-decimal pl-5 space-y-3 text-gray-900">
-              {summary.split(/\n+/).filter(line => line.trim()).map((point, idx) => (
-                <li key={idx} className="leading-relaxed font-medium">
-                  {point.replace(/^\d+\.\s*/, '')}
-                </li>
-              ))}
+              {summary
+                .split(/\n+/)
+                .filter((line) => line.trim())
+                .map((point, idx) => (
+                  <li key={idx} className="leading-relaxed font-medium">
+                    {point.replace(/^\d+\.\s*/, "")}
+                  </li>
+                ))}
             </ol>
           )}
         </div>

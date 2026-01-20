@@ -1,19 +1,16 @@
-import { prisma } from '../src/lib/prisma';
+import { prisma } from "../src/lib/prisma";
 import {
   NotFoundError,
   AIUsageLimitExceededError,
   DatabaseError,
   ForbiddenError,
   InvalidInputError,
-} from '../src/lib/errors';
-import {
-  GenerateLearningToolRequest,
-  LearningToolDto,
-} from '../src/types/api';
-import { subjectService } from './subject.service';
-import { noteService } from './note.service';
-import { aiService } from './ai.service';
-import { LearningToolType, LearningToolSource, Prisma } from '@prisma/client';
+} from "../src/lib/errors";
+import { GenerateLearningToolRequest, LearningToolDto } from "../src/types/api";
+import { subjectService } from "./subject.service";
+import { noteService } from "./note.service";
+import { aiService } from "./ai.service";
+import { LearningToolType, LearningToolSource, Prisma } from "@prisma/client";
 
 export class LearningToolService {
   /**
@@ -28,9 +25,9 @@ export class LearningToolService {
       source?: LearningToolSource;
       page?: number;
       pageSize?: number;
-      sortBy?: 'createdAt';
-      sortOrder?: 'asc' | 'desc';
-    } = {}
+      sortBy?: "createdAt";
+      sortOrder?: "asc" | "desc";
+    } = {},
   ) {
     try {
       const {
@@ -40,18 +37,15 @@ export class LearningToolService {
         source,
         page = 1,
         pageSize = 20,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
+        sortBy = "createdAt",
+        sortOrder = "desc",
       } = options;
 
       const skip = (page - 1) * pageSize;
 
       // Build where clause with user ownership verification
       const where: Prisma.LearningToolWhereInput = {
-        OR: [
-          { subject: { userId } },
-          { note: { subject: { userId } } },
-        ],
+        OR: [{ subject: { userId } }, { note: { subject: { userId } } }],
         ...(subjectId && { subjectId }),
         ...(noteId && { noteId }),
         ...(type && { type }),
@@ -105,7 +99,10 @@ export class LearningToolService {
         pageSize,
       };
     } catch (error) {
-      throw new DatabaseError('Failed to fetch learning tools', error instanceof Error ? error : undefined);
+      throw new DatabaseError(
+        "Failed to fetch learning tools",
+        error instanceof Error ? error : undefined,
+      );
     }
   }
 
@@ -114,7 +111,7 @@ export class LearningToolService {
    */
   async getLearningToolById(
     learningToolId: string,
-    userId: string
+    userId: string,
   ): Promise<LearningToolDto> {
     try {
       const learningTool = await prisma.learningTool.findUnique({
@@ -140,16 +137,17 @@ export class LearningToolService {
       });
 
       if (!learningTool) {
-        throw new NotFoundError('Learning tool');
+        throw new NotFoundError("Learning tool");
       }
 
       // Verify ownership
       const ownerUserId =
-        learningTool.subject?.userId ||
-        learningTool.note?.subject?.userId;
+        learningTool.subject?.userId || learningTool.note?.subject?.userId;
 
       if (ownerUserId !== userId) {
-        throw new ForbiddenError('You do not have access to this learning tool');
+        throw new ForbiddenError(
+          "You do not have access to this learning tool",
+        );
       }
 
       return {
@@ -162,7 +160,10 @@ export class LearningToolService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to fetch learning tool', error instanceof Error ? error : undefined);
+      throw new DatabaseError(
+        "Failed to fetch learning tool",
+        error instanceof Error ? error : undefined,
+      );
     }
   }
 
@@ -171,7 +172,7 @@ export class LearningToolService {
    */
   async generateLearningTool(
     userId: string,
-    data: GenerateLearningToolRequest
+    data: GenerateLearningToolRequest,
   ): Promise<LearningToolDto> {
     try {
       // Check AI usage limit
@@ -184,7 +185,7 @@ export class LearningToolService {
       });
 
       if (!user) {
-        throw new NotFoundError('User');
+        throw new NotFoundError("User");
       }
 
       if (user.aiUsageCount >= user.aiUsageLimit) {
@@ -197,13 +198,18 @@ export class LearningToolService {
       let noteId: string | undefined;
       let selectedNoteIds: string[] = [];
 
-      if (data.source === 'SUBJECT') {
+      if (data.source === "SUBJECT") {
         if (!data.subjectId) {
-          throw new InvalidInputError('Subject ID is required for SUBJECT source');
+          throw new InvalidInputError(
+            "Subject ID is required for SUBJECT source",
+          );
         }
 
         // Verify subject ownership
-        const subject = await subjectService.getSubjectById(data.subjectId, userId);
+        const subject = await subjectService.getSubjectById(
+          data.subjectId,
+          userId,
+        );
         subjectId = subject.id;
 
         // Get notes to process
@@ -223,11 +229,13 @@ export class LearningToolService {
           });
 
           if (notes.length !== data.noteIds.length) {
-            throw new InvalidInputError('One or more selected notes not found');
+            throw new InvalidInputError("One or more selected notes not found");
           }
 
           // Use knowledgeBase if available (from PDF/image uploads), otherwise use rawContent
-          contentToProcess = notes.map((n) => n.knowledgeBase || n.rawContent).join('\n\n---\n\n');
+          contentToProcess = notes
+            .map((n) => n.knowledgeBase || n.rawContent)
+            .join("\n\n---\n\n");
         } else {
           // Use all notes in subject
           const notes = await prisma.note.findMany({
@@ -240,16 +248,20 @@ export class LearningToolService {
           });
 
           if (notes.length === 0) {
-            throw new InvalidInputError('No notes found in subject');
+            throw new InvalidInputError("No notes found in subject");
           }
 
           selectedNoteIds = notes.map((n) => n.id);
           // Use knowledgeBase if available (from PDF/image uploads), otherwise use rawContent
-          contentToProcess = notes.map((n) => n.knowledgeBase || n.rawContent).join('\n\n---\n\n');
+          contentToProcess = notes
+            .map((n) => n.knowledgeBase || n.rawContent)
+            .join("\n\n---\n\n");
         }
-      } else if (data.source === 'SINGLE_NOTE') {
+      } else if (data.source === "SINGLE_NOTE") {
         if (!data.noteId) {
-          throw new InvalidInputError('Note ID is required for SINGLE_NOTE source');
+          throw new InvalidInputError(
+            "Note ID is required for SINGLE_NOTE source",
+          );
         }
 
         // Verify note ownership and get note data
@@ -258,12 +270,14 @@ export class LearningToolService {
         // Use knowledgeBase if available (from PDF/image uploads), otherwise use rawContent
         contentToProcess = note.knowledgeBase || note.rawContent;
       } else {
-        throw new InvalidInputError('Invalid source type');
+        throw new InvalidInputError("Invalid source type");
       }
 
       // Validate that we have content to process
       if (!contentToProcess || contentToProcess.trim().length === 0) {
-        throw new InvalidInputError('No content available to generate learning tool. Please ensure your notes have content.');
+        throw new InvalidInputError(
+          "No content available to generate learning tool. Please ensure your notes have content.",
+        );
       }
 
       // Process with AI service based on type
@@ -276,7 +290,7 @@ export class LearningToolService {
           cardCount: data.cardCount,
           summaryLength: data.summaryLength,
           summaryType: data.summaryType,
-        }
+        },
       );
 
       // Create learning tool and increment AI usage in a transaction
@@ -292,7 +306,7 @@ export class LearningToolService {
         });
 
         // If subject-level with multiple notes, create junction records
-        if (data.source === 'SUBJECT' && selectedNoteIds.length > 0) {
+        if (data.source === "SUBJECT" && selectedNoteIds.length > 0) {
           await tx.learningToolNote.createMany({
             data: selectedNoteIds.map((nId) => ({
               learningToolId: learningTool.id,
@@ -321,7 +335,10 @@ export class LearningToolService {
       ) {
         throw error;
       }
-      throw new DatabaseError('Failed to generate learning tool', error instanceof Error ? error : undefined);
+      throw new DatabaseError(
+        "Failed to generate learning tool",
+        error instanceof Error ? error : undefined,
+      );
     }
   }
 
@@ -330,7 +347,7 @@ export class LearningToolService {
    */
   async deleteLearningTool(
     learningToolId: string,
-    userId: string
+    userId: string,
   ): Promise<void> {
     try {
       // Verify ownership
@@ -344,7 +361,10 @@ export class LearningToolService {
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
-      throw new DatabaseError('Failed to delete learning tool', error instanceof Error ? error : undefined);
+      throw new DatabaseError(
+        "Failed to delete learning tool",
+        error instanceof Error ? error : undefined,
+      );
     }
   }
 }

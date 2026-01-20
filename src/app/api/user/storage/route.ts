@@ -1,9 +1,9 @@
-import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { StorageService } from '@/service/storage.service';
-import { apiResponse, errorResponse } from '@/lib/api-response';
-import { UnauthorizedError } from '@/lib/errors';
-import prisma from '@/lib/prisma';
+import { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { StorageService } from "@/service/storage.service";
+import { apiResponse, errorResponse } from "@/lib/api-response";
+import { UnauthorizedError } from "@/lib/errors";
+import prisma from "@/lib/prisma";
 
 /**
  * GET /api/user/storage
@@ -45,7 +45,9 @@ export async function GET(req: NextRequest) {
       notesWithFiles,
     });
   } catch (error) {
-    return errorResponse(error instanceof Error ? error : new Error('Failed to get storage stats'));
+    return errorResponse(
+      error instanceof Error ? error : new Error("Failed to get storage stats"),
+    );
   }
 }
 
@@ -86,9 +88,11 @@ export async function DELETE(req: NextRequest) {
     });
 
     return apiResponse({
-      message: 'All files deleted successfully',
+      message: "All files deleted successfully",
     });
   } catch (error) {
-    return errorResponse(error instanceof Error ? error : new Error('Failed to delete files'));
+    return errorResponse(
+      error instanceof Error ? error : new Error("Failed to delete files"),
+    );
   }
 }

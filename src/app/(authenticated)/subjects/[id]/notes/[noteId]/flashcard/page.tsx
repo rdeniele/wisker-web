@@ -26,12 +26,12 @@ function FlashcardPage({ params }: FlashcardPageProps) {
       try {
         const response = await fetch(`/api/notes/${noteId}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch note');
+          throw new Error("Failed to fetch note");
         }
         const data = await response.json();
         setNote(data.data);
       } catch (error) {
-        console.error('Error fetching note:', error);
+        console.error("Error fetching note:", error);
       } finally {
         setIsLoading(false);
       }

@@ -37,6 +37,7 @@ You should see `wisker-files` in your buckets list. Click on it to browse upload
 If you have the service role key (⚠️ keep it secret!):
 
 1. Add to `.env`:
+
    ```env
    SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
    ```
@@ -47,6 +48,7 @@ If you have the service role key (⚠️ keep it secret!):
    ```
 
 To get service role key:
+
 1. Go to Supabase Dashboard → Project Settings → API
 2. Copy **service_role** key (not the anon key!)
 
@@ -76,6 +78,7 @@ Check Supabase Dashboard → Storage → wisker-files to see the uploaded file!
 - **Allowed types**: PDF, JPEG, PNG, GIF, WebP
 
 Files are organized by user ID:
+
 ```
 wisker-files/
   ├── user-uuid-1/
@@ -88,6 +91,7 @@ wisker-files/
 ## Next Steps
 
 Once the bucket is created, your app will automatically:
+
 - ✅ Upload PDFs/images when creating notes
 - ✅ Extract text using AI vision model
 - ✅ Store both file URL and extracted text

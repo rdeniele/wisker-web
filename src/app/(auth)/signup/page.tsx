@@ -219,9 +219,7 @@ export default function SignupPage() {
                     </div>
                     <span
                       className={`text-base transition-colors duration-200 ${
-                        requirement.met
-                          ? "text-gray-700"
-                          : "text-gray-600"
+                        requirement.met ? "text-gray-700" : "text-gray-600"
                       }`}
                     >
                       {requirement.text}

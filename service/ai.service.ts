@@ -3,18 +3,18 @@ import {
   QuizContent,
   FlashcardContent,
   SummaryContent,
-} from '@/types/api';
-import { LearningToolType } from '@prisma/client';
-import { AIProcessingError } from '@/lib/errors';
-import { marked } from 'marked';
+} from "@/types/api";
+import { LearningToolType } from "@prisma/client";
+import { AIProcessingError } from "@/lib/errors";
+import { marked } from "marked";
 
 interface TogetherAIMessage {
-  role: 'system' | 'user' | 'assistant';
+  role: "system" | "user" | "assistant";
   content: string | TogetherAIMessageContent[];
 }
 
 interface TogetherAIMessageContent {
-  type: 'text' | 'image_url';
+  type: "text" | "image_url";
   text?: string;
   image_url?: {
     url: string;
@@ -63,13 +63,13 @@ function markdownToHtml(markdown: string): string {
       breaks: true, // Convert \n to <br>
       gfm: true, // GitHub Flavored Markdown
     });
-    
+
     const html = marked.parse(markdown) as string;
     return html;
   } catch (error) {
-    console.error('Failed to convert markdown to HTML:', error);
+    console.error("Failed to convert markdown to HTML:", error);
     // Fallback: return markdown wrapped in basic HTML
-    return `<p>${markdown.replace(/\n/g, '<br>')}</p>`;
+    return `<p>${markdown.replace(/\n/g, "<br>")}</p>`;
   }
 }
 
@@ -77,15 +77,17 @@ export class AIService {
   private apiKey: string;
   private model: string;
   private visionModel: string;
-  private baseURL = 'https://api.together.xyz/v1';
+  private baseURL = "https://api.together.xyz/v1";
 
   constructor() {
-    this.apiKey = process.env.TOGETHER_API_KEY || '';
-    this.model = process.env.TOGETHER_AI_MODEL || 'Qwen/Qwen2.5-72B-Instruct-Turbo';
-    this.visionModel = process.env.TOGETHER_AI_VISION_MODEL || 'Qwen/Qwen3-VL-8B-Instruct';
+    this.apiKey = process.env.TOGETHER_API_KEY || "";
+    this.model =
+      process.env.TOGETHER_AI_MODEL || "Qwen/Qwen2.5-72B-Instruct-Turbo";
+    this.visionModel =
+      process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3-VL-8B-Instruct";
 
     if (!this.apiKey) {
-      console.warn('TOGETHER_API_KEY not found in environment variables');
+      console.warn("TOGETHER_API_KEY not found in environment variables");
     }
   }
 
@@ -98,10 +100,10 @@ export class AIService {
       maxTokens?: number;
       temperature?: number;
     } = {},
-    modelOverride?: string
+    modelOverride?: string,
   ): Promise<string> {
     if (!this.apiKey) {
-      throw new AIProcessingError('Together AI API key not configured');
+      throw new AIProcessingError("Together AI API key not configured");
     }
 
     const requestBody: TogetherAIRequest = {
@@ -112,7 +114,7 @@ export class AIService {
       top_p: 0.7,
       top_k: 50,
       repetition_penalty: 1,
-      stop: ['<|eot_id|>', '<|eom_id|>'],
+      stop: ["<|eot_id|>", "<|eom_id|>"],
     };
 
     // Retry configuration
@@ -122,9 +124,9 @@ export class AIService {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const response = await fetch(`${this.baseURL}/chat/completions`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${this.apiKey}`,
           },
           body: JSON.stringify(requestBody),
@@ -133,48 +135,58 @@ export class AIService {
         // Check for retryable errors (503 Service Unavailable, 429 Too Many Requests)
         if (!response.ok) {
           const errorText = await response.text();
-          const isRetryable = response.status === 503 || response.status === 429;
-          
+          const isRetryable =
+            response.status === 503 || response.status === 429;
+
           if (isRetryable && attempt < maxRetries) {
             const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
-            console.warn(`Together AI API ${response.status} error. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            console.warn(
+              `Together AI API ${response.status} error. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`,
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
             continue; // Retry
           }
-          
+
           // Non-retryable error or max retries reached
           throw new Error(
-            `Together AI API error: ${response.status} ${response.statusText} - ${errorText}`
+            `Together AI API error: ${response.status} ${response.statusText} - ${errorText}`,
           );
         }
 
         const data: TogetherAIResponse = await response.json();
 
         if (!data.choices || data.choices.length === 0) {
-          throw new Error('No response from Together AI');
+          throw new Error("No response from Together AI");
         }
 
         return data.choices[0].message.content as string;
-        
       } catch (error) {
         // If this is the last attempt or non-retryable error, throw
-        if (attempt === maxRetries || !(error instanceof Error && error.message.includes('503')) && !(error instanceof Error && error.message.includes('429'))) {
-          console.error('Together AI API error:', error);
+        if (
+          attempt === maxRetries ||
+          (!(error instanceof Error && error.message.includes("503")) &&
+            !(error instanceof Error && error.message.includes("429")))
+        ) {
+          console.error("Together AI API error:", error);
           throw new AIProcessingError(
-            'Failed to process request with Together AI',
-            error
+            "Failed to process request with Together AI",
+            error,
           );
         }
-        
+
         // Otherwise, retry with backoff
         const delay = baseDelay * Math.pow(2, attempt);
-        console.warn(`Request failed. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        console.warn(
+          `Request failed. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    
+
     // This should never be reached, but just in case
-    throw new AIProcessingError('Failed to process request with Together AI after all retries');
+    throw new AIProcessingError(
+      "Failed to process request with Together AI after all retries",
+    );
   }
 
   /**
@@ -184,16 +196,31 @@ export class AIService {
     try {
       // Remove markdown code blocks if present
       let cleanContent = content.trim();
-      if (cleanContent.startsWith('```json')) {
-        cleanContent = cleanContent.replace(/^```json\s*/, '').replace(/```\s*$/, '');
-      } else if (cleanContent.startsWith('```')) {
-        cleanContent = cleanContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      if (cleanContent.startsWith("```json")) {
+        cleanContent = cleanContent
+          .replace(/^```json\s*/, "")
+          .replace(/```\s*$/, "");
+      } else if (cleanContent.startsWith("```")) {
+        cleanContent = cleanContent
+          .replace(/^```\s*/, "")
+          .replace(/```\s*$/, "");
+      }
+
+      // Check if response looks like an error message rather than JSON
+      if (!cleanContent.startsWith("{") && !cleanContent.startsWith("[")) {
+        console.error("AI returned non-JSON response:", content);
+        throw new AIProcessingError(
+          "Insufficient content to generate the requested tool. Please ensure your note has enough detailed content."
+        );
       }
 
       return JSON.parse(cleanContent);
     } catch (error) {
-      console.error('Failed to parse JSON response:', content);
-      throw new AIProcessingError('Failed to parse AI response as JSON');
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      console.error("Failed to parse JSON response:", content);
+      throw new AIProcessingError("Failed to parse AI response as JSON");
     }
   }
 
@@ -222,8 +249,8 @@ Return your response as a JSON object with this exact structure:
       const userPrompt = `Please organize and structure the following study notes:\n\n${rawContent}`;
 
       const messages: TogetherAIMessage[] = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ];
 
       const response = await this.makeRequest(messages, {
@@ -234,7 +261,7 @@ Return your response as a JSON object with this exact structure:
       const parsed = this.parseJSONResponse(response);
       return parsed as OrganizedNoteContent;
     } catch (error) {
-      throw new AIProcessingError('Failed to process note content', error);
+      throw new AIProcessingError("Failed to process note content", error);
     }
   }
 
@@ -245,11 +272,18 @@ Return your response as a JSON object with this exact structure:
     content: string,
     options: {
       questionCount?: number;
-      difficulty?: 'easy' | 'medium' | 'hard';
-    } = {}
+      difficulty?: "easy" | "medium" | "hard";
+    } = {},
   ): Promise<QuizContent> {
     try {
-      const { questionCount = 10, difficulty = 'medium' } = options;
+      // Validate content
+      if (!content || content.trim().length < 50) {
+        throw new AIProcessingError(
+          "Note content is too short to generate a quiz. Please add more detailed content (at least 50 characters)."
+        );
+      }
+
+      const { questionCount = 10, difficulty = "medium" } = options;
 
       const systemPrompt = `You are an expert educator creating quiz questions from study material.
 Generate ${questionCount} multiple-choice questions at ${difficulty} difficulty level.
@@ -277,8 +311,8 @@ Guidelines:
       const userPrompt = `Create ${questionCount} ${difficulty} quiz questions from this content:\n\n${content}`;
 
       const messages: TogetherAIMessage[] = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ];
 
       const response = await this.makeRequest(messages, {
@@ -289,7 +323,7 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as QuizContent;
     } catch (error) {
-      throw new AIProcessingError('Failed to generate quiz', error);
+      throw new AIProcessingError("Failed to generate quiz", error);
     }
   }
 
@@ -300,9 +334,16 @@ Guidelines:
     content: string,
     options: {
       cardCount?: number;
-    } = {}
+    } = {},
   ): Promise<FlashcardContent> {
     try {
+      // Validate content
+      if (!content || content.trim().length < 50) {
+        throw new AIProcessingError(
+          "Note content is too short to generate flashcards. Please add more detailed content (at least 50 characters)."
+        );
+      }
+
       const { cardCount = 15 } = options;
 
       const systemPrompt = `You are an expert educator creating flashcards for effective studying.
@@ -329,8 +370,8 @@ Guidelines:
       const userPrompt = `Create ${cardCount} flashcards from this content:\n\n${content}`;
 
       const messages: TogetherAIMessage[] = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ];
 
       const response = await this.makeRequest(messages, {
@@ -341,7 +382,7 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as FlashcardContent;
     } catch (error) {
-      throw new AIProcessingError('Failed to generate flashcards', error);
+      throw new AIProcessingError("Failed to generate flashcards", error);
     }
   }
 
@@ -351,12 +392,19 @@ Guidelines:
   async generateSummary(
     content: string,
     options: {
-      summaryLength?: 'short' | 'medium' | 'detailed';
-      summaryType?: 'paragraph' | 'bullet' | 'keypoints';
-    } = {}
+      summaryLength?: "short" | "medium" | "detailed";
+      summaryType?: "paragraph" | "bullet" | "keypoints";
+    } = {},
   ): Promise<SummaryContent> {
     try {
-      const { summaryLength = 'medium', summaryType = 'paragraph' } = options;
+      // Validate content
+      if (!content || content.trim().length < 50) {
+        throw new AIProcessingError(
+          "Note content is too short to generate a summary. Please add more detailed content (at least 50 characters)."
+        );
+      }
+
+      const { summaryLength = "medium", summaryType = "paragraph" } = options;
 
       // Map summaryLength to character count and bullet count
       const lengthConfig = {
@@ -367,13 +415,14 @@ Guidelines:
       const config = lengthConfig[summaryLength];
 
       // Build format instructions based on summaryType
-      let formatInstructions = '';
-      let summaryFormat = '';
-      
-      if (summaryType === 'paragraph') {
-        formatInstructions = 'Present the summary as a cohesive, flowing paragraph that reads naturally.';
-        summaryFormat = 'Write the summary as flowing prose in paragraph form.';
-      } else if (summaryType === 'bullet') {
+      let formatInstructions = "";
+      let summaryFormat = "";
+
+      if (summaryType === "paragraph") {
+        formatInstructions =
+          "Present the summary as a cohesive, flowing paragraph that reads naturally.";
+        summaryFormat = "Write the summary as flowing prose in paragraph form.";
+      } else if (summaryType === "bullet") {
         formatInstructions = `Present the summary as exactly ${config.bullets} organized bullet points. Each bullet point should be a clear, concise statement covering a distinct aspect of the content.`;
         summaryFormat = `Format the summary as exactly ${config.bullets} bullet points. Start each point with a bullet character (•) followed by the text. Example:
 • First key point about the topic
@@ -381,8 +430,8 @@ Guidelines:
 • Third major idea`;
       } else {
         formatInstructions = `Present the summary as exactly ${config.keypoints} numbered key points focusing only on the most critical concepts.`;
-          formatInstructions = `Present the summary as exactly ${config.keypoints} numbered key points focusing only on the most critical concepts. Each key point MUST start with a number and a period, and be separated by a newline. Do NOT put all key points inline; each must be on its own line.`;
-          summaryFormat = `Format the summary as exactly ${config.keypoints} numbered key points. Start each point with a number followed by a period and space, and put each key point on its own line. Example:
+        formatInstructions = `Present the summary as exactly ${config.keypoints} numbered key points focusing only on the most critical concepts. Each key point MUST start with a number and a period, and be separated by a newline. Do NOT put all key points inline; each must be on its own line.`;
+        summaryFormat = `Format the summary as exactly ${config.keypoints} numbered key points. Start each point with a number followed by a period and space, and put each key point on its own line. Example:
       1. First critical concept
       2. Second essential idea
       3. Third main point`;
@@ -403,8 +452,8 @@ Return your response as a JSON object with this exact structure:
 CRITICAL FORMATTING REQUIREMENTS for the "summary" field:
 ${summaryFormat}
 
-${summaryType === 'bullet' ? `MUST include exactly ${config.bullets} bullet points separated by newlines.` : ''}
-${summaryType === 'keypoints' ? `MUST include exactly ${config.keypoints} numbered points separated by newlines.` : ''}
+${summaryType === "bullet" ? `MUST include exactly ${config.bullets} bullet points separated by newlines.` : ""}
+${summaryType === "keypoints" ? `MUST include exactly ${config.keypoints} numbered points separated by newlines.` : ""}
 
 Guidelines:
 - Summary field must follow the exact format specified above
@@ -416,8 +465,8 @@ Guidelines:
       const userPrompt = `Create a summary of this content:\n\n${content}`;
 
       const messages: TogetherAIMessage[] = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ];
 
       const response = await this.makeRequest(messages, {
@@ -428,7 +477,7 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as SummaryContent;
     } catch (error) {
-      throw new AIProcessingError('Failed to generate summary', error);
+      throw new AIProcessingError("Failed to generate summary", error);
     }
   }
 
@@ -440,38 +489,40 @@ Guidelines:
     content: string,
     options?: {
       questionCount?: number;
-      difficulty?: 'easy' | 'medium' | 'hard';
+      difficulty?: "easy" | "medium" | "hard";
       cardCount?: number;
-      summaryLength?: 'short' | 'medium' | 'detailed';
-      summaryType?: 'paragraph' | 'bullet' | 'keypoints';
-    }
+      summaryLength?: "short" | "medium" | "detailed";
+      summaryType?: "paragraph" | "bullet" | "keypoints";
+    },
   ): Promise<string> {
     try {
       let result: any;
 
       switch (type) {
-        case 'ORGANIZED_NOTE':
+        case "ORGANIZED_NOTE":
           result = await this.processNote(content);
           break;
-        case 'QUIZ':
+        case "QUIZ":
           result = await this.generateQuiz(content, {
             questionCount: options?.questionCount,
             difficulty: options?.difficulty,
           });
           break;
-        case 'FLASHCARDS':
+        case "FLASHCARDS":
           result = await this.generateFlashcards(content, {
             cardCount: options?.cardCount,
           });
           break;
-        case 'SUMMARY':
+        case "SUMMARY":
           result = await this.generateSummary(content, {
             summaryLength: options?.summaryLength,
             summaryType: options?.summaryType,
           });
           break;
         default:
-          throw new AIProcessingError(`Unsupported learning tool type: ${type}`);
+          throw new AIProcessingError(
+            `Unsupported learning tool type: ${type}`,
+          );
       }
 
       return JSON.stringify(result);
@@ -479,7 +530,7 @@ Guidelines:
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      throw new AIProcessingError('Failed to generate learning tool', error);
+      throw new AIProcessingError("Failed to generate learning tool", error);
     }
   }
 
@@ -494,11 +545,13 @@ Guidelines:
     // Text is already extracted by pdfjs client-side
     // Just validate and return it
     const trimmedText = extractedText.trim();
-    
+
     if (!trimmedText || trimmedText.length === 0) {
-      throw new AIProcessingError('Extracted text is empty. The PDF might not contain readable text.');
+      throw new AIProcessingError(
+        "Extracted text is empty. The PDF might not contain readable text.",
+      );
     }
-    
+
     return trimmedText;
   }
 
@@ -515,7 +568,7 @@ Guidelines:
       // Then process the extracted text into organized notes
       return await this.processNote(extractedText);
     } catch (error) {
-      throw new AIProcessingError('Failed to process PDF to note', error);
+      throw new AIProcessingError("Failed to process PDF to note", error);
     }
   }
 
@@ -532,19 +585,19 @@ If there are diagrams, tables, or other visual elements, describe them clearly.
 Return only the extracted text and descriptions, without any additional commentary.`;
 
       const messages: TogetherAIMessage[] = [
-        { 
-          role: 'system', 
-          content: systemPrompt 
+        {
+          role: "system",
+          content: systemPrompt,
         },
         {
-          role: 'user',
+          role: "user",
           content: [
             {
-              type: 'text',
-              text: 'Extract all text and describe visual elements from this image:',
+              type: "text",
+              text: "Extract all text and describe visual elements from this image:",
             },
             {
-              type: 'image_url',
+              type: "image_url",
               image_url: {
                 url: `data:image/jpeg;base64,${imageBase64}`,
               },
@@ -559,12 +612,12 @@ Return only the extracted text and descriptions, without any additional commenta
           maxTokens: 4000,
           temperature: 0.1,
         },
-        this.visionModel
+        this.visionModel,
       );
 
       return response;
     } catch (error) {
-      throw new AIProcessingError('Failed to extract text from image', error);
+      throw new AIProcessingError("Failed to extract text from image", error);
     }
   }
 
@@ -574,7 +627,9 @@ Return only the extracted text and descriptions, without any additional commenta
    * @param knowledgeBase - Raw extracted content from PDF/image
    * @returns Well-structured note content
    */
-  async generateStructuredNoteFromKnowledge(knowledgeBase: string): Promise<string> {
+  async generateStructuredNoteFromKnowledge(
+    knowledgeBase: string,
+  ): Promise<string> {
     try {
       const systemPrompt = `You are an expert educational content writer and learning specialist.
 Your task is to transform raw extracted content (from PDFs or images) into well-structured, 
@@ -596,8 +651,8 @@ Return a well-formatted markdown text that students can easily learn from.`;
       const userPrompt = `Transform this raw extracted content into a well-structured, learning-optimized study note:\n\n${knowledgeBase}`;
 
       const messages: TogetherAIMessage[] = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ];
 
       const response = await this.makeRequest(messages, {
@@ -607,7 +662,10 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
       return response;
     } catch (error) {
-      throw new AIProcessingError('Failed to generate structured note from knowledge', error);
+      throw new AIProcessingError(
+        "Failed to generate structured note from knowledge",
+        error,
+      );
     }
   }
 
@@ -621,7 +679,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
     structuredNote: string;
   }> {
     if (!this.apiKey) {
-      throw new AIProcessingError('Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.');
+      throw new AIProcessingError(
+        "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
+      );
     }
 
     try {
@@ -629,7 +689,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
       const knowledgeBase = await this.extractTextFromPDF(extractedText);
 
       if (!knowledgeBase || knowledgeBase.trim().length === 0) {
-        throw new AIProcessingError('No content could be extracted from the PDF. The PDF might be empty or image-based.');
+        throw new AIProcessingError(
+          "No content could be extracted from the PDF. The PDF might be empty or image-based.",
+        );
       }
 
       // Step 2: Enforce hard limits to prevent excessive token usage and costs
@@ -638,13 +700,15 @@ Return a well-formatted markdown text that students can easily learn from.`;
       const maxCharsPerChunk = 90000; // Conservative limit per chunk
       const maxTotalChars = 300000; // HARD LIMIT: Max 300k chars = ~3 chunks = ~3 AI credits
       const absoluteMaxChunks = 5; // Never process more than 5 chunks
-      
+
       let processedText = knowledgeBase;
       let wasTruncated = false;
 
       // COST PROTECTION: Truncate if too large
       if (knowledgeBase.length > maxTotalChars) {
-        console.warn(`⚠️ PDF is very large (${knowledgeBase.length} chars). Truncating to ${maxTotalChars} chars to prevent excessive costs.`);
+        console.warn(
+          `⚠️ PDF is very large (${knowledgeBase.length} chars). Truncating to ${maxTotalChars} chars to prevent excessive costs.`,
+        );
         processedText = knowledgeBase.substring(0, maxTotalChars);
         wasTruncated = true;
       }
@@ -653,43 +717,51 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
       if (processedText.length > maxCharsPerChunk) {
         // Split into chunks and process separately
-        console.log(`PDF is large (${processedText.length} chars), processing in chunks...`);
-        
+        console.log(
+          `PDF is large (${processedText.length} chars), processing in chunks...`,
+        );
+
         const chunks: string[] = [];
-        let currentChunk = '';
-        const lines = processedText.split('\n');
-        
+        let currentChunk = "";
+        const lines = processedText.split("\n");
+
         for (const line of lines) {
           // COST PROTECTION: Stop if we hit chunk limit
           if (chunks.length >= absoluteMaxChunks) {
-            console.warn(`⚠️ Reached maximum chunk limit (${absoluteMaxChunks}). Stopping to prevent excessive costs.`);
+            console.warn(
+              `⚠️ Reached maximum chunk limit (${absoluteMaxChunks}). Stopping to prevent excessive costs.`,
+            );
             break;
           }
 
-          if ((currentChunk + line + '\n').length > maxCharsPerChunk) {
+          if ((currentChunk + line + "\n").length > maxCharsPerChunk) {
             if (currentChunk) {
               chunks.push(currentChunk);
-              currentChunk = line + '\n';
+              currentChunk = line + "\n";
             } else {
               // Single line is too long, split it
               chunks.push(line.substring(0, maxCharsPerChunk));
-              currentChunk = line.substring(maxCharsPerChunk) + '\n';
+              currentChunk = line.substring(maxCharsPerChunk) + "\n";
             }
           } else {
-            currentChunk += line + '\n';
+            currentChunk += line + "\n";
           }
         }
         if (currentChunk && chunks.length < absoluteMaxChunks) {
           chunks.push(currentChunk);
         }
 
-        console.log(`Split into ${chunks.length} chunks (max ${absoluteMaxChunks})`);
+        console.log(
+          `Split into ${chunks.length} chunks (max ${absoluteMaxChunks})`,
+        );
 
         // Process each chunk
         const processedChunks: string[] = [];
         for (let i = 0; i < chunks.length; i++) {
           console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
-          const chunkNote = await this.generateStructuredNoteFromKnowledge(chunks[i]);
+          const chunkNote = await this.generateStructuredNoteFromKnowledge(
+            chunks[i],
+          );
           processedChunks.push(`\n\n## Section ${i + 1}\n\n${chunkNote}`);
         }
 
@@ -698,19 +770,24 @@ Return a well-formatted markdown text that students can easily learn from.`;
         if (wasTruncated) {
           headerNote += `\n\n⚠️ **Note:** The PDF was very large and was truncated to ${maxTotalChars.toLocaleString()} characters to manage processing costs. Some content from the end of the document may not be included.`;
         }
-        const markdownNote = `# Combined Note\n\n${headerNote}\n\n${processedChunks.join('\n\n---\n')}`;
+        const markdownNote = `# Combined Note\n\n${headerNote}\n\n${processedChunks.join("\n\n---\n")}`;
         // Convert to HTML for TipTap editor
         structuredNote = markdownToHtml(markdownNote);
       } else {
         // Small enough to process in one go
-        console.log('Processing PDF in single request (under chunk size limit)');
-        const markdownNote = await this.generateStructuredNoteFromKnowledge(processedText);
-        
+        console.log(
+          "Processing PDF in single request (under chunk size limit)",
+        );
+        const markdownNote =
+          await this.generateStructuredNoteFromKnowledge(processedText);
+
         let finalMarkdown = markdownNote;
         if (wasTruncated) {
-          finalMarkdown = `⚠️ **Note:** This PDF was truncated to manage processing costs. Original size: ${knowledgeBase.length.toLocaleString()} characters, processed: ${processedText.length.toLocaleString()} characters.\n\n---\n\n` + markdownNote;
+          finalMarkdown =
+            `⚠️ **Note:** This PDF was truncated to manage processing costs. Original size: ${knowledgeBase.length.toLocaleString()} characters, processed: ${processedText.length.toLocaleString()} characters.\n\n---\n\n` +
+            markdownNote;
         }
-        
+
         // Convert to HTML for TipTap editor
         structuredNote = markdownToHtml(finalMarkdown);
       }
@@ -723,7 +800,10 @@ Return a well-formatted markdown text that students can easily learn from.`;
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      throw new AIProcessingError('Failed to process PDF with knowledge extraction', error);
+      throw new AIProcessingError(
+        "Failed to process PDF with knowledge extraction",
+        error,
+      );
     }
   }
 
@@ -737,7 +817,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
     structuredNote: string;
   }> {
     if (!this.apiKey) {
-      throw new AIProcessingError('Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.');
+      throw new AIProcessingError(
+        "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
+      );
     }
 
     try {
@@ -745,11 +827,14 @@ Return a well-formatted markdown text that students can easily learn from.`;
       const knowledgeBase = await this.extractTextFromImage(imageBase64);
 
       if (!knowledgeBase || knowledgeBase.trim().length === 0) {
-        throw new AIProcessingError('No content could be extracted from the image. The image might be empty or unclear.');
+        throw new AIProcessingError(
+          "No content could be extracted from the image. The image might be empty or unclear.",
+        );
       }
 
       // Step 2: Generate a well-structured note for better learning
-      const structuredNote = await this.generateStructuredNoteFromKnowledge(knowledgeBase);
+      const structuredNote =
+        await this.generateStructuredNoteFromKnowledge(knowledgeBase);
 
       return {
         knowledgeBase,
@@ -759,7 +844,10 @@ Return a well-formatted markdown text that students can easily learn from.`;
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      throw new AIProcessingError('Failed to process image with knowledge extraction', error);
+      throw new AIProcessingError(
+        "Failed to process image with knowledge extraction",
+        error,
+      );
     }
   }
 }

@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { learningToolService } from '@/service/learningtool.service';
-import { validateRequest, learningToolQuerySchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { learningToolService } from "@/service/learningtool.service";
+import { validateRequest, learningToolQuerySchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/learning-tools
@@ -18,15 +18,21 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);
-    const validatedParams = validateRequest(learningToolQuerySchema, searchParams);
+    const validatedParams = validateRequest(
+      learningToolQuerySchema,
+      searchParams,
+    );
 
     // Get learning tools
-    const result = await learningToolService.getUserLearningTools(user.id, validatedParams);
+    const result = await learningToolService.getUserLearningTools(
+      user.id,
+      validatedParams,
+    );
 
     return successResponse(result);
   } catch (error) {

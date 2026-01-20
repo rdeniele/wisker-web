@@ -26,11 +26,11 @@ function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
         setIsLoading(true);
         const response = await fetch(`/api/subjects/${subjectId}`);
         const result = await response.json();
-        
+
         if (!response.ok) {
           throw new Error(result.error?.message || "Failed to fetch subject");
         }
-        
+
         setSubjectName(result.data.title || "");
         setDescription(result.data.description || "");
       } catch (err) {
@@ -39,21 +39,21 @@ function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
         setIsLoading(false);
       }
     };
-    
+
     fetchSubject();
   }, [subjectId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
+
     if (!subjectName.trim()) {
       setError("Subject name is required");
       return;
     }
-    
+
     setIsUpdating(true);
-    
+
     try {
       const response = await fetch(`/api/subjects/${subjectId}`, {
         method: "PATCH",
@@ -65,13 +65,13 @@ function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
           description: description.trim() || undefined,
         }),
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error?.message || "Failed to update subject");
       }
-      
+
       // Success - refresh and close
       onSuccess?.();
       router.refresh();
@@ -84,7 +84,10 @@ function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans transition-colors">
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-sans transition-colors"
+    >
       {/* Close Button */}
       <button
         className="absolute left-4 top-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -109,8 +112,20 @@ function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
           {isUpdating ? (
             <>
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
               </svg>
               Updating...
             </>
@@ -185,7 +200,10 @@ function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
 
       {/* Exam Date */}
       <div className="mb-4">
-        <label className="block text-sm font-semibold mb-1 text-gray-900" htmlFor="examDate">
+        <label
+          className="block text-sm font-semibold mb-1 text-gray-900"
+          htmlFor="examDate"
+        >
           Exam Date{" "}
           <span className="text-gray-500 font-normal">(Optional)</span>
         </label>

@@ -1,6 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FiRotateCw, FiChevronLeft, FiChevronRight, FiArrowLeft } from "react-icons/fi";
+import {
+  FiRotateCw,
+  FiChevronLeft,
+  FiChevronRight,
+  FiArrowLeft,
+} from "react-icons/fi";
 import { FlashcardConfig } from "./FlashcardSetup";
 import { useToast } from "@/../hook/useToast";
 
@@ -32,25 +37,29 @@ export default function FlashcardView({
   useEffect(() => {
     const fetchFlashcards = async () => {
       try {
-        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
-        
+        const response = await fetch(
+          `/api/learning-tools/${config.learningToolId}`,
+        );
+
         if (!response.ok) {
-          throw new Error('Failed to fetch flashcards');
+          throw new Error("Failed to fetch flashcards");
         }
 
         const data = await response.json();
         const flashcardContent = JSON.parse(data.data.generatedContent);
-        
+
         if (!flashcardContent.cards || flashcardContent.cards.length === 0) {
-          throw new Error('No flashcards found');
+          throw new Error("No flashcards found");
         }
 
         setFlashcards(flashcardContent.cards);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching flashcards:', error);
-        setError(error instanceof Error ? error.message : 'Failed to load flashcards');
-        showToast('Failed to load flashcards', 'error');
+        console.error("Error fetching flashcards:", error);
+        setError(
+          error instanceof Error ? error.message : "Failed to load flashcards",
+        );
+        showToast("Failed to load flashcards", "error");
         setIsLoading(false);
       }
     };
@@ -85,9 +94,24 @@ export default function FlashcardView({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <svg className="animate-spin h-10 w-10 text-purple-600" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          <svg
+            className="animate-spin h-10 w-10 text-purple-600"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+              fill="none"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
           </svg>
           <div className="text-gray-500 font-medium">Loading flashcards...</div>
         </div>
@@ -110,10 +134,10 @@ export default function FlashcardView({
         </button>
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            {error ? 'Error Loading Flashcards' : 'No Flashcards Available'}
+            {error ? "Error Loading Flashcards" : "No Flashcards Available"}
           </h3>
           <p className="text-gray-600 mb-4">
-            {error || 'Could not generate flashcards from the selected notes.'}
+            {error || "Could not generate flashcards from the selected notes."}
           </p>
           <button
             onClick={onBack}
@@ -152,14 +176,18 @@ export default function FlashcardView({
             Card {currentIndex + 1} of {flashcards.length}
           </p>
           <span className="text-gray-400">•</span>
-          <p className={`font-semibold ${
-            config.difficulty === "easy"
-              ? "text-green-600"
-              : config.difficulty === "medium"
-              ? "text-yellow-600"
-              : "text-red-600"
-          }`}>
-            {config.difficulty.charAt(0).toUpperCase() + config.difficulty.slice(1)} Mode
+          <p
+            className={`font-semibold ${
+              config.difficulty === "easy"
+                ? "text-green-600"
+                : config.difficulty === "medium"
+                  ? "text-yellow-600"
+                  : "text-red-600"
+            }`}
+          >
+            {config.difficulty.charAt(0).toUpperCase() +
+              config.difficulty.slice(1)}{" "}
+            Mode
           </p>
         </div>
       </div>

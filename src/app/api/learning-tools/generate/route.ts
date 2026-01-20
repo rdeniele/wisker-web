@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { learningToolService } from '@/service/learningtool.service';
-import { validateRequest, generateLearningToolSchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { learningToolService } from "@/service/learningtool.service";
+import { validateRequest, generateLearningToolSchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * POST /api/learning-tools/generate
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate request body
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     // Generate learning tool
     const learningTool = await learningToolService.generateLearningTool(
       user.id,
-      validatedData
+      validatedData,
     );
 
     return successResponse(learningTool, 201);

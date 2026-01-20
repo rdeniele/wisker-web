@@ -1,8 +1,8 @@
-import { NextRequest } from 'next/server';
-import { successResponse, errorResponse } from '@/lib/api-response';
-import { noteService } from '@/service/note.service';
-import { validateRequest, noteQuerySchema } from '@/lib/validation';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { noteService } from "@/service/note.service";
+import { validateRequest, noteQuerySchema } from "@/lib/validation";
+import { createClient } from "@/lib/supabase/server";
 
 /**
  * GET /api/notes
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return errorResponse(new Error('Unauthorized'), 401);
+      return errorResponse(new Error("Unauthorized"), 401);
     }
 
     // Parse and validate query parameters

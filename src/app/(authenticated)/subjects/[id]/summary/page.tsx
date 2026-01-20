@@ -48,7 +48,7 @@ function SubjectSummaryPage({ params }: SubjectSummaryPageProps) {
           setNotes(notesData.data.notes || []);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }

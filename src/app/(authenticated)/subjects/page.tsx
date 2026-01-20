@@ -21,7 +21,9 @@ function SubjectsPage() {
   const [, startTransition] = useTransition();
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
+    null,
+  );
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +40,7 @@ function SubjectsPage() {
         // Silently fail - user sync will be retried on next page load
       }
     };
-    
+
     syncUser().then(() => fetchSubjects());
   }, []);
 
@@ -47,7 +49,7 @@ function SubjectsPage() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await fetch("/api/subjects", {
         method: "GET",
         headers: {
@@ -55,18 +57,18 @@ function SubjectsPage() {
         },
         credentials: "include",
       });
-      
+
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Server error occurred. Please try again later.");
       }
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error?.message || "Failed to fetch subjects");
       }
-      
+
       setSubjects(result.data.subjects || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load subjects");
@@ -86,7 +88,7 @@ function SubjectsPage() {
   const handleDeleteSubject = async (id: string) => {
     try {
       setIsDeleting(true);
-      
+
       const response = await fetch(`/api/subjects/${id}`, {
         method: "DELETE",
         headers: {
@@ -94,15 +96,15 @@ function SubjectsPage() {
         },
         credentials: "include",
       });
-      
+
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error?.message || "Failed to delete subject");
       }
-      
+
       // Remove the subject from the local state
-      setSubjects(prev => prev.filter(subject => subject.id !== id));
+      setSubjects((prev) => prev.filter((subject) => subject.id !== id));
       setDeleteConfirmId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete subject");
@@ -129,7 +131,7 @@ function SubjectsPage() {
   };
 
   // Transform subjects to match the format expected by SubjectCard
-  const transformedSubjects = subjects.map(subject => ({
+  const transformedSubjects = subjects.map((subject) => ({
     id: subject.id,
     name: subject.title,
     notes: subject._count?.notes || 0,
@@ -146,7 +148,9 @@ function SubjectsPage() {
             My Subjects
           </h1>
           <p className="text-gray-600 text-sm sm:text-base">
-            {transformedSubjects.length} {transformedSubjects.length === 1 ? 'subject' : 'subjects'} to explore
+            {transformedSubjects.length}{" "}
+            {transformedSubjects.length === 1 ? "subject" : "subjects"} to
+            explore
           </p>
         </div>
 
@@ -162,7 +166,7 @@ function SubjectsPage() {
                 Try again
               </button>
               <button
-                onClick={() => window.location.href = "/api/auth/login"}
+                onClick={() => (window.location.href = "/api/auth/login")}
                 className="text-red-700 underline hover:no-underline text-sm"
               >
                 Re-authenticate
@@ -226,7 +230,7 @@ function SubjectsPage() {
           onClick={() => setShowModal(false)}
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <CreateSubject 
+            <CreateSubject
               onClose={() => setShowModal(false)}
               onSuccess={() => {
                 fetchSubjects(); // Refresh the subjects list
@@ -275,7 +279,8 @@ function SubjectsPage() {
               Delete Subject?
             </h2>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this subject? This action cannot be undone and will delete all associated notes and learning tools.
+              Are you sure you want to delete this subject? This action cannot
+              be undone and will delete all associated notes and learning tools.
             </p>
             <div className="flex gap-3 justify-end">
               <button

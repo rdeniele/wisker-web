@@ -20,7 +20,7 @@ function StudyStats() {
     const fetchStats = async () => {
       try {
         setIsLoading(true);
-        
+
         // Fetch subjects to count them and aggregate notes
         const subjectsResponse = await fetch("/api/subjects", {
           method: "GET",
@@ -29,17 +29,17 @@ function StudyStats() {
           },
           credentials: "include",
         });
-        
+
         if (subjectsResponse.ok) {
           const subjectsResult = await subjectsResponse.json();
           const subjects = subjectsResult.data.subjects || [];
-          
+
           // Calculate total subjects and total notes across all subjects
           const totalSubjects = subjects.length;
           const totalNotes = subjects.reduce((sum: number, subject: any) => {
             return sum + (subject._count?.notes || 0);
           }, 0);
-          
+
           setStats({
             totalSubjects,
             totalNotes,
@@ -52,7 +52,7 @@ function StudyStats() {
         setIsLoading(false);
       }
     };
-    
+
     fetchStats();
   }, []);
   return (
@@ -67,7 +67,10 @@ function StudyStats() {
         {/* Total Subjects Card */}
         <div
           className="bg-linear-to-br from-[#FFE5E5] to-[#FFD0D0] p-6 rounded-2xl"
-          style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
+          style={{
+            fontFamily: "Fredoka, Arial, sans-serif",
+            boxShadow: "0 4px 0 #ececec",
+          }}
         >
           <div className="flex flex-col items-center justify-center">
             {isLoading ? (
@@ -91,7 +94,10 @@ function StudyStats() {
         {/* Total Notes Card */}
         <div
           className="bg-linear-to-br from-[#E0F7FF] to-[#B8E6FF] p-6 rounded-2xl"
-          style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
+          style={{
+            fontFamily: "Fredoka, Arial, sans-serif",
+            boxShadow: "0 4px 0 #ececec",
+          }}
         >
           <div className="flex flex-col items-center justify-center">
             {isLoading ? (
@@ -115,7 +121,10 @@ function StudyStats() {
         {/* Quizzes This Week Card */}
         <div
           className="bg-linear-to-br from-[#F0E5FF] to-[#E0CFFF] p-6 rounded-2xl"
-          style={{ fontFamily: "Fredoka, Arial, sans-serif", boxShadow: '0 4px 0 #ececec' }}
+          style={{
+            fontFamily: "Fredoka, Arial, sans-serif",
+            boxShadow: "0 4px 0 #ececec",
+          }}
         >
           <div className="flex flex-col items-center justify-center">
             {isLoading ? (
