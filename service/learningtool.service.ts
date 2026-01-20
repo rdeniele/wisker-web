@@ -261,6 +261,11 @@ export class LearningToolService {
         throw new InvalidInputError('Invalid source type');
       }
 
+      // Validate that we have content to process
+      if (!contentToProcess || contentToProcess.trim().length === 0) {
+        throw new InvalidInputError('No content available to generate learning tool. Please ensure your notes have content.');
+      }
+
       // Process with AI service based on type
       const generatedContent = await aiService.generateLearningTool(
         data.type,
@@ -269,6 +274,8 @@ export class LearningToolService {
           questionCount: data.questionCount,
           difficulty: data.difficulty,
           cardCount: data.cardCount,
+          summaryLength: data.summaryLength,
+          summaryType: data.summaryType,
         }
       );
 

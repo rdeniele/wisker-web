@@ -90,7 +90,7 @@ export class AIService {
   }
 
   /**
-   * Make a request to Together AI API
+   * Make a request to Together AI API with retry logic
    */
   private async makeRequest(
     messages: TogetherAIMessage[],
@@ -115,37 +115,66 @@ export class AIService {
       stop: ['<|eot_id|>', '<|eom_id|>'],
     };
 
-    try {
-      const response = await fetch(`${this.baseURL}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
+    // Retry configuration
+    const maxRetries = 3;
+    const baseDelay = 1000; // 1 second
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Together AI API error: ${response.status} ${response.statusText} - ${errorText}`
-        );
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(`${this.baseURL}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        // Check for retryable errors (503 Service Unavailable, 429 Too Many Requests)
+        if (!response.ok) {
+          const errorText = await response.text();
+          const isRetryable = response.status === 503 || response.status === 429;
+          
+          if (isRetryable && attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
+            console.warn(`Together AI API ${response.status} error. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue; // Retry
+          }
+          
+          // Non-retryable error or max retries reached
+          throw new Error(
+            `Together AI API error: ${response.status} ${response.statusText} - ${errorText}`
+          );
+        }
+
+        const data: TogetherAIResponse = await response.json();
+
+        if (!data.choices || data.choices.length === 0) {
+          throw new Error('No response from Together AI');
+        }
+
+        return data.choices[0].message.content as string;
+        
+      } catch (error) {
+        // If this is the last attempt or non-retryable error, throw
+        if (attempt === maxRetries || !(error instanceof Error && error.message.includes('503')) && !(error instanceof Error && error.message.includes('429'))) {
+          console.error('Together AI API error:', error);
+          throw new AIProcessingError(
+            'Failed to process request with Together AI',
+            error
+          );
+        }
+        
+        // Otherwise, retry with backoff
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.warn(`Request failed. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
-
-      const data: TogetherAIResponse = await response.json();
-
-      if (!data.choices || data.choices.length === 0) {
-        throw new Error('No response from Together AI');
-      }
-
-      return data.choices[0].message.content as string;
-    } catch (error) {
-      console.error('Together AI API error:', error);
-      throw new AIProcessingError(
-        'Failed to process request with Together AI',
-        error
-      );
     }
+    
+    // This should never be reached, but just in case
+    throw new AIProcessingError('Failed to process request with Together AI after all retries');
   }
 
   /**
@@ -322,28 +351,66 @@ Guidelines:
   async generateSummary(
     content: string,
     options: {
-      maxLength?: number;
-      includeKeyPoints?: boolean;
+      summaryLength?: 'short' | 'medium' | 'detailed';
+      summaryType?: 'paragraph' | 'bullet' | 'keypoints';
     } = {}
   ): Promise<SummaryContent> {
     try {
-      const { maxLength = 500, includeKeyPoints = true } = options;
+      const { summaryLength = 'medium', summaryType = 'paragraph' } = options;
+
+      // Map summaryLength to character count and bullet count
+      const lengthConfig = {
+        short: { chars: 300, bullets: 3, keypoints: 3 },
+        medium: { chars: 600, bullets: 6, keypoints: 5 },
+        detailed: { chars: 1200, bullets: 10, keypoints: 8 },
+      };
+      const config = lengthConfig[summaryLength];
+
+      // Build format instructions based on summaryType
+      let formatInstructions = '';
+      let summaryFormat = '';
+      
+      if (summaryType === 'paragraph') {
+        formatInstructions = 'Present the summary as a cohesive, flowing paragraph that reads naturally.';
+        summaryFormat = 'Write the summary as flowing prose in paragraph form.';
+      } else if (summaryType === 'bullet') {
+        formatInstructions = `Present the summary as exactly ${config.bullets} organized bullet points. Each bullet point should be a clear, concise statement covering a distinct aspect of the content.`;
+        summaryFormat = `Format the summary as exactly ${config.bullets} bullet points. Start each point with a bullet character (•) followed by the text. Example:
+• First key point about the topic
+• Second important concept
+• Third major idea`;
+      } else {
+        formatInstructions = `Present the summary as exactly ${config.keypoints} numbered key points focusing only on the most critical concepts.`;
+        summaryFormat = `Format the summary as exactly ${config.keypoints} numbered key points. Start each point with a number followed by a period and space. Example:
+1. First critical concept
+2. Second essential idea
+3. Third main point`;
+      }
 
       const systemPrompt = `You are an expert at creating concise, informative summaries of study material.
-Create a summary that captures the essential information in approximately ${maxLength} characters.
+Create a ${summaryLength} summary in ${summaryType} format.
+
+${formatInstructions}
 
 Return your response as a JSON object with this exact structure:
 {
-  "summary": "A comprehensive summary of the content",
+  "summary": "Your formatted summary here",
   "keyPoints": ["Key point 1", "Key point 2", "Key point 3"],
   "mainTopics": ["Topic 1", "Topic 2", "Topic 3"]
 }
 
+CRITICAL FORMATTING REQUIREMENTS for the "summary" field:
+${summaryFormat}
+
+${summaryType === 'bullet' ? `MUST include exactly ${config.bullets} bullet points separated by newlines.` : ''}
+${summaryType === 'keypoints' ? `MUST include exactly ${config.keypoints} numbered points separated by newlines.` : ''}
+
 Guidelines:
-- Summary should be clear and well-written
-- Include 5-7 key points
-- Identify 3-5 main topics
-- Focus on the most important information`;
+- Summary field must follow the exact format specified above
+- Include 5-7 items in keyPoints array
+- Identify 3-5 items in mainTopics array
+- Focus on the most important information
+- For bullet/keypoints format: Each point should be substantial but concise (1-2 sentences)`;
 
       const userPrompt = `Create a summary of this content:\n\n${content}`;
 
@@ -374,6 +441,8 @@ Guidelines:
       questionCount?: number;
       difficulty?: 'easy' | 'medium' | 'hard';
       cardCount?: number;
+      summaryLength?: 'short' | 'medium' | 'detailed';
+      summaryType?: 'paragraph' | 'bullet' | 'keypoints';
     }
   ): Promise<string> {
     try {
@@ -395,7 +464,10 @@ Guidelines:
           });
           break;
         case 'SUMMARY':
-          result = await this.generateSummary(content);
+          result = await this.generateSummary(content, {
+            summaryLength: options?.summaryLength,
+            summaryType: options?.summaryType,
+          });
           break;
         default:
           throw new AIProcessingError(`Unsupported learning tool type: ${type}`);

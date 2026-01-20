@@ -3,81 +3,54 @@ import { useState, useEffect } from "react";
 import { FiArrowLeft, FiCopy, FiCheck, FiDownload } from "react-icons/fi";
 import { SummaryConfig } from "./SummarySetup";
 
-interface Note {
-  id: number;
-  title: string;
-}
-
 interface SummaryViewProps {
   subjectName: string;
-  selectedNoteIds: number[];
-  notes: Note[];
   config: SummaryConfig;
   onBack: () => void;
 }
 
 export default function SummaryView({
   subjectName,
-  selectedNoteIds,
-  notes,
   config,
   onBack,
 }: SummaryViewProps) {
   const [summary, setSummary] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [isCopied, setIsCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const selectedNotes = notes.filter((note) => selectedNoteIds.includes(note.id));
-
-  // Generate summary from selected notes
+  // Fetch summary from learning tool API
   useEffect(() => {
-    const generateSummary = () => {
-      let mockSummary = "";
-      const notesList = selectedNotes.map((n) => n.title).join(", ");
-
-      if (config.summaryType === "paragraph") {
-        if (config.summaryLength === "short") {
-          mockSummary = `This summary covers the key concepts from ${selectedNotes.length} note${selectedNotes.length > 1 ? "s" : ""} in ${subjectName}: ${notesList}. The content provides an overview of the main topics discussed.`;
-        } else if (config.summaryLength === "medium") {
-          mockSummary = `This comprehensive summary synthesizes information from ${selectedNotes.length} note${selectedNotes.length > 1 ? "s" : ""} in ${subjectName} (${notesList}). The material explores several key concepts, including their definitions, applications, and relationships. The notes are organized to help understand the fundamental principles and their practical implications across various contexts. Together, these notes provide a cohesive understanding of the subject matter.`;
-        } else {
-          mockSummary = `This detailed summary offers an in-depth exploration of ${subjectName} based on ${selectedNotes.length} selected note${selectedNotes.length > 1 ? "s" : ""}: ${notesList}. The content begins by introducing fundamental concepts from each note and progressively builds upon them to cover more advanced topics. Throughout the material, various examples are provided to illustrate key points, and the relationships between different concepts across notes are carefully explained. The summary includes both theoretical frameworks and practical applications, helping readers develop a comprehensive understanding of the topic. Special attention is given to common misconceptions and challenging areas, with detailed explanations to clarify these aspects. The integration of multiple notes provides a well-rounded perspective on the subject.`;
+    const fetchSummary = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch summary');
         }
-      } else if (config.summaryType === "bullet") {
-        const shortPoints = selectedNotes.map((note) => `Key concepts from ${note.title}`);
-        const mediumPoints = selectedNotes.flatMap((note) => [
-          `Overview from ${note.title}`,
-          `Key principles and applications`,
-        ]);
-        const detailedPoints = selectedNotes.flatMap((note) => [
-          `Comprehensive introduction from ${note.title}`,
-          `Core principles and frameworks`,
-          `Practical applications and examples`,
-        ]);
-
-        const points =
-          config.summaryLength === "short"
-            ? shortPoints
-            : config.summaryLength === "medium"
-            ? mediumPoints
-            : detailedPoints;
-
-        mockSummary = points.map((point) => `• ${point}`).join("\n");
-      } else {
-        // keypoints
-        const points = selectedNotes.map((note, idx) => 
-          `${idx + 1}. ${note.title}: Key concepts and applications from this note`
-        );
-
-        mockSummary = points.join("\n\n");
+        
+        const data = await response.json();
+        const summaryContent = JSON.parse(data.data.generatedContent);
+        
+        // Extract the summary text based on the type
+        if (summaryContent.summary) {
+          setSummary(summaryContent.summary);
+        } else {
+          throw new Error('Invalid summary format');
+        }
+      } catch (err) {
+        console.error('Error fetching summary:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load summary');
+      } finally {
+        setIsLoading(false);
       }
-
-      setSummary(mockSummary);
-      setIsLoading(false);
     };
 
-    generateSummary();
-  }, [subjectName, selectedNotes, config]);
+    fetchSummary();
+  }, [config.learningToolId]);
 
   const handleCopy = async () => {
     try {
@@ -118,6 +91,35 @@ export default function SummaryView({
         </button>
         <div className="flex items-center justify-center h-96">
           <div className="text-gray-500">Generating summary...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
+        >
+          <FiArrowLeft
+            size={20}
+            className="group-hover:-translate-x-1 transition-transform"
+          />
+          <span className="font-medium">Back to Setup</span>
+        </button>
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Error Loading Summary
+          </h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={onBack}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     );
@@ -184,19 +186,36 @@ export default function SummaryView({
               : "Key Points"}{" "}
             Format
           </p>
-          <span className="text-gray-400">•</span>
-          <p className="text-gray-600">
-            {selectedNotes.length} note{selectedNotes.length > 1 ? "s" : ""}
-          </p>
         </div>
       </div>
 
       {/* Summary Content */}
       <div className="bg-white rounded-lg shadow-md p-8">
         <div className="prose max-w-none">
-          <div className="text-gray-900 leading-relaxed whitespace-pre-line">
-            {summary}
-          </div>
+          {config.summaryType === "bullet" ? (
+            <ul className="list-disc ml-6 text-gray-900">
+              {summary.split(/\n|•/)
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0)
+                .map((point, idx) => (
+                  <li key={idx}>{point}</li>
+                ))}
+            </ul>
+          ) : config.summaryType === "keypoints" ? (
+            <ol className="list-decimal ml-6 text-gray-900">
+              {summary
+                .split(/\n/)
+                .map((line) => line.trim())
+                .filter((line) => /^\d+\.\s+/.test(line))
+                .map((point, idx) => (
+                  <li key={idx}>{point.replace(/^\d+\.\s+/, "")}</li>
+                ))}
+            </ol>
+          ) : (
+            <div className="text-gray-900 leading-relaxed whitespace-pre-line">
+              {summary}
+            </div>
+          )}
         </div>
       </div>
     </div>

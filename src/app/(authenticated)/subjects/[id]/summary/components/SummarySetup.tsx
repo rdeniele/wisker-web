@@ -1,30 +1,81 @@
 "use client";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { FiArrowLeft, FiFileText, FiAlignLeft, FiList, FiZap, FiInfo } from "react-icons/fi";
+import { useToast } from "@/../hook/useToast";
 
 interface SummarySetupProps {
+  subjectId: string;
   subjectName: string;
+  selectedNoteIds: string[];
   selectedNotesCount: number;
   onGenerate: (config: SummaryConfig) => void;
   onBack: () => void;
 }
 
 export interface SummaryConfig {
+  learningToolId: string;
   summaryLength: "short" | "medium" | "detailed";
   summaryType: "paragraph" | "bullet" | "keypoints";
 }
 
 export default function SummarySetup({
+  subjectId,
   subjectName,
+  selectedNoteIds,
   selectedNotesCount,
   onGenerate,
   onBack,
 }: SummarySetupProps) {
   const [summaryLength, setSummaryLength] = useState<"short" | "medium" | "detailed">("medium");
   const [summaryType, setSummaryType] = useState<"paragraph" | "bullet" | "keypoints">("paragraph");
+  const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
 
-  const handleGenerate = () => {
-    onGenerate({ summaryLength, summaryType });
+  const handleGenerate = async () => {
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/learning-tools/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            type: 'SUMMARY',
+            source: 'SUBJECT',
+            subjectId,
+            noteIds: selectedNoteIds,
+            summaryLength,
+            summaryType,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('API Error:', errorData);
+          throw new Error(errorData.error?.message || 'Failed to generate summary');
+        }
+
+        const data = await response.json();
+        showToast('Summary generated successfully!', 'success');
+        
+        onGenerate({
+          learningToolId: data.data.id,
+          summaryLength,
+          summaryType,
+        });
+      } catch (error) {
+        console.error('Error generating summary:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to generate summary';
+        const isServiceUnavailable = errorMessage.includes('503') || errorMessage.includes('Service unavailable');
+        
+        showToast(
+          isServiceUnavailable 
+            ? 'AI service is temporarily unavailable. Please try again in a few moments.' 
+            : errorMessage,
+          'error'
+        );
+      }
+    });
   };
 
   const lengthOptions = [
@@ -172,12 +223,74 @@ export default function SummarySetup({
             </div>
           </div>
 
+          {/* Live Preview Section */}
+          <div className="mb-8">
+            <label className="block text-lg font-semibold text-gray-900 mb-4">
+              Live Preview
+            </label>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+              {summaryType === "paragraph" && (
+                <div className="text-gray-900 leading-relaxed">
+                  <span className="font-bold">Paragraph:</span> <br />
+                  {summaryLength === "short" && (
+                    <>A brief, flowing summary in 2-3 sentences, covering the main ideas from your notes.</>
+                  )}
+                  {summaryLength === "medium" && (
+                    <>A balanced, narrative summary with key details and transitions between concepts.</>
+                  )}
+                  {summaryLength === "detailed" && (
+                    <>A comprehensive, multi-paragraph summary with examples and deeper explanations.</>
+                  )}
+                </div>
+              )}
+              {summaryType === "bullet" && (
+                <div className="text-gray-900">
+                  <span className="font-bold">Bullet Points:</span>
+                  <ul className="list-disc ml-6 mt-2">
+                    {summaryLength === "short" && (
+                      <li>Quick list of main ideas (2-3 bullets)</li>
+                    )}
+                    {summaryLength === "medium" && (
+                      <>
+                        <li>Key concepts and supporting details (5-7 bullets)</li>
+                        <li>Organized for clarity</li>
+                      </>
+                    )}
+                    {summaryLength === "detailed" && (
+                      <>
+                        <li>Comprehensive breakdown with examples (8+ bullets)</li>
+                        <li>Includes sub-points and explanations</li>
+                      </>
+                    )}
+                  </ul>
+                </div>
+              )}
+              {summaryType === "keypoints" && (
+                <div className="text-gray-900">
+                  <span className="font-bold">Key Points:</span>
+                  <ul className="list-decimal ml-6 mt-2">
+                    {summaryLength === "short" && (
+                      <li>2-3 main concepts only</li>
+                    )}
+                    {summaryLength === "medium" && (
+                      <li>5-7 essential ideas, no extra details</li>
+                    )}
+                    {summaryLength === "detailed" && (
+                      <li>Comprehensive list of all major concepts</li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95"
+            disabled={isPending}
+            className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Generate Summary
+            {isPending ? 'Generating...' : 'Generate Summary'}
           </button>
 
           {/* Info */}

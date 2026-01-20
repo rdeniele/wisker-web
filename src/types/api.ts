@@ -120,6 +120,9 @@ export interface GenerateLearningToolRequest {
   difficulty?: 'easy' | 'medium' | 'hard';
   // Flashcard-specific options
   cardCount?: number;
+  // Summary-specific options
+  summaryLength?: 'short' | 'medium' | 'detailed';
+  summaryType?: 'paragraph' | 'bullet' | 'keypoints';
 }
 
 // AI Processing Types

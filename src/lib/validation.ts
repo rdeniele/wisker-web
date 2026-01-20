@@ -97,6 +97,9 @@ export const generateLearningToolSchema = z
     difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
     // Flashcard-specific options
     cardCount: z.number().int().min(1).max(100).optional(),
+    // Summary-specific options
+    summaryLength: z.enum(['short', 'medium', 'detailed']).optional(),
+    summaryType: z.enum(['paragraph', 'bullet', 'keypoints']).optional(),
   })
   .refine(
     (data) => {
