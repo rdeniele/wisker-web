@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { noteService } from "@/service/note.service";
 import { validateRequest, noteQuerySchema } from "@/lib/validation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 /**
  * GET /api/notes
@@ -10,16 +10,8 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function GET(request: NextRequest) {
   try {
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (auto-syncs to Prisma if needed)
+    const user = await getAuthenticatedUser();
 
     // Parse and validate query parameters
     const searchParams = Object.fromEntries(request.nextUrl.searchParams);

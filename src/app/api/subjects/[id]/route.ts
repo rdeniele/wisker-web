@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { subjectService } from "@/service/subject.service";
 import { validateRequest, updateSubjectSchema } from "@/lib/validation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 type RouteParams = {
   params: Promise<{
@@ -18,16 +18,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (auto-syncs to Prisma if needed)
+    const user = await getAuthenticatedUser();
 
     // Get subject
     const subject = await subjectService.getSubjectById(id, user.id);
@@ -46,16 +38,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (auto-syncs to Prisma if needed)
+    const user = await getAuthenticatedUser();
 
     // Parse and validate request body
     const body = await request.json();
@@ -82,16 +66,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (auto-syncs to Prisma if needed)
+    const user = await getAuthenticatedUser();
 
     // Delete subject
     await subjectService.deleteSubject(id, user.id);

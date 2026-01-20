@@ -148,6 +148,11 @@ export class AIService {
           }
 
           // Non-retryable error or max retries reached
+          if (response.status === 503) {
+            throw new Error(
+              `The AI service is temporarily unavailable. This usually resolves within a few minutes. Please try again later or contact support if the issue persists.`,
+            );
+          }
           throw new Error(
             `Together AI API error: ${response.status} ${response.statusText} - ${errorText}`,
           );
@@ -168,10 +173,10 @@ export class AIService {
             !(error instanceof Error && error.message.includes("429")))
         ) {
           console.error("Together AI API error:", error);
-          throw new AIProcessingError(
-            "Failed to process request with Together AI",
-            error,
-          );
+          const errorMessage = error instanceof Error && error.message.includes("503")
+            ? "The AI service is temporarily unavailable. Please try again in a few minutes."
+            : "Failed to process request with AI service. Please try again.";
+          throw new AIProcessingError(errorMessage, error);
         }
 
         // Otherwise, retry with backoff

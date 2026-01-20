@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { StorageService } from "@/service/storage.service";
 import { apiResponse, errorResponse } from "@/lib/api-response";
 import { UnauthorizedError, NotFoundError, AppError } from "@/lib/errors";
@@ -16,17 +16,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const supabase = await createClient();
 
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      throw new UnauthorizedError();
-    }
+    // Get authenticated user (auto-syncs to Prisma if needed)
+    const user = await getAuthenticatedUser();
 
     // Get note and verify ownership
     const note = await prisma.note.findFirst({

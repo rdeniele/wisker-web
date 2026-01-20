@@ -61,6 +61,23 @@ const UpgradeIcon = () => (
   </svg>
 );
 
+const LogoutIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="w-6 h-6"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
+    />
+  </svg>
+);
+
 const navLinks = [
   { name: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" },
   { name: "Subjects", icon: <SubjectsIcon />, href: "/subjects" },
@@ -109,6 +126,14 @@ function Sidebar() {
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
   const [userPlan, setUserPlan] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -234,6 +259,43 @@ function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Logout Button */}
+        <div className="mt-auto pt-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className={`flex items-center gap-3 px-2 py-2 rounded-lg font-medium transition-all duration-200 group/link text-left w-full text-gray-700 hover:bg-red-50 hover:text-red-600 ${
+              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <span className="w-6 h-6 shrink-0 transition-colors flex items-center justify-center">
+              {isLoggingOut ? (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <LogoutIcon />
+              )}
+            </span>
+            <span className="ml-2 truncate group-hover/sidebar:inline-block hidden transition-all duration-200">
+              Logout
+            </span>
+          </button>
+        </div>
       </aside>
 
       {/* Mobile/Tablet FAB */}
@@ -352,6 +414,41 @@ function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Logout Button */}
+        <div className="mt-auto pt-4 border-t border-gray-200">
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-all duration-200 text-left w-full text-gray-700 hover:bg-red-50 hover:text-red-600 ${
+              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            <span className="w-6 h-6 shrink-0 flex items-center justify-center">
+              {isLoggingOut ? (
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <LogoutIcon />
+              )}
+            </span>
+            <span className="ml-2">Logout</span>
+          </button>
+        </div>
       </aside>
     </>
   );
