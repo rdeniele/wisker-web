@@ -2,35 +2,22 @@
 import { useState, useEffect } from "react";
 import { FiRotateCw, FiChevronLeft, FiChevronRight, FiArrowLeft } from "react-icons/fi";
 import { FlashcardConfig } from "./FlashcardSetup";
+import { useToast } from "@/../hook/useToast";
 
 interface Flashcard {
-  id: number;
+  id: string;
   front: string;
   back: string;
-  difficulty: "easy" | "medium" | "hard";
-  noteTitle: string;
-}
-
-interface Note {
-  id: number;
-  title: string;
-  createdAt: Date;
-  lastOpened: Date;
-  characterCount: number;
 }
 
 interface FlashcardViewProps {
   subjectName: string;
-  selectedNoteIds: number[];
-  notes: Note[];
   config: FlashcardConfig;
   onBack: () => void;
 }
 
 export default function FlashcardView({
   subjectName,
-  selectedNoteIds,
-  notes,
   config,
   onBack,
 }: FlashcardViewProps) {
@@ -38,57 +25,38 @@ export default function FlashcardView({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
-  const selectedNotes = notes.filter((note) => selectedNoteIds.includes(note.id));
-
-  // Generate flashcards from selected notes
+  // Fetch AI-generated flashcards
   useEffect(() => {
-    const generateFlashcards = () => {
-      const mockCards: Flashcard[] = [];
-
-      const questionTemplates = {
-        easy: [
-          "What is the main topic of {title}?",
-          "Define key terms from {title}",
-          "What are the basic concepts in {title}?",
-        ],
-        medium: [
-          "Explain the relationship between concepts in {title}",
-          "How do the ideas in {title} apply in practice?",
-          "Compare and contrast the main points in {title}",
-        ],
-        hard: [
-          "Analyze the implications discussed in {title}",
-          "Synthesize information from {title} to create new understanding",
-          "Evaluate the strengths and limitations in {title}",
-        ],
-      };
-
-      const cardsPerNote = Math.ceil(config.numberOfCards / selectedNotes.length);
-
-      selectedNotes.forEach((note) => {
-        const templates = questionTemplates[config.difficulty];
+    const fetchFlashcards = async () => {
+      try {
+        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
         
-        for (let i = 0; i < cardsPerNote && mockCards.length < config.numberOfCards; i++) {
-          const template = templates[i % templates.length];
-          const question = template.replace("{title}", note.title);
-          
-          mockCards.push({
-            id: mockCards.length + 1,
-            front: question,
-            back: `This is the answer based on the content from "${note.title}". In a real application, this would be generated from the actual note content.`,
-            difficulty: config.difficulty,
-            noteTitle: note.title,
-          });
+        if (!response.ok) {
+          throw new Error('Failed to fetch flashcards');
         }
-      });
 
-      setFlashcards(mockCards);
-      setIsLoading(false);
+        const data = await response.json();
+        const flashcardContent = JSON.parse(data.data.generatedContent);
+        
+        if (!flashcardContent.cards || flashcardContent.cards.length === 0) {
+          throw new Error('No flashcards found');
+        }
+
+        setFlashcards(flashcardContent.cards);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching flashcards:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load flashcards');
+        showToast('Failed to load flashcards', 'error');
+        setIsLoading(false);
+      }
     };
 
-    generateFlashcards();
-  }, [selectedNotes, config]);
+    fetchFlashcards();
+  }, [config.learningToolId, showToast]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -115,25 +83,19 @@ export default function FlashcardView({
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
-        >
-          <FiArrowLeft
-            size={20}
-            className="group-hover:-translate-x-1 transition-transform"
-          />
-          <span className="font-medium">Back to Setup</span>
-        </button>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Generating flashcards...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <svg className="animate-spin h-10 w-10 text-purple-600" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          <div className="text-gray-500 font-medium">Loading flashcards...</div>
         </div>
       </div>
     );
   }
 
-  if (flashcards.length === 0) {
+  if (error || flashcards.length === 0) {
     return (
       <div className="space-y-6">
         <button
@@ -148,11 +110,17 @@ export default function FlashcardView({
         </button>
         <div className="bg-white rounded-lg shadow-md p-8 text-center">
           <h3 className="text-xl font-bold text-gray-900 mb-2">
-            No Flashcards Available
+            {error ? 'Error Loading Flashcards' : 'No Flashcards Available'}
           </h3>
-          <p className="text-gray-600">
-            Could not generate flashcards from the selected notes.
+          <p className="text-gray-600 mb-4">
+            {error || 'Could not generate flashcards from the selected notes.'}
           </p>
+          <button
+            onClick={onBack}
+            className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     );
@@ -192,10 +160,6 @@ export default function FlashcardView({
               : "text-red-600"
           }`}>
             {config.difficulty.charAt(0).toUpperCase() + config.difficulty.slice(1)} Mode
-          </p>
-          <span className="text-gray-400">•</span>
-          <p className="text-purple-600 font-semibold">
-            From: {currentCard.noteTitle}
           </p>
         </div>
       </div>

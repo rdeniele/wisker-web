@@ -3,17 +3,15 @@ import { useState } from "react";
 import { FiArrowLeft, FiCheckSquare, FiSquare, FiLayers } from "react-icons/fi";
 
 interface Note {
-  id: number;
+  id: string;
   title: string;
-  createdAt: Date;
-  lastOpened: Date;
-  characterCount: number;
+  rawContent: string;
 }
 
 interface NoteSelectorProps {
   subjectName: string;
   notes: Note[];
-  onNotesSelected: (noteIds: number[]) => void;
+  onNotesSelected: (noteIds: string[]) => void;
   onBack: () => void;
 }
 
@@ -23,9 +21,9 @@ export default function NoteSelector({
   onNotesSelected,
   onBack,
 }: NoteSelectorProps) {
-  const [selectedNotes, setSelectedNotes] = useState<Set<number>>(new Set());
+  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
 
-  const toggleNote = (noteId: number) => {
+  const toggleNote = (noteId: string) => {
     const newSelected = new Set(selectedNotes);
     if (newSelected.has(noteId)) {
       newSelected.delete(noteId);
@@ -86,9 +84,9 @@ export default function NoteSelector({
               className="flex items-center gap-3 text-purple-600 hover:text-purple-700 font-semibold transition"
             >
               {selectedNotes.size === notes.length ? (
-                <FiCheckSquare size={20} />
+                <FiCheckSquare size={20} className="text-purple-600" aria-checked="true" role="checkbox" />
               ) : (
-                <FiSquare size={20} />
+                <FiSquare size={20} className="text-gray-400" aria-checked="false" role="checkbox" />
               )}
               <span>
                 {selectedNotes.size === notes.length
@@ -121,9 +119,11 @@ export default function NoteSelector({
                         <FiCheckSquare
                           className="text-purple-600"
                           size={20}
+                          aria-checked="true"
+                          role="checkbox"
                         />
                       ) : (
-                        <FiSquare className="text-gray-400" size={20} />
+                        <FiSquare className="text-gray-400" size={20} aria-checked="false" role="checkbox" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -131,7 +131,7 @@ export default function NoteSelector({
                         {note.title}
                       </h3>
                       <p className="text-sm text-gray-500">
-                        {note.characterCount} characters
+                        {note.rawContent.length} characters
                       </p>
                     </div>
                   </div>
