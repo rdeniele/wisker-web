@@ -12,14 +12,19 @@ interface AuthLayoutProps {
 }
 
 export default async function AuthLayout({ children }: AuthLayoutProps) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  // If user is already logged in, redirect to dashboard
-  if (user) {
-    redirect("/dashboard");
+    // If user is already logged in, redirect to dashboard
+    if (user) {
+      redirect("/dashboard");
+    }
+  } catch (error) {
+    console.error("Auth layout error:", error);
+    // Continue rendering even if Supabase check fails
   }
 
   return (
