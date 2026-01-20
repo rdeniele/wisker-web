@@ -92,6 +92,11 @@ export const generateLearningToolSchema = z
     subjectId: z.string().uuid('Invalid subject ID').optional(),
     noteId: z.string().uuid('Invalid note ID').optional(),
     noteIds: z.array(z.string().uuid('Invalid note ID')).optional(),
+    // Quiz-specific options
+    questionCount: z.number().int().min(1).max(50).optional(),
+    difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+    // Flashcard-specific options
+    cardCount: z.number().int().min(1).max(100).optional(),
   })
   .refine(
     (data) => {

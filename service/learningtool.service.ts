@@ -264,7 +264,12 @@ export class LearningToolService {
       // Process with AI service based on type
       const generatedContent = await aiService.generateLearningTool(
         data.type,
-        contentToProcess
+        contentToProcess,
+        {
+          questionCount: data.questionCount,
+          difficulty: data.difficulty,
+          cardCount: data.cardCount,
+        }
       );
 
       // Create learning tool and increment AI usage in a transaction

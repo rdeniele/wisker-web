@@ -115,6 +115,11 @@ export interface GenerateLearningToolRequest {
   subjectId?: string;
   noteId?: string;
   noteIds?: string[]; // For subject-level generation with selected notes
+  // Quiz-specific options
+  questionCount?: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  // Flashcard-specific options
+  cardCount?: number;
 }
 
 // AI Processing Types

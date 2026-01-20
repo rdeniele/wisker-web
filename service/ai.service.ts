@@ -369,7 +369,12 @@ Guidelines:
    */
   async generateLearningTool(
     type: LearningToolType,
-    content: string
+    content: string,
+    options?: {
+      questionCount?: number;
+      difficulty?: 'easy' | 'medium' | 'hard';
+      cardCount?: number;
+    }
   ): Promise<string> {
     try {
       let result: any;
@@ -379,10 +384,15 @@ Guidelines:
           result = await this.processNote(content);
           break;
         case 'QUIZ':
-          result = await this.generateQuiz(content);
+          result = await this.generateQuiz(content, {
+            questionCount: options?.questionCount,
+            difficulty: options?.difficulty,
+          });
           break;
         case 'FLASHCARDS':
-          result = await this.generateFlashcards(content);
+          result = await this.generateFlashcards(content, {
+            cardCount: options?.cardCount,
+          });
           break;
         case 'SUMMARY':
           result = await this.generateSummary(content);

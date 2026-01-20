@@ -2,25 +2,18 @@
 import { useState, useEffect } from "react";
 import { FiArrowLeft, FiCheck, FiX } from "react-icons/fi";
 import { QuizConfig } from "./QuizSetup";
+import { useToast } from "@/../hook/useToast";
 
 interface QuizQuestion {
-  id: number;
+  id: string;
   question: string;
   options: string[];
   correctAnswer: number;
   explanation?: string;
-  noteTitle: string;
-}
-
-interface Note {
-  id: number;
-  title: string;
 }
 
 interface QuizPlayProps {
   subjectName: string;
-  selectedNoteIds: number[];
-  notes: Note[];
   config: QuizConfig;
   onBack: () => void;
   onComplete: (correct: number, total: number) => void;
@@ -28,8 +21,6 @@ interface QuizPlayProps {
 
 export default function QuizPlay({
   subjectName,
-  selectedNoteIds,
-  notes,
   config,
   onBack,
   onComplete,
@@ -40,38 +31,38 @@ export default function QuizPlay({
   const [score, setScore] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
-    // Generate quiz questions from selected notes
-    const generateQuestions = () => {
-      const selectedNotes = notes.filter((note) => selectedNoteIds.includes(note.id));
-      const mockQuestions: QuizQuestion[] = [];
-      const questionsPerNote = Math.ceil(config.numberOfQuestions / selectedNotes.length);
-
-      selectedNotes.forEach((note) => {
-        for (let i = 0; i < questionsPerNote && mockQuestions.length < config.numberOfQuestions; i++) {
-          mockQuestions.push({
-            id: mockQuestions.length + 1,
-            question: `Question from "${note.title}": What is the main concept discussed?`,
-            options: [
-              "Option A - This is a possible answer",
-              "Option B - This could be correct",
-              "Option C - Another potential answer",
-              "Option D - The correct answer",
-            ],
-            correctAnswer: 3,
-            explanation: `This question is based on content from "${note.title}". In a real application, questions would be generated from actual note content.`,
-            noteTitle: note.title,
-          });
+    // Fetch AI-generated quiz questions
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch quiz questions');
         }
-      });
 
-      setQuestions(mockQuestions);
-      setIsLoading(false);
+        const data = await response.json();
+        const quizContent = JSON.parse(data.data.generatedContent);
+        
+        if (!quizContent.questions || quizContent.questions.length === 0) {
+          throw new Error('No questions found in quiz');
+        }
+
+        setQuestions(quizContent.questions);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching quiz:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load quiz');
+        showToast('Failed to load quiz questions', 'error');
+        setIsLoading(false);
+      }
     };
 
-    generateQuestions();
-  }, [selectedNoteIds, notes, config.numberOfQuestions]);
+    fetchQuestions();
+  }, [config.learningToolId, showToast]);
 
   const question = questions[currentQuestion];
   const isLastQuestion = currentQuestion === questions.length - 1;
@@ -107,7 +98,42 @@ export default function QuizPlay({
       <div className="min-h-screen bg-gray-50 p-4 md:p-8">
         <div className="max-w-3xl mx-auto">
           <div className="flex items-center justify-center h-96">
-            <div className="text-gray-500">Generating quiz questions...</div>
+            <div className="flex flex-col items-center gap-4">
+              <svg className="animate-spin h-10 w-10 text-orange-500" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <div className="text-gray-500 font-medium">Loading quiz questions...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="max-w-3xl mx-auto">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group mb-6"
+          >
+            <FiArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Back</span>
+          </button>
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="text-red-500 text-lg font-semibold mb-2">
+                {error || 'No questions available'}
+              </div>
+              <button
+                onClick={onBack}
+                className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         </div>
       </div>
