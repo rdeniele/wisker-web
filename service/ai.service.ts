@@ -382,51 +382,22 @@ Guidelines:
   }
 
   /**
-   * Extract text from PDF using vision model
-   * @param pdfBase64 - Base64 encoded PDF file
-   * @returns Extracted text content
+   * Process pre-extracted text from PDF
+   * Note: Text extraction happens client-side using pdfjs-dist.
+   * This method just validates and returns the extracted text.
+   * @param extractedText - Text already extracted from PDF client-side
+   * @returns Validated text content
    */
-  async extractTextFromPDF(pdfBase64: string): Promise<string> {
-    try {
-      const systemPrompt = `You are an expert at extracting text from PDF documents.
-Extract all text content from the provided PDF image, maintaining the structure and formatting.
-Return only the extracted text, without any additional commentary.`;
-
-      const messages: TogetherAIMessage[] = [
-        { 
-          role: 'system', 
-          content: systemPrompt 
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: 'Extract all text from this PDF page:',
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:application/pdf;base64,${pdfBase64}`,
-              },
-            },
-          ],
-        },
-      ];
-
-      const response = await this.makeRequest(
-        messages,
-        {
-          maxTokens: 4000,
-          temperature: 0.1,
-        },
-        this.visionModel
-      );
-
-      return response;
-    } catch (error) {
-      throw new AIProcessingError('Failed to extract text from PDF', error);
+  async extractTextFromPDF(extractedText: string): Promise<string> {
+    // Text is already extracted by pdfjs client-side
+    // Just validate and return it
+    const trimmedText = extractedText.trim();
+    
+    if (!trimmedText || trimmedText.length === 0) {
+      throw new AIProcessingError('Extracted text is empty. The PDF might not contain readable text.');
     }
+    
+    return trimmedText;
   }
 
   /**
@@ -492,6 +463,195 @@ Return only the extracted text and descriptions, without any additional commenta
       return response;
     } catch (error) {
       throw new AIProcessingError('Failed to extract text from image', error);
+    }
+  }
+
+  /**
+   * Generate a well-structured, learning-optimized note from raw knowledge base
+   * This transforms raw PDF/image content into a better formatted note for learning
+   * @param knowledgeBase - Raw extracted content from PDF/image
+   * @returns Well-structured note content
+   */
+  async generateStructuredNoteFromKnowledge(knowledgeBase: string): Promise<string> {
+    try {
+      const systemPrompt = `You are an expert educational content writer and learning specialist.
+Your task is to transform raw extracted content (from PDFs or images) into well-structured, 
+engaging study notes optimized for learning and retention.
+
+Guidelines:
+- Create clear sections with descriptive headings
+- Break down complex information into digestible chunks
+- Add bullet points for key concepts
+- Include examples and explanations where helpful
+- Highlight important terms and definitions
+- Organize information logically (introduction → main concepts → details → summary)
+- Use markdown formatting for better readability
+- Make it student-friendly and easy to understand
+- Preserve all important information from the source
+
+Return a well-formatted markdown text that students can easily learn from.`;
+
+      const userPrompt = `Transform this raw extracted content into a well-structured, learning-optimized study note:\n\n${knowledgeBase}`;
+
+      const messages: TogetherAIMessage[] = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ];
+
+      const response = await this.makeRequest(messages, {
+        maxTokens: 4000,
+        temperature: 0.6,
+      });
+
+      return response;
+    } catch (error) {
+      throw new AIProcessingError('Failed to generate structured note from knowledge', error);
+    }
+  }
+
+  /**
+   * Process PDF with complete workflow: validate extracted text → store as knowledge → generate structured note
+   * @param extractedText - Text already extracted from PDF client-side using pdfjs
+   * @returns Object with knowledgeBase and structuredNote
+   */
+  async processPDFWithKnowledge(extractedText: string): Promise<{
+    knowledgeBase: string;
+    structuredNote: string;
+  }> {
+    if (!this.apiKey) {
+      throw new AIProcessingError('Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.');
+    }
+
+    try {
+      // Step 1: Validate the pre-extracted text (this becomes the knowledge base)
+      const knowledgeBase = await this.extractTextFromPDF(extractedText);
+
+      if (!knowledgeBase || knowledgeBase.trim().length === 0) {
+        throw new AIProcessingError('No content could be extracted from the PDF. The PDF might be empty or image-based.');
+      }
+
+      // Step 2: Enforce hard limits to prevent excessive token usage and costs
+      // Model limit: 32,769 tokens total, using 4,000 for output = 28,769 for input
+      // At 4 chars/token = ~115,000 chars max per request
+      const maxCharsPerChunk = 90000; // Conservative limit per chunk
+      const maxTotalChars = 300000; // HARD LIMIT: Max 300k chars = ~3 chunks = ~3 AI credits
+      const absoluteMaxChunks = 5; // Never process more than 5 chunks
+      
+      let processedText = knowledgeBase;
+      let wasTruncated = false;
+
+      // COST PROTECTION: Truncate if too large
+      if (knowledgeBase.length > maxTotalChars) {
+        console.warn(`⚠️ PDF is very large (${knowledgeBase.length} chars). Truncating to ${maxTotalChars} chars to prevent excessive costs.`);
+        processedText = knowledgeBase.substring(0, maxTotalChars);
+        wasTruncated = true;
+      }
+
+      let structuredNote: string;
+
+      if (processedText.length > maxCharsPerChunk) {
+        // Split into chunks and process separately
+        console.log(`PDF is large (${processedText.length} chars), processing in chunks...`);
+        
+        const chunks: string[] = [];
+        let currentChunk = '';
+        const lines = processedText.split('\n');
+        
+        for (const line of lines) {
+          // COST PROTECTION: Stop if we hit chunk limit
+          if (chunks.length >= absoluteMaxChunks) {
+            console.warn(`⚠️ Reached maximum chunk limit (${absoluteMaxChunks}). Stopping to prevent excessive costs.`);
+            break;
+          }
+
+          if ((currentChunk + line + '\n').length > maxCharsPerChunk) {
+            if (currentChunk) {
+              chunks.push(currentChunk);
+              currentChunk = line + '\n';
+            } else {
+              // Single line is too long, split it
+              chunks.push(line.substring(0, maxCharsPerChunk));
+              currentChunk = line.substring(maxCharsPerChunk) + '\n';
+            }
+          } else {
+            currentChunk += line + '\n';
+          }
+        }
+        if (currentChunk && chunks.length < absoluteMaxChunks) {
+          chunks.push(currentChunk);
+        }
+
+        console.log(`Split into ${chunks.length} chunks (max ${absoluteMaxChunks})`);
+
+        // Process each chunk
+        const processedChunks: string[] = [];
+        for (let i = 0; i < chunks.length; i++) {
+          console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
+          const chunkNote = await this.generateStructuredNoteFromKnowledge(chunks[i]);
+          processedChunks.push(`\n\n## Section ${i + 1}\n\n${chunkNote}`);
+        }
+
+        // Combine all chunks with appropriate warnings
+        let headerNote = `*This note was created from a large PDF and processed in ${chunks.length} sections.*`;
+        if (wasTruncated) {
+          headerNote += `\n\n⚠️ **Note:** The PDF was very large and was truncated to ${maxTotalChars.toLocaleString()} characters to manage processing costs. Some content from the end of the document may not be included.`;
+        }
+        structuredNote = `# Combined Note\n\n${headerNote}\n\n${processedChunks.join('\n\n---\n')}`;
+      } else {
+        // Small enough to process in one go
+        console.log('Processing PDF in single request (under chunk size limit)');
+        structuredNote = await this.generateStructuredNoteFromKnowledge(processedText);
+        
+        if (wasTruncated) {
+          structuredNote = `⚠️ **Note:** This PDF was truncated to manage processing costs. Original size: ${knowledgeBase.length.toLocaleString()} characters, processed: ${processedText.length.toLocaleString()} characters.\n\n---\n\n` + structuredNote;
+        }
+      }
+
+      return {
+        knowledgeBase,
+        structuredNote,
+      };
+    } catch (error) {
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      throw new AIProcessingError('Failed to process PDF with knowledge extraction', error);
+    }
+  }
+
+  /**
+   * Process image with complete workflow: extract → store as knowledge → generate structured note
+   * @param imageBase64 - Base64 encoded image file
+   * @returns Object with knowledgeBase and structuredNote
+   */
+  async processImageWithKnowledge(imageBase64: string): Promise<{
+    knowledgeBase: string;
+    structuredNote: string;
+  }> {
+    if (!this.apiKey) {
+      throw new AIProcessingError('Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.');
+    }
+
+    try {
+      // Step 1: Extract raw content from image (this is the knowledge base)
+      const knowledgeBase = await this.extractTextFromImage(imageBase64);
+
+      if (!knowledgeBase || knowledgeBase.trim().length === 0) {
+        throw new AIProcessingError('No content could be extracted from the image. The image might be empty or unclear.');
+      }
+
+      // Step 2: Generate a well-structured note for better learning
+      const structuredNote = await this.generateStructuredNoteFromKnowledge(knowledgeBase);
+
+      return {
+        knowledgeBase,
+        structuredNote,
+      };
+    } catch (error) {
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      throw new AIProcessingError('Failed to process image with knowledge extraction', error);
     }
   }
 }

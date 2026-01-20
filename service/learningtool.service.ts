@@ -218,6 +218,7 @@ export class LearningToolService {
             select: {
               id: true,
               rawContent: true,
+              knowledgeBase: true,
             },
           });
 
@@ -225,7 +226,8 @@ export class LearningToolService {
             throw new InvalidInputError('One or more selected notes not found');
           }
 
-          contentToProcess = notes.map((n) => n.rawContent).join('\n\n---\n\n');
+          // Use knowledgeBase if available (from PDF/image uploads), otherwise use rawContent
+          contentToProcess = notes.map((n) => n.knowledgeBase || n.rawContent).join('\n\n---\n\n');
         } else {
           // Use all notes in subject
           const notes = await prisma.note.findMany({
@@ -233,6 +235,7 @@ export class LearningToolService {
             select: {
               id: true,
               rawContent: true,
+              knowledgeBase: true,
             },
           });
 
@@ -241,17 +244,19 @@ export class LearningToolService {
           }
 
           selectedNoteIds = notes.map((n) => n.id);
-          contentToProcess = notes.map((n) => n.rawContent).join('\n\n---\n\n');
+          // Use knowledgeBase if available (from PDF/image uploads), otherwise use rawContent
+          contentToProcess = notes.map((n) => n.knowledgeBase || n.rawContent).join('\n\n---\n\n');
         }
       } else if (data.source === 'SINGLE_NOTE') {
         if (!data.noteId) {
           throw new InvalidInputError('Note ID is required for SINGLE_NOTE source');
         }
 
-        // Verify note ownership
+        // Verify note ownership and get note data
         const note = await noteService.getNoteById(data.noteId, userId);
         noteId = note.id;
-        contentToProcess = note.rawContent;
+        // Use knowledgeBase if available (from PDF/image uploads), otherwise use rawContent
+        contentToProcess = note.knowledgeBase || note.rawContent;
       } else {
         throw new InvalidInputError('Invalid source type');
       }

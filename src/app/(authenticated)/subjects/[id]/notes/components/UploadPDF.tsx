@@ -17,6 +17,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
   const { showToast } = useToast();
 
@@ -32,6 +33,38 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       };
       reader.onerror = error => reject(error);
     });
+  };
+
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    try {
+      // Dynamically import pdfjs only when needed (client-side only)
+      const pdfjs = await import('pdfjs-dist');
+      
+      // Set up worker
+      pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+      
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+
+      // Extract text from all pages
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        
+        // Join all text items with spaces
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        
+        fullText += `\n\n--- Page ${i} ---\n\n${pageText}`;
+      }
+
+      return fullText.trim();
+    } catch (error) {
+      console.error('Error extracting text from PDF:', error);
+      throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const handleFileUpload = async (files: FileList | null) => {
@@ -50,39 +83,98 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
     }
 
     setIsUploading(true);
+    setUploadProgress('Uploading file...');
 
     try {
-      const base64Content = await convertFileToBase64(file);
       const isPDF = file.type === "application/pdf";
       const isImage = file.type.startsWith("image/");
 
       if (!isPDF && !isImage) {
         showToast("Only PDF and image files are supported", "error");
         setIsUploading(false);
+        setUploadProgress('');
         return;
       }
 
       // Generate a title from the filename (remove extension)
       const title = file.name.replace(/\.[^/.]+$/, "");
 
+      let requestBody: any = {
+        subjectId,
+        title,
+      };
+
+      if (isPDF) {
+        setUploadProgress('Extracting text from PDF...');
+        const extractedText = await extractTextFromPDF(file);
+        
+        if (!extractedText || extractedText.trim().length === 0) {
+          throw new Error('No text could be extracted from PDF. It might be empty or image-based.');
+        }
+
+        // COST PROTECTION: Warn about large PDFs
+        const charCount = extractedText.length;
+        const estimatedCredits = Math.max(1, Math.ceil(charCount / 100000));
+        const maxAllowedChars = 300000; // Server-side limit
+        
+        if (charCount > maxAllowedChars) {
+          const shouldContinue = confirm(
+            `⚠️ Large PDF Warning\n\n` +
+            `This PDF contains ${charCount.toLocaleString()} characters. ` +
+            `It will be truncated to ${maxAllowedChars.toLocaleString()} characters to manage costs.\n\n` +
+            `Estimated AI credits: ${estimatedCredits}\n\n` +
+            `Do you want to continue? (Content from the end of the PDF may be omitted)`
+          );
+          if (!shouldContinue) {
+            setIsUploading(false);
+            setUploadProgress('');
+            return;
+          }
+        } else if (charCount > 100000) {
+          showToast(`Large PDF: Will use ~${estimatedCredits} AI credits`, "warning");
+        }
+
+        requestBody.pdfText = extractedText;
+        
+        showToast(`Extracted ${charCount.toLocaleString()} characters from PDF`, "info");
+      } else {
+        setUploadProgress('Converting image...');
+        const base64Content = await convertFileToBase64(file);
+        requestBody.imageBase64 = base64Content;
+      }
+
+      setUploadProgress('Processing with AI...');
+
       const response = await fetch("/api/notes/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          subjectId,
-          title,
-          ...(isPDF ? { pdfBase64: base64Content } : { imageBase64: base64Content }),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || "Failed to upload file");
+      console.log('Upload response status:', response.status);
+      console.log('Upload response headers:', Object.fromEntries(response.headers.entries()));
+      
+      let data;
+      const responseText = await response.text();
+      console.log('Upload response text:', responseText);
+      
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('Failed to parse response as JSON:', e);
+        throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
 
+      if (!response.ok) {
+        console.error('Upload error response:', data);
+        const errorMessage = data.error?.message || data.message || "Failed to upload file";
+        throw new Error(errorMessage);
+      }
+
+      setUploadProgress('Creating structured note...');
+      
       showToast("File uploaded and processed successfully!", "success");
       
       // Call the original callback if provided
@@ -97,6 +189,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       );
     } finally {
       setIsUploading(false);
+      setUploadProgress('');
     }
   };
 
@@ -125,6 +218,8 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleFileUpload(e.target.files);
+    // Reset input value to allow selecting the same file again
+    e.target.value = '';
   };
 
   return (
@@ -167,12 +262,12 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
       {/* Upload Section */}
       <div className="flex flex-col items-center mb-2">
-        <span className="text-xl font-bold text-gray-800 mb-1">Upload a PDF/Image/Doc</span>
+        <span className="text-xl font-bold text-gray-800 mb-1">Upload a PDF or Image</span>
         <label className="w-full flex justify-center">
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,.doc,.docx,image/*"
+            accept=".pdf,image/*"
             className="hidden"
             onChange={handleInputChange}
             disabled={isUploading}
@@ -181,29 +276,43 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
             className={`bg-orange-400 hover:bg-orange-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-base mt-2 mb-1 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
             onClick={handleClick}
           >
-            {isUploading ? "Uploading..." : "select files"}
+            {isUploading ? "Processing..." : "select files"}
           </span>
         </label>
-        <span className="text-gray-400 text-xs mt-1 mb-1">or drag & drop files here</span>
-        <button
-          className="text-blue-500 underline text-sm mt-1 mb-2 hover:text-blue-700"
-          type="button"
-          onClick={onGoogleDrive}
-        >
-          Or upload from Google Drive
-        </button>
+        {uploadProgress && (
+          <div className="text-sm text-orange-500 font-medium mt-2 animate-pulse">
+            {uploadProgress}
+          </div>
+        )}
+        {!isUploading && (
+          <>
+            <span className="text-gray-400 text-xs mt-1 mb-1">or drag & drop files here</span>
+            <button
+              className="text-blue-500 underline text-sm mt-1 mb-2 hover:text-blue-700"
+              type="button"
+              onClick={onGoogleDrive}
+              disabled={isUploading}
+            >
+              Or upload from Google Drive
+            </button>
+          </>
+        )}
       </div>
 
       {/* File size note */}
       <div className="text-xs text-gray-500 text-center mb-2">
-        Maximum file size: 10MB. Text will be automatically extracted from text-based PDFs.
+        Maximum file size: 10MB. AI will extract text and create a well-structured note.
+        <br />
+        <span className="text-orange-500 font-medium">PDFs: Text extraction (all pages). Images: AI vision processing</span>
+        <br />
+        <span className="text-blue-500 font-medium">Cost: 1 AI credit per ~100k characters (PDFs), 2 credits (images)</span>
       </div>
 
       {/* Tip */}
       <div className="flex items-center gap-2 bg-[#f7f6fd] rounded-xl px-3 py-2 mt-2">
         <span className="text-yellow-400 text-lg">💡</span>
         <span className="text-xs text-gray-700">
-          Tip: For best results, use PDFs with selectable text. Image-based PDFs will provide a template for manual entry.
+          Text-based PDFs are processed instantly! Large PDFs (&gt;300k chars) are truncated to manage costs.
         </span>
       </div>
     </div>

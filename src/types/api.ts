@@ -66,6 +66,7 @@ export interface NoteDto {
   subjectId: string;
   title: string;
   rawContent: string;
+  knowledgeBase?: string;
   aiProcessedContent?: string;
   fileUrl?: string;
   fileName?: string;
@@ -78,9 +79,10 @@ export interface NoteDto {
 export interface CreateNoteRequest {
   subjectId: string;
   title: string;
-  rawContent: string;
-  pdfBase64?: string; // Optional: PDF file as base64
-  imageBase64?: string; // Optional: Image file as base64
+  rawContent?: string;
+  pdfText?: string; // Optional: Extracted PDF text (text-only PDFs)
+  pdfBase64?: string; // Optional: PDF file as base64 (legacy, for storage only)
+  imageBase64?: string; // Optional: Image file as base64 (vision AI)
 }
 
 export interface UpdateNoteRequest {

@@ -39,6 +39,9 @@ export const createNoteSchema = z.object({
     .string()
     .max(100000, 'Content is too large')
     .optional(),
+  pdfText: z
+    .string()
+    .optional(),
   pdfBase64: z
     .string()
     .optional(),
@@ -47,11 +50,11 @@ export const createNoteSchema = z.object({
     .optional(),
 }).refine(
   (data) => {
-    // At least one of rawContent, pdfBase64, or imageBase64 must be provided
-    return data.rawContent || data.pdfBase64 || data.imageBase64;
+    // At least one of rawContent, pdfText, pdfBase64, or imageBase64 must be provided
+    return data.rawContent || data.pdfText || data.pdfBase64 || data.imageBase64;
   },
   {
-    message: 'At least one of rawContent, pdfBase64, or imageBase64 must be provided',
+    message: 'At least one of rawContent, pdfText, pdfBase64, or imageBase64 must be provided',
   }
 );
 

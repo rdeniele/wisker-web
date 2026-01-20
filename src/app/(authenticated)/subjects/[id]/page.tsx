@@ -1,14 +1,26 @@
 "use client";
 import { notFound, useRouter } from "next/navigation";
 import { use, useState, useTransition, useEffect } from "react";
+import dynamic from "next/dynamic";
 import PageLayout from "@/components/layouts/PageLayout";
 import PageHeader from "@/components/ui/pageheader";
 import NoteCard from "@/components/ui/NoteCard";
 import EmptyState from "@/components/ui/EmptyState";
 import { FiArrowLeft } from "react-icons/fi";
 import CreateNoteModal from "./notes/components/CreateNoteModal";
-import UploadPDF from "./notes/components/UploadPDF";
 import { useToast } from "@/contexts/ToastContext";
+
+// Dynamically import UploadPDF to prevent SSR issues with pdfjs
+const UploadPDF = dynamic(() => import('./notes/components/UploadPDF'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6">
+      <div className="flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
+      </div>
+    </div>
+  ),
+});
 
 interface SubjectPageProps {
   params: Promise<{ id: string }>;

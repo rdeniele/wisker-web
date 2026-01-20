@@ -101,6 +101,7 @@ export class NoteService {
 
       return {
         ...note,
+        knowledgeBase: note.knowledgeBase ?? undefined,
         aiProcessedContent: note.aiProcessedContent ?? undefined,
         fileUrl: note.fileUrl ?? undefined,
         fileName: note.fileName ?? undefined,
@@ -158,63 +159,116 @@ export class NoteService {
       }
 
       let rawContent = data.rawContent || '';
+      let knowledgeBase: string | undefined;
       let fileUrl: string | undefined;
       let fileName: string | undefined;
       let fileSize: number | undefined;
       let fileType: string | undefined;
 
       // If PDF or image is provided, extract text using AI and upload to storage
-      if (data.pdfBase64 || data.imageBase64) {
-        // Check AI usage limit for extraction
-        if (user.aiUsageCount >= user.aiUsageLimit) {
+      // Process files if provided
+      if (data.pdfText || data.pdfBase64 || data.imageBase64) {
+        // COST PROTECTION: Enforce hard limits on PDF size
+        const MAX_PDF_CHARS = 500000; // Absolute maximum: 500k chars
+        const MAX_CHUNKS = 5; // Maximum 5 chunks = 5 AI credits per PDF
+        
+        if (data.pdfText && data.pdfText.length > MAX_PDF_CHARS) {
+          throw new DatabaseError(
+            `PDF is too large (${data.pdfText.length.toLocaleString()} characters). ` +
+            `Maximum allowed: ${MAX_PDF_CHARS.toLocaleString()} characters. ` +
+            `Please upload a smaller PDF or split it into multiple files.`
+          );
+        }
+
+        // Estimate AI credits needed (will be refined after processing)
+        const estimatedCredits = data.pdfText 
+          ? Math.min(MAX_CHUNKS, Math.ceil(data.pdfText.length / 100000)) // Cap at max chunks
+          : 2; // Images use 2 credits
+
+        // Check AI usage limit
+        if (user.aiUsageCount + estimatedCredits > user.aiUsageLimit) {
           throw new AIUsageLimitExceededError(user.aiUsageLimit);
         }
+        
+        console.log(`Estimated AI credits for this upload: ${estimatedCredits}`);
 
-        if (data.pdfBase64) {
-          // Extract text from PDF
-          const extractedText = await aiService.extractTextFromPDF(data.pdfBase64);
-          rawContent = extractedText;
+        try {
+          if (data.pdfText) {
+            // Process PDF text: Use extracted text to generate structured note
+            console.log('Processing PDF text with AI...');
+            const { knowledgeBase: extractedKnowledge, structuredNote } = 
+              await aiService.processPDFWithKnowledge(data.pdfText);
+            
+            knowledgeBase = extractedKnowledge; // Store raw extracted text as knowledge
+            rawContent = structuredNote; // Store AI-generated structured note as content
 
-          // Upload PDF to storage
-          const uploadResult = await StorageService.uploadFile(
-            data.pdfBase64,
-            `${data.title}.pdf`,
-            userId,
-            'application/pdf'
+            // Calculate actual credits used (1 per chunk processed)
+            // Rough estimate: each 100k chars = 1 chunk
+            const actualCredits = Math.max(1, Math.ceil(data.pdfText.length / 100000));
+            
+            // Increment AI usage for note generation
+            await prisma.user.update({
+              where: { id: userId },
+              data: { aiUsageCount: { increment: actualCredits } },
+            });
+          } else if (data.pdfBase64) {
+            // Legacy support: Handle base64 PDF (not used anymore but kept for compatibility)
+            console.log('Processing PDF base64 with AI (legacy)...');
+            rawContent = data.pdfBase64; // Store as-is
+
+            // Upload PDF to storage
+            console.log('Uploading PDF to storage...');
+            const uploadResult = await StorageService.uploadFile(
+              data.pdfBase64,
+              `${data.title}.pdf`,
+              userId,
+              'application/pdf'
+            );
+            fileUrl = uploadResult.url;
+            fileName = `${data.title}.pdf`;
+            fileSize = uploadResult.size;
+            fileType = 'application/pdf';
+          } else if (data.imageBase64) {
+            // Process image: extract knowledge base and generate structured note
+            console.log('Processing image with AI...');
+            const { knowledgeBase: extractedKnowledge, structuredNote } = 
+              await aiService.processImageWithKnowledge(data.imageBase64);
+            
+            knowledgeBase = extractedKnowledge; // Store raw extracted content as knowledge
+            rawContent = structuredNote; // Store AI-generated structured note as content
+
+            // Determine image type from base64 header
+            const imageType = data.imageBase64.startsWith('/9j/') ? 'image/jpeg' :
+                             data.imageBase64.startsWith('iVBORw') ? 'image/png' :
+                             data.imageBase64.startsWith('R0lGOD') ? 'image/gif' : 'image/jpeg';
+            const extension = imageType.split('/')[1];
+
+            // Upload image to storage
+            console.log('Uploading image to storage...');
+            const uploadResult = await StorageService.uploadFile(
+              data.imageBase64,
+              `${data.title}.${extension}`,
+              userId,
+              imageType
+            );
+            fileUrl = uploadResult.url;
+            fileName = `${data.title}.${extension}`;
+            fileSize = uploadResult.size;
+            fileType = imageType;
+
+            // Increment AI usage for extraction (2 calls: extraction + note generation)
+            await prisma.user.update({
+              where: { id: userId },
+              data: { aiUsageCount: { increment: 2 } },
+            });
+          }
+        } catch (aiError) {
+          console.error('AI processing error:', aiError);
+          throw new DatabaseError(
+            `Failed to process file with AI: ${aiError instanceof Error ? aiError.message : 'Unknown error'}`,
+            aiError instanceof Error ? aiError : undefined
           );
-          fileUrl = uploadResult.url;
-          fileName = `${data.title}.pdf`;
-          fileSize = uploadResult.size;
-          fileType = 'application/pdf';
-        } else if (data.imageBase64) {
-          // Extract text from image
-          const extractedText = await aiService.extractTextFromImage(data.imageBase64);
-          rawContent = extractedText;
-
-          // Determine image type from base64 header
-          const imageType = data.imageBase64.startsWith('/9j/') ? 'image/jpeg' :
-                           data.imageBase64.startsWith('iVBORw') ? 'image/png' :
-                           data.imageBase64.startsWith('R0lGOD') ? 'image/gif' : 'image/jpeg';
-          const extension = imageType.split('/')[1];
-
-          // Upload image to storage
-          const uploadResult = await StorageService.uploadFile(
-            data.imageBase64,
-            `${data.title}.${extension}`,
-            userId,
-            imageType
-          );
-          fileUrl = uploadResult.url;
-          fileName = `${data.title}.${extension}`;
-          fileSize = uploadResult.size;
-          fileType = imageType;
         }
-
-        // Increment AI usage for extraction
-        await prisma.user.update({
-          where: { id: userId },
-          data: { aiUsageCount: { increment: 1 } },
-        });
       }
 
       // Create note
@@ -223,6 +277,7 @@ export class NoteService {
           subjectId: data.subjectId,
           title: data.title,
           rawContent,
+          knowledgeBase,
           fileUrl,
           fileName,
           fileSize,
@@ -232,6 +287,7 @@ export class NoteService {
 
       return {
         ...note,
+        knowledgeBase: note.knowledgeBase ?? undefined,
         aiProcessedContent: note.aiProcessedContent ?? undefined,
         fileUrl: note.fileUrl ?? undefined,
         fileName: note.fileName ?? undefined,
@@ -274,6 +330,7 @@ export class NoteService {
 
       return {
         ...note,
+        knowledgeBase: note.knowledgeBase ?? undefined,
         aiProcessedContent: note.aiProcessedContent ?? undefined,
         fileUrl: note.fileUrl ?? undefined,
         fileName: note.fileName ?? undefined,
@@ -354,7 +411,7 @@ export class NoteService {
       const aiProcessedContent = JSON.stringify(organizedContent);
 
       // Update note with AI processed content and increment AI usage
-      const [updatedNote] = await prisma.$transaction([
+      await prisma.$transaction([
         prisma.note.update({
           where: { id: noteId },
           data: { aiProcessedContent },
@@ -365,14 +422,8 @@ export class NoteService {
         }),
       ]);
 
-      return {
-        ...updatedNote,
-        aiProcessedContent: updatedNote.aiProcessedContent ?? undefined,
-        fileUrl: updatedNote.fileUrl ?? undefined,
-        fileName: updatedNote.fileName ?? undefined,
-        fileSize: updatedNote.fileSize ?? undefined,
-        fileType: updatedNote.fileType ?? undefined,
-      };
+      // Fetch the updated note to return
+      return await this.getNoteById(noteId, userId);
     } catch (error) {
       if (
         error instanceof NotFoundError ||

@@ -66,6 +66,7 @@ model Note {
   subjectId             String    @map("subject_id")
   title                 String
   rawContent            String    @map("raw_content") @db.Text
+  knowledgeBase         String?   @map("knowledge_base") @db.Text
   aiProcessedContent    String?   @map("ai_processed_content") @db.Text
   fileUrl               String?   @map("file_url")
   fileName              String?   @map("file_name")
