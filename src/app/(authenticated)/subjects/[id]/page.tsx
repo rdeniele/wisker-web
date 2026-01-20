@@ -8,28 +8,76 @@ import EmptyState from "@/components/ui/EmptyState";
 import { FiArrowLeft } from "react-icons/fi";
 import CreateNoteModal from "./notes/components/CreateNoteModal";
 import UploadPDF from "./notes/components/UploadPDF";
+import { useToast } from "@/contexts/ToastContext";
 
 interface SubjectPageProps {
   params: Promise<{ id: string }>;
 }
 
+interface Note {
+  id: string;
+  title: string;
+  rawContent: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const SubjectPage = ({ params }: SubjectPageProps) => {
   const { id } = use(params);
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
+  const [, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [showCreateNoteModal, setShowCreateNoteModal] = useState(false);
   const [showUploadPDF, setShowUploadPDF] = useState(false);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(true);
+  const [subject, setSubject] = useState<{ id: string; title: string } | null>(null);
 
-  // TODO: Fetch real subject from backend
-  const subject = { id: Number(id), name: "Subject", notes: 0, time: "", img: "" };
-  const noteCards: Array<{
-    id: number;
-    title: string;
-    createdAt: Date;
-    lastOpened: Date;
-    characterCount: number;
-  }> = [];
+  // Fetch subject and notes
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingNotes(true);
+      try {
+        // Fetch subject details
+        const subjectResponse = await fetch(`/api/subjects/${id}`);
+        if (!subjectResponse.ok) {
+          throw new Error("Failed to fetch subject");
+        }
+        const subjectData = await subjectResponse.json();
+        setSubject(subjectData.data);
+
+        // Fetch notes for this subject
+        const notesResponse = await fetch(`/api/notes?subjectId=${id}`);
+        if (!notesResponse.ok) {
+          throw new Error("Failed to fetch notes");
+        }
+        const notesData = await notesResponse.json();
+        setNotes(notesData.data.notes || []);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        showToast("Failed to load data", "error");
+      } finally {
+        setIsLoadingNotes(false);
+      }
+    };
+
+    fetchData();
+  }, [id, showToast]);
+
+  // Function to refresh notes without full page reload
+  const refreshNotes = async () => {
+    try {
+      const notesResponse = await fetch(`/api/notes?subjectId=${id}`);
+      if (!notesResponse.ok) {
+        throw new Error("Failed to fetch notes");
+      }
+      const notesData = await notesResponse.json();
+      setNotes(notesData.data.notes || []);
+    } catch (error) {
+      console.error("Error refreshing notes:", error);
+    }
+  };
 
   // Action buttons configuration
   const actionButtons = [
@@ -57,14 +105,51 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
   ];
 
   const handleActionClick = (route: string, actionId: string) => {
-    if (noteCards.length > 0) {
+    if (notes.length > 0) {
       setNavigatingTo(actionId);
       startTransition(() => {
         router.push(route);
-        setNavigatingTo(null); // Reset navigatingTo after navigation
+        setNavigatingTo(null);
       });
     }
   };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!confirm("Are you sure you want to delete this note?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete note");
+      }
+
+      showToast("Note deleted successfully", "success");
+      // Remove the note from state
+      setNotes(notes.filter((note) => note.id !== noteId));
+    } catch (error) {
+      console.error("Error deleting note:", error);
+      showToast("Failed to delete note", "error");
+    }
+  };
+
+  if (isLoadingNotes) {
+    return (
+      <PageLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (!subject) {
+    return notFound();
+  }
 
   return (
     <PageLayout>
@@ -80,10 +165,10 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
       </button>
       
       <div className="flex items-center justify-between mb-6">
-        <PageHeader title={subject.name} centered={false} />
+        <PageHeader title={subject.title} centered={false} />
         <div className="flex items-center gap-3">
           {actionButtons.map((action) => {
-            const isDisabled = noteCards.length === 0 || navigatingTo === action.id;
+            const isDisabled = notes.length === 0 || navigatingTo === action.id;
             const isLoading = navigatingTo === action.id;
             
             return (
@@ -97,7 +182,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
                     : "bg-[#615FFF] text-white hover:bg-[#524CE5] active:translate-y-0.5 active:shadow-none"
                 }`}
                 style={{ boxShadow: isDisabled ? 'none' : '0 4px 0 0 rgba(97, 95, 255, 0.3)' }}
-                title={noteCards.length === 0 ? action.disabledTooltip : action.enabledTooltip}
+                title={notes.length === 0 ? action.disabledTooltip : action.enabledTooltip}
               >
                 {isLoading && (
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
@@ -112,23 +197,23 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {noteCards.length === 0 ? (
+        {notes.length === 0 ? (
           <EmptyState message="No notes found." />
         ) : (
-          noteCards.map((noteCard) => (
+          notes.map((note) => (
             <NoteCard
-              key={noteCard.id}
-              id={noteCard.id}
-              title={noteCard.title}
-              createdAt={noteCard.createdAt}
-              lastOpened={noteCard.lastOpened}
-              characterCount={noteCard.characterCount}
+              key={note.id}
+              id={parseInt(note.id, 10) || 0}
+              title={note.title}
+              createdAt={new Date(note.createdAt)}
+              lastOpened={new Date(note.updatedAt)}
+              characterCount={note.rawContent.length}
               onClick={() =>
-                router.push(`/subjects/${id}/notes/${noteCard.id}`)
+                router.push(`/subjects/${id}/notes/${note.id}`)
               }
-              onView={() => router.push(`/subjects/${id}/notes/${noteCard.id}`)}
-              onEdit={() => console.log("Edit note:", noteCard.id)}
-              onDelete={() => console.log("Delete note:", noteCard.id)}
+              onView={() => router.push(`/subjects/${id}/notes/${note.id}`)}
+              onEdit={() => router.push(`/subjects/${id}/notes/${note.id}`)}
+              onDelete={() => handleDeleteNote(note.id)}
             />
           ))
         )}
@@ -175,6 +260,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         >
           <div className="relative" onClick={e => e.stopPropagation()}>
             <UploadPDF
+              subjectId={id}
               onClose={() => {
                 setShowUploadPDF(false);
                 setShowCreateNoteModal(true);
@@ -182,10 +268,11 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
               onFileSelect={() => {
                 setShowUploadPDF(false);
                 setShowCreateNoteModal(false);
-                // Handle file upload logic here
+                // Refresh notes list
+                refreshNotes();
               }}
               onGoogleDrive={() => {
-                // Handle Google Drive upload logic here
+                showToast("Google Drive integration coming soon!", "info");
               }}
             />
           </div>

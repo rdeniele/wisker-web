@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { use, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import RichTextEditor from "@/components/ui/RichTextEditor";
+import { useToast } from "@/contexts/ToastContext";
 
 type NotePageProps = {
   params: Promise<{ id: string }>;
@@ -12,15 +13,58 @@ type NotePageProps = {
 function NewNotePage({ params }: NotePageProps) {
   const { id } = use(params);
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    // TODO: Replace with actual save logic (API call, etc.)
-    console.log("Saving new note", { subjectId: id, title, content });
-    // After save, redirect to the new note page or notes list
-    // router.push(`/subjects/${id}/notes/[newNoteId]`);
+  const handleSave = async () => {
+    // Validation
+    if (!title.trim()) {
+      showToast("Please enter a note title", "error");
+      return;
+    }
+
+    if (!content.trim()) {
+      showToast("Please enter some content", "error");
+      return;
+    }
+
+    setIsSaving(true);
+    
+    try {
+      const response = await fetch("/api/notes/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          subjectId: id,
+          title: title.trim(),
+          rawContent: content,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || "Failed to create note");
+      }
+
+      showToast("Note created successfully!", "success");
+      
+      // Redirect to the newly created note or back to subject page
+      router.push(`/subjects/${id}`);
+    } catch (error) {
+      console.error("Error creating note:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to create note",
+        "error"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -39,9 +83,10 @@ function NewNotePage({ params }: NotePageProps) {
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-orange-400 text-white rounded-[5px] hover:bg-orange-500 transition font-medium text-sm text-center shadow-[0_3px_0_#FFA726]"
+                disabled={isSaving}
+                className="px-4 py-2 bg-orange-400 text-white rounded-[5px] hover:bg-orange-500 transition font-medium text-sm text-center shadow-[0_3px_0_#FFA726] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save
+                {isSaving ? "Saving..." : "Save"}
               </button>
             </div>
 
