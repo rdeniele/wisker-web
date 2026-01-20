@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiArrowLeft, FiCheck, FiX } from "react-icons/fi";
+import { QuizConfig } from "./QuizSetup";
 
 interface QuizQuestion {
   id: number;
@@ -11,17 +12,95 @@ interface QuizQuestion {
 }
 
 interface QuizPlayProps {
-  questions: QuizQuestion[];
   noteTitle: string;
+  config: QuizConfig;
   onBack: () => void;
   onComplete: (score: number) => void;
 }
 
-export default function QuizPlay({ questions, noteTitle, onBack, onComplete }: QuizPlayProps) {
+export default function QuizPlay({ noteTitle, config, onBack, onComplete }: QuizPlayProps) {
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([]);
+
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch quiz');
+        }
+        
+        const data = await response.json();
+        const quizContent = JSON.parse(data.data.generatedContent);
+        
+        if (quizContent.questions && Array.isArray(quizContent.questions)) {
+          setQuestions(quizContent.questions);
+        } else {
+          throw new Error('Invalid quiz format');
+        }
+      } catch (err) {
+        console.error('Error fetching quiz:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load quiz');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuiz();
+  }, [config.learningToolId]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="max-w-3xl mx-auto">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group mb-6"
+          >
+            <FiArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
+            <span className="font-medium">Back</span>
+          </button>
+          <div className="flex items-center justify-center h-96">
+            <div className="text-gray-500">Loading quiz...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || questions.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="max-w-3xl mx-auto">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group mb-6"
+          >
+            <FiArrowLeft
+              size={20}
+              className="group-hover:-translate-x-1 transition-transform"
+            />
+            <span className="font-medium">Back</span>
+          </button>
+          <div className="flex items-center justify-center h-96">
+            <div className="text-red-500">{error || 'No questions available'}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const question = questions[currentQuestion];
   const isLastQuestion = currentQuestion === questions.length - 1;

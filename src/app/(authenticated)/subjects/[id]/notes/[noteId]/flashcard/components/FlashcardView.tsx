@@ -12,14 +12,12 @@ interface Flashcard {
 
 interface FlashcardViewProps {
   noteTitle: string;
-  noteContent: string;
   config: FlashcardConfig;
   onBack: () => void;
 }
 
 export default function FlashcardView({
   noteTitle,
-  noteContent,
   config,
   onBack,
 }: FlashcardViewProps) {
@@ -27,86 +25,39 @@ export default function FlashcardView({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Generate flashcards from note content
+  // Fetch flashcards from API
   useEffect(() => {
-    const generateFlashcards = () => {
-      // For now, we'll create mock flashcards based on the config
-      // In a real app, you'd use AI to generate these from the note content
-      const mockCards: Flashcard[] = [];
-      
-      const easyQuestions = [
-        {
-          front: `What is the main topic of "${noteTitle}"?`,
-          back: "This is a summary of the key concepts covered in the note.",
-        },
-        {
-          front: "Define the key terms from this note",
-          back: "Key terms and their definitions from the note content.",
-        },
-        {
-          front: "What are the basic concepts discussed?",
-          back: "The basic concepts include fundamental ideas explored in the note.",
-        },
-      ];
-
-      const mediumQuestions = [
-        {
-          front: "Explain the relationship between the key concepts",
-          back: "The concepts are interconnected through various principles and theories.",
-        },
-        {
-          front: "How do these ideas apply in practice?",
-          back: "These ideas can be applied through practical examples and real-world scenarios.",
-        },
-        {
-          front: "Compare and contrast the main points",
-          back: "The main points have both similarities and differences that are important to understand.",
-        },
-      ];
-
-      const hardQuestions = [
-        {
-          front: "Analyze the implications of this concept",
-          back: "The implications include complex interactions and advanced applications that require deep understanding.",
-        },
-        {
-          front: "Synthesize the information to create a new understanding",
-          back: "By combining different aspects, we can develop a comprehensive framework for application.",
-        },
-        {
-          front: "Evaluate the strengths and limitations",
-          back: "Critical analysis reveals both powerful applications and important constraints to consider.",
-        },
-      ];
-
-      let questionPool: typeof easyQuestions = [];
-      
-      if (config.difficulty === "easy") {
-        questionPool = easyQuestions;
-      } else if (config.difficulty === "medium") {
-        questionPool = [...easyQuestions, ...mediumQuestions];
-      } else {
-        questionPool = [...easyQuestions, ...mediumQuestions, ...hardQuestions];
+    const fetchFlashcards = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const response = await fetch(`/api/learning-tools/${config.learningToolId}`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch flashcards');
+        }
+        
+        const data = await response.json();
+        const flashcardContent = JSON.parse(data.data.generatedContent);
+        
+        if (flashcardContent.flashcards && Array.isArray(flashcardContent.flashcards)) {
+          setFlashcards(flashcardContent.flashcards);
+        } else {
+          throw new Error('Invalid flashcard format');
+        }
+      } catch (err) {
+        console.error('Error fetching flashcards:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load flashcards');
+      } finally {
+        setIsLoading(false);
       }
-
-      // Generate the requested number of cards, cycling through the pool if needed
-      for (let i = 0; i < config.numberOfCards; i++) {
-        const question = questionPool[i % questionPool.length];
-        mockCards.push({
-          id: i + 1,
-          front: question.front,
-          back: question.back,
-          difficulty: config.difficulty,
-        });
-      }
-
-      setFlashcards(mockCards);
-      setIsLoading(false);
     };
 
-    generateFlashcards();
-  }, [noteTitle, noteContent, config]);
+    fetchFlashcards();
+  }, [config.learningToolId]);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -133,21 +84,48 @@ export default function FlashcardView({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-500">Generating flashcards...</div>
+      <div className="space-y-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
+        >
+          <FiArrowLeft
+            size={20}
+            className="group-hover:-translate-x-1 transition-transform"
+          />
+          <span className="font-medium">Back to Setup</span>
+        </button>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-gray-500">Loading flashcards...</div>
+        </div>
       </div>
     );
   }
 
-  if (flashcards.length === 0) {
+  if (error || flashcards.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <h3 className="text-xl font-bold text-gray-900 mb-2">
-          No Flashcards Available
-        </h3>
-        <p className="text-gray-600">
-          Could not generate flashcards from this note. Try adding more content
-          to your note.
+      <div className="space-y-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group"
+        >
+          <FiArrowLeft
+            size={20}
+            className="group-hover:-translate-x-1 transition-transform"
+          />
+          <span className="font-medium">Back to Setup</span>
+        </button>
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            {error ? 'Error Loading Flashcards' : 'No Flashcards Available'}
+          </h3>
+          <p className="text-gray-600">
+            {error || 'Could not load flashcards. Please try again.'}
+          </p>
+        </div>
+      </div>
+    );
+  }
         </p>
       </div>
     );

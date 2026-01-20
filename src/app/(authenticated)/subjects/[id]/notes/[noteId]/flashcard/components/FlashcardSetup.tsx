@@ -1,8 +1,10 @@
 "use client";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { FiArrowLeft, FiLayers, FiSmile, FiMeh, FiZap, FiInfo } from "react-icons/fi";
+import { useToast } from "@/../hook/useToast";
 
 interface FlashcardSetupProps {
+  noteId: string;
   noteTitle: string;
   onStart: (config: FlashcardConfig) => void;
   onBack: () => void;
@@ -11,14 +13,46 @@ interface FlashcardSetupProps {
 export interface FlashcardConfig {
   numberOfCards: number;
   difficulty: "easy" | "medium" | "hard";
+  learningToolId: string;
 }
 
-export default function FlashcardSetup({ noteTitle, onStart, onBack }: FlashcardSetupProps) {
+export default function FlashcardSetup({ noteId, noteTitle, onStart, onBack }: FlashcardSetupProps) {
   const [numberOfCards, setNumberOfCards] = useState(10);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium");
+  const [isPending, startTransition] = useTransition();
+  const { showToast } = useToast();
 
-  const handleStart = () => {
-    onStart({ numberOfCards, difficulty });
+  const handleStart = async () => {
+    startTransition(async () => {
+      try {
+        const response = await fetch('/api/learning-tools/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'FLASHCARDS',
+            source: 'SINGLE_NOTE',
+            noteId,
+            cardCount: numberOfCards,
+            difficulty
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate flashcards');
+        }
+
+        const data = await response.json();
+        
+        onStart({
+          numberOfCards,
+          difficulty,
+          learningToolId: data.data.id
+        });
+      } catch (error) {
+        console.error('Error generating flashcards:', error);
+        showToast('Failed to generate flashcards. Please try again.', 'error');
+      }
+    });
   };
 
   const difficultyOptions = [
@@ -143,16 +177,17 @@ export default function FlashcardSetup({ noteTitle, onStart, onBack }: Flashcard
           {/* Start Button */}
           <button
             onClick={handleStart}
-            className="w-full py-4 bg-[#615FFF] text-white rounded-xl hover:bg-[#524CE5] transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95"
+            disabled={isPending}
+            className="w-full py-4 bg-[#615FFF] text-white rounded-xl hover:bg-[#524CE5] transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Generate Flashcards
+            {isPending ? 'Generating Flashcards...' : 'Generate Flashcards'}
           </button>
 
           {/* Info */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
             <p className="text-sm text-blue-800 text-center flex items-center justify-center gap-2">
               <FiInfo className="text-blue-600" size={16} />
-              <span className="font-semibold">Tip:</span> Flashcards will be generated based on your note content
+              <span className="font-semibold">Tip:</span> Flashcards will be AI-generated based on your note content
             </p>
           </div>
         </div>
