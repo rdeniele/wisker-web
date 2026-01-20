@@ -274,7 +274,6 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
           />
           <span
             className={`bg-orange-400 hover:bg-orange-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-base mt-2 mb-1 ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            onClick={handleClick}
           >
             {isUploading ? "Processing..." : "select files"}
           </span>

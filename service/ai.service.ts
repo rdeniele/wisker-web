@@ -6,6 +6,7 @@ import {
 } from '@/types/api';
 import { LearningToolType } from '@prisma/client';
 import { AIProcessingError } from '@/lib/errors';
+import { marked } from 'marked';
 
 interface TogetherAIMessage {
   role: 'system' | 'user' | 'assistant';
@@ -54,6 +55,24 @@ interface TogetherAIResponse {
 /**
  * AI Service for processing notes and generating learning tools using Together AI
  */
+// Helper function to convert Markdown to HTML for TipTap editor
+function markdownToHtml(markdown: string): string {
+  try {
+    // Configure marked options
+    marked.setOptions({
+      breaks: true, // Convert \n to <br>
+      gfm: true, // GitHub Flavored Markdown
+    });
+    
+    const html = marked.parse(markdown) as string;
+    return html;
+  } catch (error) {
+    console.error('Failed to convert markdown to HTML:', error);
+    // Fallback: return markdown wrapped in basic HTML
+    return `<p>${markdown.replace(/\n/g, '<br>')}</p>`;
+  }
+}
+
 export class AIService {
   private apiKey: string;
   private model: string;
@@ -596,15 +615,21 @@ Return a well-formatted markdown text that students can easily learn from.`;
         if (wasTruncated) {
           headerNote += `\n\n⚠️ **Note:** The PDF was very large and was truncated to ${maxTotalChars.toLocaleString()} characters to manage processing costs. Some content from the end of the document may not be included.`;
         }
-        structuredNote = `# Combined Note\n\n${headerNote}\n\n${processedChunks.join('\n\n---\n')}`;
+        const markdownNote = `# Combined Note\n\n${headerNote}\n\n${processedChunks.join('\n\n---\n')}`;
+        // Convert to HTML for TipTap editor
+        structuredNote = markdownToHtml(markdownNote);
       } else {
         // Small enough to process in one go
         console.log('Processing PDF in single request (under chunk size limit)');
-        structuredNote = await this.generateStructuredNoteFromKnowledge(processedText);
+        const markdownNote = await this.generateStructuredNoteFromKnowledge(processedText);
         
+        let finalMarkdown = markdownNote;
         if (wasTruncated) {
-          structuredNote = `⚠️ **Note:** This PDF was truncated to manage processing costs. Original size: ${knowledgeBase.length.toLocaleString()} characters, processed: ${processedText.length.toLocaleString()} characters.\n\n---\n\n` + structuredNote;
+          finalMarkdown = `⚠️ **Note:** This PDF was truncated to manage processing costs. Original size: ${knowledgeBase.length.toLocaleString()} characters, processed: ${processedText.length.toLocaleString()} characters.\n\n---\n\n` + markdownNote;
         }
+        
+        // Convert to HTML for TipTap editor
+        structuredNote = markdownToHtml(finalMarkdown);
       }
 
       return {

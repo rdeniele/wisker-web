@@ -18,7 +18,13 @@ function NotePage({ params }: NotePageProps) {
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [note, setNote] = useState<any>(null);
+  interface Note {
+    title: string;
+    rawContent: string;
+    // Add other fields as needed
+  }
+
+  const [note, setNote] = useState<Note | null>(null);
 
   // Fetch note data
   useEffect(() => {
