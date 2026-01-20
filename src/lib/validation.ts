@@ -76,14 +76,10 @@ export const processNoteSchema = z.object({
 export const generateLearningToolSchema = z
   .object({
     type: z.nativeEnum(LearningToolType, {
-      errorMap: () => ({
-        message: "Invalid learning tool type",
-      }),
+      message: "Invalid learning tool type",
     }),
     source: z.nativeEnum(LearningToolSource, {
-      errorMap: () => ({
-        message: "Invalid source type",
-      }),
+      message: "Invalid source type",
     }),
     subjectId: z.string().uuid("Invalid subject ID").optional(),
     noteId: z.string().uuid("Invalid note ID").optional(),
@@ -118,9 +114,7 @@ export const generateLearningToolSchema = z
 // User Validation
 export const updateUserPlanSchema = z.object({
   planType: z.nativeEnum(PlanType, {
-    errorMap: () => ({
-      message: "Invalid plan type",
-    }),
+    message: "Invalid plan type",
   }),
 });
 

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { FaRegClone, FaQuestionCircle, FaRegLightbulb } from "react-icons/fa";
 
 interface SubjectActionButtonsProps {
-  subjectId: number;
+  subjectId: string;
   navigatingTo: string | null;
   onNavigationStart: (id: string) => void;
 }

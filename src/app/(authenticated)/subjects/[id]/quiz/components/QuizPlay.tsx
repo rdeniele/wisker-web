@@ -201,12 +201,9 @@ export default function QuizPlay({
 
         {/* Quiz Card */}
         <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-6">
-          {/* Subject and Note Title */}
+          {/* Subject Title */}
           <div className="mb-4 pb-4 border-b border-gray-200">
             <p className="text-sm text-gray-500">Quiz on: {subjectName}</p>
-            <p className="text-xs text-orange-500 font-medium">
-              From: {question.noteTitle}
-            </p>
           </div>
 
           {/* Question */}
