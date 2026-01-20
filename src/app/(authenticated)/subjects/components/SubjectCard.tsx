@@ -6,7 +6,7 @@ import OptionWidget from "@/components/ui/OptionWidget";
 import SubjectActionButtons from "./SubjectActionButtons";
 
 interface Subject {
-  id: number;
+  id: string;
   name: string;
   notes: number;
   time: string;
@@ -17,8 +17,8 @@ interface SubjectCardProps {
   subject: Subject;
   navigatingTo: string | null;
   onNavigationStart: (id: string) => void;
-  onEdit: (id: number) => void;
-  onDelete: (id: number) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
 }
 
 export default function SubjectCard({

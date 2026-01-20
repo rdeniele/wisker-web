@@ -5,21 +5,73 @@ import CreateSubject from "./components/CreateSubject";
 import UpdateSubject from "./components/UpdateSubject";
 import SubjectCard from "./components/SubjectCard";
 
+interface Subject {
+  id: string;
+  title: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    notes: number;
+    learningTools: number;
+  };
+}
+
 function SubjectsPage() {
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // TODO: Fetch real subjects from backend
-  const subjects: Array<{
-    id: number;
-    name: string;
-    notes: number;
-    time: string;
-    img: string;
-  }> = [];
+  // Sync user to database on mount
+  useEffect(() => {
+    const syncUser = async () => {
+      try {
+        await fetch("/api/user/sync", { method: "POST" });
+      } catch {
+        // Silently fail - user sync will be retried on next page load
+      }
+    };
+    
+    syncUser().then(() => fetchSubjects());
+  }, []);
+
+  // Fetch subjects from API
+  const fetchSubjects = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch("/api/subjects", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server error occurred. Please try again later.");
+      }
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error?.message || "Failed to fetch subjects");
+      }
+      
+      setSubjects(result.data.subjects || []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load subjects");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleNavigationStart = (id: string) => {
     setNavigatingTo(id);
@@ -28,6 +80,32 @@ function SubjectsPage() {
       setNavigatingTo(null); // Reset after transition
     });
   };
+
+  const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffWeeks = Math.floor(diffDays / 7);
+
+    if (diffSecs < 60) return `${diffSecs}s ago`;
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return `${diffWeeks}w ago`;
+  };
+
+  // Transform subjects to match the format expected by SubjectCard
+  const transformedSubjects = subjects.map(subject => ({
+    id: subject.id,
+    name: subject.title,
+    notes: subject._count?.notes || 0,
+    time: getRelativeTime(subject.updatedAt),
+    img: "/images/wisky-read.png",
+  }));
 
   return (
     <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
@@ -38,12 +116,38 @@ function SubjectsPage() {
             My Subjects
           </h1>
           <p className="text-gray-600 text-sm sm:text-base">
-            {subjects.length} {subjects.length === 1 ? 'subject' : 'subjects'} to explore
+            {transformedSubjects.length} {transformedSubjects.length === 1 ? 'subject' : 'subjects'} to explore
           </p>
         </div>
 
-        {/* Subject Cards Grid - More spacious */}
-        {subjects.length === 0 ? (
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <p className="text-red-600 font-semibold mb-2">{error}</p>
+            <div className="flex gap-3">
+              <button
+                onClick={fetchSubjects}
+                className="text-red-700 underline hover:no-underline text-sm"
+              >
+                Try again
+              </button>
+              <button
+                onClick={() => window.location.href = "/api/auth/login"}
+                className="text-red-700 underline hover:no-underline text-sm"
+              >
+                Re-authenticate
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+            <p className="text-gray-500">Loading subjects...</p>
+          </div>
+        ) : transformedSubjects.length === 0 ? (
           <div className="text-center py-20">
             <IoBookSharp className="text-6xl text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-6">No subjects yet</p>
@@ -56,7 +160,7 @@ function SubjectsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {subjects.map((subject) => (
+            {transformedSubjects.map((subject) => (
               <SubjectCard
                 key={subject.id}
                 subject={subject}
@@ -66,8 +170,8 @@ function SubjectsPage() {
                   setSelectedSubjectId(id);
                   setShowUpdateModal(true);
                 }}
-                onDelete={(id) => {
-                  // Add delete logic here
+                onDelete={async (id) => {
+                  // TODO: Add delete logic here
                   console.log("Delete subject", id);
                 }}
               />
@@ -93,13 +197,18 @@ function SubjectsPage() {
           onClick={() => setShowModal(false)}
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <CreateSubject onClose={() => setShowModal(false)} />
+            <CreateSubject 
+              onClose={() => setShowModal(false)}
+              onSuccess={() => {
+                fetchSubjects(); // Refresh the subjects list
+              }}
+            />
           </div>
         </div>
       )}
 
       {/* Update Subject Modal Overlay */}
-      {showUpdateModal && (
+      {showUpdateModal && selectedSubjectId && (
         <div
           className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
           onClick={() => {
@@ -108,11 +217,15 @@ function SubjectsPage() {
           }}
         >
           <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <UpdateSubject 
+            <UpdateSubject
+              subjectId={selectedSubjectId}
               onClose={() => {
                 setShowUpdateModal(false);
                 setSelectedSubjectId(null);
-              }} 
+              }}
+              onSuccess={() => {
+                fetchSubjects(); // Refresh the subjects list
+              }}
             />
           </div>
         </div>

@@ -62,12 +62,13 @@ export class UserService {
   /**
    * Create a new user
    */
-  async createUser(email: string, planType: PlanType = 'FREE'): Promise<UserDto> {
+  async createUser(email: string, planType: PlanType = 'FREE', userId?: string): Promise<UserDto> {
     try {
       const limits = PLAN_LIMITS[planType];
 
       const user = await prisma.user.create({
         data: {
+          ...(userId && { id: userId }), // Use provided ID if available (for Supabase sync)
           email,
           planType,
           notesLimit: limits.notesLimit,

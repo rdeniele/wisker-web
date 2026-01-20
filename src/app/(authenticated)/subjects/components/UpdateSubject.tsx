@@ -1,29 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 const quizFrequencies = ["Daily", "Weekly", "Bi-Weekly", "Monthly"];
 
 interface UpdateSubjectProps {
+  subjectId: string;
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-function UpdateSubject({ onClose }: UpdateSubjectProps) {
+function UpdateSubject({ subjectId, onClose, onSuccess }: UpdateSubjectProps) {
+  const router = useRouter();
   const [subjectName, setSubjectName] = useState("");
+  const [description, setDescription] = useState("");
   const [examDate, setExamDate] = useState("");
   const [quizFrequency, setQuizFrequency] = useState(quizFrequencies[0]);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch existing subject data
+  useEffect(() => {
+    const fetchSubject = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`/api/subjects/${subjectId}`);
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error?.message || "Failed to fetch subject");
+        }
+        
+        setSubjectName(result.data.title || "");
+        setDescription(result.data.description || "");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load subject");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchSubject();
+  }, [subjectId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
+    if (!subjectName.trim()) {
+      setError("Subject name is required");
+      return;
+    }
+    
     setIsUpdating(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Add actual API call here
-    console.log("Updating subject:", { subjectName, examDate, quizFrequency });
-    
-    setIsUpdating(false);
-    onClose?.();
+    try {
+      const response = await fetch(`/api/subjects/${subjectId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: subjectName.trim(),
+          description: description.trim() || undefined,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error?.message || "Failed to update subject");
+      }
+      
+      // Success - refresh and close
+      onSuccess?.();
+      router.refresh();
+      onClose?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update subject");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -34,7 +91,7 @@ function UpdateSubject({ onClose }: UpdateSubjectProps) {
         aria-label="Close"
         type="button"
         onClick={onClose}
-        disabled={isUpdating}
+        disabled={isUpdating || isLoading}
       >
         &#10005;
       </button>
@@ -47,7 +104,7 @@ function UpdateSubject({ onClose }: UpdateSubjectProps) {
         <button
           className="absolute right-4 top-4 bg-orange-400 hover:bg-orange-500 text-white font-semibold px-5 py-1.5 rounded-lg shadow-md transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           type="submit"
-          disabled={isUpdating}
+          disabled={isUpdating || isLoading}
         >
           {isUpdating ? (
             <>
@@ -68,23 +125,63 @@ function UpdateSubject({ onClose }: UpdateSubjectProps) {
         Update your subject details and study schedule
       </p>
 
-      {/* Subject Name */}
-      <div className="mb-4">
-        <label
-          className="block text-sm font-semibold mb-1 text-gray-900"
-          htmlFor="subjectName"
-        >
-          Subject Name
-        </label>
-        <input
-          id="subjectName"
-          type="text"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base bg-white text-gray-900"
-          placeholder="e.g~ Mathematics, Biology"
-          value={subjectName}
-          onChange={(e) => setSubjectName(e.target.value)}
-        />
-      </div>
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="text-center py-8">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400 mb-2"></div>
+          <p className="text-gray-500">Loading subject...</p>
+        </div>
+      ) : (
+        <>
+          {/* Error Display */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Subject Name */}
+          <div className="mb-4">
+            <label
+              className="block text-sm font-semibold mb-1 text-gray-900"
+              htmlFor="subjectName"
+            >
+              Subject Name
+            </label>
+            <input
+              id="subjectName"
+              type="text"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base bg-white text-gray-900"
+              placeholder="e.g~ Mathematics, Biology"
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
+              required
+              disabled={isUpdating}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="mb-4">
+            <label
+              className="block text-sm font-semibold mb-1 text-gray-900"
+              htmlFor="description"
+            >
+              Description{" "}
+              <span className="text-gray-500 font-normal">(Optional)</span>
+            </label>
+            <textarea
+              id="description"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base bg-white text-gray-900 resize-none"
+              placeholder="Add a brief description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              maxLength={1000}
+              disabled={isUpdating}
+            />
+          </div>
+        </>
+      )}
 
       {/* Exam Date */}
       <div className="mb-4">

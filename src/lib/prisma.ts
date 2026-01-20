@@ -1,10 +1,25 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import pg from 'pg'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
+// Check if DATABASE_URL is configured
+if (!process.env.DATABASE_URL || process.env.DATABASE_URL === 'your-supabase-database-url-here') {
+  throw new Error(
+    'DATABASE_URL is not configured. Please set it in your .env.local file.\n' +
+    'Get your database URL from: Supabase Dashboard → Settings → Database → Connection String (Direct connection)'
+  );
+}
+
+// Create the adapter for Prisma 7
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+
 export const prisma = globalForPrisma.prisma ?? new PrismaClient({
+  adapter,
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
 })
 

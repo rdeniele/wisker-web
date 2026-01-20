@@ -1,29 +1,66 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const quizFrequencies = ["Daily", "Weekly", "Bi-Weekly", "Monthly"];
 
 interface CreateSubjectProps {
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-function CreateSubject({ onClose }: CreateSubjectProps) {
+function CreateSubject({ onClose, onSuccess }: CreateSubjectProps) {
+  const router = useRouter();
   const [subjectName, setSubjectName] = useState("");
+  const [description, setDescription] = useState("");
   const [examDate, setExamDate] = useState("");
   const [quizFrequency, setQuizFrequency] = useState(quizFrequencies[0]);
   const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
+    if (!subjectName.trim()) {
+      setError("Subject name is required");
+      return;
+    }
+    
     setIsCreating(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Add actual API call here
-    console.log("Creating subject:", { subjectName, examDate, quizFrequency });
-    
-    setIsCreating(false);
-    onClose?.();
+    try {
+      const response = await fetch("/api/subjects/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: subjectName.trim(),
+          description: description.trim() || undefined,
+        }),
+      });
+      
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server error occurred. Please try again.");
+      }
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        const errorMessage = result.error?.message || "Failed to create subject";
+        throw new Error(errorMessage);
+      }
+      
+      // Success - refresh and close
+      onSuccess?.();
+      router.refresh();
+      onClose?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create subject");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -68,6 +105,13 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
         Create a new subject to organize your study materials
       </p>
 
+      {/* Error Display */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-600 text-sm">{error}</p>
+        </div>
+      )}
+
       {/* Subject Name */}
       <div className="mb-4">
         <label
@@ -83,6 +127,29 @@ function CreateSubject({ onClose }: CreateSubjectProps) {
           placeholder="e.g~ Mathematics, Biology"
           value={subjectName}
           onChange={(e) => setSubjectName(e.target.value)}
+          required
+          disabled={isCreating}
+        />
+      </div>
+
+      {/* Description */}
+      <div className="mb-4">
+        <label
+          className="block text-sm font-semibold mb-1 text-gray-900"
+          htmlFor="description"
+        >
+          Description{" "}
+          <span className="text-gray-500 font-normal">(Optional)</span>
+        </label>
+        <textarea
+          id="description"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 text-base bg-white text-gray-900 resize-none"
+          placeholder="Add a brief description..."
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          maxLength={1000}
+          disabled={isCreating}
         />
       </div>
 
