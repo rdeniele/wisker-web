@@ -42,9 +42,8 @@ export default function FlashcardView({
         
         const data = await response.json();
         const flashcardContent = JSON.parse(data.data.generatedContent);
-        
-        if (flashcardContent.flashcards && Array.isArray(flashcardContent.flashcards)) {
-          setFlashcards(flashcardContent.flashcards);
+        if (flashcardContent.cards && Array.isArray(flashcardContent.cards)) {
+          setFlashcards(flashcardContent.cards);
         } else {
           throw new Error('Invalid flashcard format');
         }
@@ -126,10 +125,7 @@ export default function FlashcardView({
       </div>
     );
   }
-        </p>
-      </div>
-    );
-  }
+// ...existing code...
 
   const currentCard = flashcards[currentIndex];
 
