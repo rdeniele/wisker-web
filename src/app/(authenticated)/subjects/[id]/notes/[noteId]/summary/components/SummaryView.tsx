@@ -197,7 +197,7 @@ export default function SummaryView({
             </ul>
           ) : (
             <ol className="list-decimal pl-5 space-y-3 text-gray-900">
-              {summary.split('\n').filter(line => line.trim()).map((point, idx) => (
+              {summary.split(/\n+/).filter(line => line.trim()).map((point, idx) => (
                 <li key={idx} className="leading-relaxed font-medium">
                   {point.replace(/^\d+\.\s*/, '')}
                 </li>

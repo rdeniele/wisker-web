@@ -381,10 +381,11 @@ Guidelines:
 • Third major idea`;
       } else {
         formatInstructions = `Present the summary as exactly ${config.keypoints} numbered key points focusing only on the most critical concepts.`;
-        summaryFormat = `Format the summary as exactly ${config.keypoints} numbered key points. Start each point with a number followed by a period and space. Example:
-1. First critical concept
-2. Second essential idea
-3. Third main point`;
+          formatInstructions = `Present the summary as exactly ${config.keypoints} numbered key points focusing only on the most critical concepts. Each key point MUST start with a number and a period, and be separated by a newline. Do NOT put all key points inline; each must be on its own line.`;
+          summaryFormat = `Format the summary as exactly ${config.keypoints} numbered key points. Start each point with a number followed by a period and space, and put each key point on its own line. Example:
+      1. First critical concept
+      2. Second essential idea
+      3. Third main point`;
       }
 
       const systemPrompt = `You are an expert at creating concise, informative summaries of study material.
