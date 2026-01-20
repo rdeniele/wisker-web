@@ -98,15 +98,18 @@ export async function signIn(
     password,
   });
 
+  console.log("Supabase signIn response:", { data: !!data.user, session: !!data.session, error: error?.message });
+
   if (error) {
     // Provide more specific error messages
     let errorMessage = error.message;
+    console.error("Supabase signIn error details:", error);
 
     if (error.message.includes("Email not confirmed")) {
       errorMessage =
         "Please confirm your email address before signing in. Check your inbox for the confirmation link.";
     } else if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "Invalid email or password. Please try again.";
+      errorMessage = "Invalid email or password. Please check your credentials and try again. If you just signed up, you may need to confirm your email first.";
     }
 
     return {

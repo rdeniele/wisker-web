@@ -49,29 +49,24 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup form submitted");
 
     // Client-side validation
     if (password !== confirmPassword) {
-      console.log("Validation failed: Passwords do not match");
       showToast("Passwords do not match!", "error");
       return;
     }
 
     const allRequirementsMet = passwordRequirements.every((req) => req.met);
     if (!allRequirementsMet) {
-      console.log("Validation failed: Password requirements not met", passwordRequirements);
       showToast("Please meet all password requirements!", "error");
       return;
     }
 
     if (!firstName.trim() || !lastName.trim()) {
-      console.log("Validation failed: Missing name");
       showToast("Please provide both first and last name", "error");
       return;
     }
 
-    console.log("All validations passed, sending signup request");
     setIsLoading(true);
 
     try {
@@ -81,9 +76,7 @@ export default function SignupPage() {
         body: JSON.stringify({ email, password, firstName, lastName }),
       });
 
-      console.log("Signup response status:", res.status);
       const result = await res.json();
-      console.log("Signup result:", result);
 
       if (result.success) {
         showToast(result.message, "success");
