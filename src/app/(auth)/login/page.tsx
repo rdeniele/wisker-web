@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import PageHeader from "@/components/ui/pageheader";
 import InputBox from "@/components/ui/inputboxes";
 import Button from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Toast from "@/components/ui/Toast";
 import { useToast } from "../../../../hook/useToast";
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast, showToast, hideToast } = useToast();
@@ -212,5 +212,17 @@ export default function LoginPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
