@@ -50,12 +50,15 @@ export async function getPrismaWithRLS(): Promise<PrismaClient> {
 
   // Parse the DATABASE_URL and add the JWT
   const dbUrl = new URL(process.env.DATABASE_URL!);
-  const connectionString = `postgresql://${dbUrl.username}:${dbUrl.password}@${dbUrl.host}${dbUrl.pathname}${dbUrl.search}`;
+  const searchParams = dbUrl.search || '';
+  const connectionString = `postgresql://${dbUrl.username}:${dbUrl.password}@${dbUrl.host}${dbUrl.pathname}${searchParams}`;
   
   // Create a new pool with the user's JWT in the connection options
   const userPool = new pg.Pool({
     connectionString,
-    options: `-c search_path=public -c request.jwt.claim.sub=${session.user.id}`,
+    // Set PostgreSQL session variables for RLS
+    application_name: 'wisker-rls',
+    options: `--search_path=public -c request.jwt.claim.sub=${session.user.id}`,
   });
 
   const userAdapter = new PrismaPg(userPool);

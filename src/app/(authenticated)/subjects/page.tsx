@@ -26,6 +26,8 @@ function SubjectsPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Sync user to database on mount
   useEffect(() => {
@@ -79,6 +81,34 @@ function SubjectsPage() {
       // Navigation will be handled by SubjectCard/SubjectActionButtons
       setNavigatingTo(null); // Reset after transition
     });
+  };
+
+  const handleDeleteSubject = async (id: string) => {
+    try {
+      setIsDeleting(true);
+      
+      const response = await fetch(`/api/subjects/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error?.message || "Failed to delete subject");
+      }
+      
+      // Remove the subject from the local state
+      setSubjects(prev => prev.filter(subject => subject.id !== id));
+      setDeleteConfirmId(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete subject");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getRelativeTime = (dateString: string) => {
@@ -170,9 +200,8 @@ function SubjectsPage() {
                   setSelectedSubjectId(id);
                   setShowUpdateModal(true);
                 }}
-                onDelete={async (id) => {
-                  // TODO: Add delete logic here
-                  console.log("Delete subject", id);
+                onDelete={(id) => {
+                  setDeleteConfirmId(id);
                 }}
               />
             ))}
@@ -227,6 +256,50 @@ function SubjectsPage() {
                 fetchSubjects(); // Refresh the subjects list
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          onClick={() => !isDeleting && setDeleteConfirmId(null)}
+        >
+          <div
+            className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+            style={{ boxShadow: "0 8px 0 #ececec" }}
+          >
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Delete Subject?
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this subject? This action cannot be undone and will delete all associated notes and learning tools.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={isDeleting}
+                className="px-6 py-2.5 rounded-2xl font-medium text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteSubject(deleteConfirmId)}
+                disabled={isDeleting}
+                className="px-6 py-2.5 rounded-2xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Deleting...
+                  </>
+                ) : (
+                  "Delete"
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
