@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fredoka, Poppins } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "./editor.css";
 
@@ -45,6 +46,19 @@ export default function RootLayout({
       <body
         className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-background text-foreground`}
       >
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-8BNJV7KG36"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-8BNJV7KG36');
+          `}
+        </Script>
         {children}
       </body>
     </html>
