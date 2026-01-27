@@ -24,6 +24,7 @@ export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Check password requirements in real-time
   const passwordRequirements = useMemo<PasswordRequirement[]>(
@@ -67,13 +68,25 @@ export default function SignupPage() {
       return;
     }
 
+    if (!acceptedTerms) {
+      showToast("Please accept the Terms and Conditions and Privacy Policy", "error");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, firstName, lastName }),
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          firstName, 
+          lastName,
+          acceptedTerms: true,
+          acceptedPrivacy: true
+        }),
       });
 
       const result = await res.json();
@@ -225,6 +238,39 @@ export default function SignupPage() {
               </div>
             </div>
           )}
+
+          {/* Terms and Privacy Policy Checkbox */}
+          <div className="flex items-start gap-3 pt-2">
+            <input
+              type="checkbox"
+              id="terms-checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 text-orange-500 bg-white border-gray-300 rounded focus:ring-orange-500 focus:ring-2 cursor-pointer"
+              required
+            />
+            <label
+              htmlFor="terms-checkbox"
+              className="text-sm text-gray-600 cursor-pointer"
+            >
+              I agree to the{" "}
+              <Link
+                href="/terms"
+                target="_blank"
+                className="text-orange-500 hover:text-orange-600 font-medium transition-colors underline"
+              >
+                Terms and Conditions
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                target="_blank"
+                className="text-orange-500 hover:text-orange-600 font-medium transition-colors underline"
+              >
+                Privacy Policy
+              </Link>
+            </label>
+          </div>
 
           {/* Sign Up Button */}
           <Button type="submit" fullWidth size="lg" isLoading={isLoading}>

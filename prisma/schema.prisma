@@ -76,6 +76,10 @@ model User {
   currentStreak         Int       @default(0) @map("current_streak") // Current consecutive days of activity
   longestStreak         Int       @default(0) @map("longest_streak") // Longest streak ever achieved
   lastActivityDate      DateTime? @map("last_activity_date") // Last date user had activity
+  acceptedTerms         Boolean   @default(false) @map("accepted_terms") // Terms and conditions acceptance
+  acceptedPrivacy       Boolean   @default(false) @map("accepted_privacy") // Privacy policy acceptance
+  termsAcceptedAt       DateTime? @map("terms_accepted_at") // When T&C was accepted
+  privacyAcceptedAt     DateTime? @map("privacy_accepted_at") // When privacy policy was accepted
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   

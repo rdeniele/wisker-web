@@ -29,7 +29,17 @@ export async function getAuthenticatedUser(): Promise<User> {
       // User doesn't exist in Prisma, create them
       console.log(`User ${user.id} not found in database, creating...`);
       try {
-        await userService.createUser(user.email || user.id, "FREE", user.id);
+        // Get T&C acceptance from user metadata if available
+        const acceptedTerms = user.user_metadata?.accepted_terms || false;
+        const acceptedPrivacy = user.user_metadata?.accepted_privacy || false;
+        
+        await userService.createUser(
+          user.email || user.id, 
+          "FREE", 
+          user.id,
+          acceptedTerms,
+          acceptedPrivacy
+        );
         console.log(`Successfully created user ${user.id} in database`);
       } catch (createError) {
         console.error(`Failed to create user ${user.id}:`, createError);

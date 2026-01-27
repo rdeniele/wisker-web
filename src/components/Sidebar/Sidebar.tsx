@@ -191,9 +191,34 @@ function Sidebar() {
         // Use only first name
         setUserName(firstName || "Student");
 
-        // Set plan type - default to Free (you can fetch this from your database later)
-        const plan = user.user_metadata?.subscription_plan || "Free";
-        setUserPlan(`${plan} Plan`);
+        // Fetch user's subscription plan from the same endpoint as navbar
+        try {
+          const response = await fetch('/api/subscription/status');
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+              const subData = data.data;
+              
+              // Format plan type (FREE -> Free, PRO -> Pro, PREMIUM -> Premium)
+              const planType = subData.planType || "FREE";
+              const formattedPlan = planType.charAt(0) + planType.slice(1).toLowerCase();
+              
+              // Check if subscription is active
+              const isActive = subData.isActive && subData.subscriptionStatus === "active";
+              const planLabel = isActive ? `${formattedPlan} (Active)` : formattedPlan;
+              
+              setUserPlan(`${planLabel} Plan`);
+            } else {
+              setUserPlan("Free Plan");
+            }
+          } else {
+            // Fallback to Free plan if API call fails
+            setUserPlan("Free Plan");
+          }
+        } catch (error) {
+          console.error("Failed to fetch user plan:", error);
+          setUserPlan("Free Plan");
+        }
       }
     };
 

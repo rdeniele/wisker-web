@@ -5,7 +5,7 @@ import { AuthCredentials, AuthResponse, SignupCredentials } from "@/types/auth";
 export async function signUp(
   credentials: SignupCredentials,
 ): Promise<AuthResponse> {
-  const { email, password, firstName, lastName } = credentials;
+  const { email, password, firstName, lastName, acceptedTerms, acceptedPrivacy } = credentials;
 
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.isValid) {
@@ -24,6 +24,14 @@ export async function signUp(
     };
   }
 
+  if (!acceptedTerms || !acceptedPrivacy) {
+    return {
+      success: false,
+      message: "Validation failed",
+      error: "You must accept the Terms and Conditions and Privacy Policy.",
+    };
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase.auth.signUp({
@@ -34,6 +42,10 @@ export async function signUp(
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         display_name: `${firstName.trim()} ${lastName.trim()}`,
+        accepted_terms: acceptedTerms,
+        accepted_privacy: acceptedPrivacy,
+        terms_accepted_at: new Date().toISOString(),
+        privacy_accepted_at: new Date().toISOString(),
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/callback`,
     },

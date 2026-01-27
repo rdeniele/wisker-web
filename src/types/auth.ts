@@ -10,6 +10,8 @@ export interface SignupCredentials {
   password: string;
   firstName: string;
   lastName: string;
+  acceptedTerms: boolean;
+  acceptedPrivacy: boolean;
 }
 
 export interface AuthResponse {

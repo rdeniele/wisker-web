@@ -66,9 +66,12 @@ export class UserService {
     email: string,
     planType: PlanType = "FREE",
     userId?: string,
+    acceptedTerms?: boolean,
+    acceptedPrivacy?: boolean,
   ): Promise<UserDto> {
     try {
       const limits = PLAN_LIMITS[planType];
+      const now = new Date();
 
       const user = await prisma.user.create({
         data: {
@@ -78,6 +81,14 @@ export class UserService {
           notesLimit: limits.notesLimit,
           subjectsLimit: limits.subjectsLimit,
           aiUsageLimit: limits.aiUsageLimit,
+          ...(acceptedTerms !== undefined && { 
+            acceptedTerms, 
+            termsAcceptedAt: acceptedTerms ? now : null 
+          }),
+          ...(acceptedPrivacy !== undefined && { 
+            acceptedPrivacy, 
+            privacyAcceptedAt: acceptedPrivacy ? now : null 
+          }),
         },
       });
 
