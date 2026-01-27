@@ -33,13 +33,15 @@ function TodaysFocus() {
           // Filter to today's activities
           const today = new Date();
           today.setHours(0, 0, 0, 0);
-          
-          const todaysTools = result.data.learningTools.filter((tool: LearningTool) => {
-            const toolDate = new Date(tool.createdAt);
-            toolDate.setHours(0, 0, 0, 0);
-            return toolDate.getTime() === today.getTime();
-          });
-          
+
+          const todaysTools = result.data.learningTools.filter(
+            (tool: LearningTool) => {
+              const toolDate = new Date(tool.createdAt);
+              toolDate.setHours(0, 0, 0, 0);
+              return toolDate.getTime() === today.getTime();
+            },
+          );
+
           setRecentTools(todaysTools.slice(0, 5));
         }
       } catch (error) {
@@ -160,7 +162,9 @@ function TodaysFocus() {
         ) : (
           <div className="text-center py-8">
             <p className="text-6xl mb-3">🎉</p>
-            <p className="text-lg font-bold text-gray-700">No activity today yet</p>
+            <p className="text-lg font-bold text-gray-700">
+              No activity today yet
+            </p>
             <p className="text-sm text-gray-500 mt-1">
               Create a quiz, flashcard, or summary to get started!
             </p>

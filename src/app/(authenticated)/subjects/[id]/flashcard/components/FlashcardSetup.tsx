@@ -61,7 +61,10 @@ export default function FlashcardSetup({
 
       if (!response.ok) {
         const errorData = await response.json();
-        const errorMessage = errorData.error?.message || errorData.message || "Failed to generate flashcards";
+        const errorMessage =
+          errorData.error?.message ||
+          errorData.message ||
+          "Failed to generate flashcards";
         throw new Error(errorMessage);
       }
 
@@ -74,7 +77,10 @@ export default function FlashcardSetup({
       });
     } catch (error) {
       console.error("Error generating flashcards:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to generate flashcards. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate flashcards. Please try again.";
       showToast(errorMessage, "error");
     } finally {
       setIsGenerating(false);

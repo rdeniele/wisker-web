@@ -314,8 +314,11 @@ export class LearningToolService {
     } catch (error) {
       console.error("Learning Tool Service Error:", error);
       console.error("Error type:", error?.constructor?.name);
-      console.error("Error message:", error instanceof Error ? error.message : error);
-      
+      console.error(
+        "Error message:",
+        error instanceof Error ? error.message : error,
+      );
+
       // Re-throw known error types to preserve error messages
       if (
         error instanceof NotFoundError ||
@@ -326,12 +329,17 @@ export class LearningToolService {
       ) {
         throw error;
       }
-      
+
       // Check if it's an error with AI_PROCESSING_ERROR code (in case instanceof doesn't work)
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'AI_PROCESSING_ERROR') {
+      if (
+        error &&
+        typeof error === "object" &&
+        "code" in error &&
+        error.code === "AI_PROCESSING_ERROR"
+      ) {
         throw error;
       }
-      
+
       // For other errors, preserve the original error message
       if (error instanceof Error) {
         throw new DatabaseError(
@@ -339,12 +347,9 @@ export class LearningToolService {
           error,
         );
       }
-      
+
       // For unknown error types
-      throw new DatabaseError(
-        "Failed to generate learning tool",
-        error,
-      );
+      throw new DatabaseError("Failed to generate learning tool", error);
     }
   }
 

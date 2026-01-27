@@ -355,13 +355,11 @@ export async function createCheckoutSession(data: {
 /**
  * Retrieve a Checkout Session
  */
-export async function retrieveCheckoutSession(
-  sessionId: string,
-): Promise<{
+export async function retrieveCheckoutSession(sessionId: string): Promise<{
   id: string;
   type: string;
-  attributes: { 
-    payment_status: string; 
+  attributes: {
+    payment_status: string;
     metadata: Record<string, unknown>;
     status?: string;
     paid_at?: number | null;

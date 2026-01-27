@@ -243,7 +243,7 @@ export class NoteService {
             fileSize = uploadResult.size;
             fileType = imageType;
 
-            console.log('Image extraction completed');
+            console.log("Image extraction completed");
           }
         } catch (aiError) {
           console.error("AI processing error:", aiError);

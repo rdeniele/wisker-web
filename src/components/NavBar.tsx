@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
@@ -23,7 +22,9 @@ export default function NavBar() {
             className="rounded-lg border-2 border-[#b3d1ff] bg-[#f5faff]"
             priority
           />
-          <span className="font-extrabold text-xl sm:text-2xl text-gray-800 tracking-tight leading-none font-sans">Wisker</span>
+          <span className="font-extrabold text-xl sm:text-2xl text-gray-800 tracking-tight leading-none font-sans">
+            Wisker
+          </span>
         </div>
         {/* Burger menu button for mobile */}
         <button
@@ -31,21 +32,60 @@ export default function NavBar() {
           aria-label="Toggle menu"
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          <svg className="w-7 h-7 text-[#4a90e2]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg
+            className="w-7 h-7 text-[#4a90e2]"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
             {menuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             )}
           </svg>
         </button>
         {/* Desktop menu */}
         <div className="hidden sm:flex items-center gap-4 md:gap-5">
-          <Link href="/" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Home</Link>
-          <a href="#how-it-works" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">How It Works</a>
-          <a href="#features" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Features</a>
-          <a href="#blogs" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Blogs</a>
-          <a href="#pricing" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Pricing</a>
+          <Link
+            href="/"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Home
+          </Link>
+          <a
+            href="#how-it-works"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            How It Works
+          </a>
+          <a
+            href="#features"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Features
+          </a>
+          <a
+            href="#blogs"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Blogs
+          </a>
+          <a
+            href="#pricing"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Pricing
+          </a>
           {!isSignedIn ? (
             <>
               <a
@@ -72,13 +112,40 @@ export default function NavBar() {
         </div>
       </div>
       {/* Mobile menu dropdown */}
-      <div className={`sm:hidden w-full bg-white border-t-2 border-[#b3d1ff] px-4 py-2 transition-all duration-200 ${menuOpen ? 'block' : 'hidden'}`}>
+      <div
+        className={`sm:hidden w-full bg-white border-t-2 border-[#b3d1ff] px-4 py-2 transition-all duration-200 ${menuOpen ? "block" : "hidden"}`}
+      >
         <div className="flex flex-col gap-2">
-          <Link href="/" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Home</Link>
-          <a href="#how-it-works" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">How It Works</a>
-          <a href="#features" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Features</a>
-          <a href="#blogs" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Blogs</a>
-          <a href="#pricing" className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors">Pricing</a>
+          <Link
+            href="/"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Home
+          </Link>
+          <a
+            href="#how-it-works"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            How It Works
+          </a>
+          <a
+            href="#features"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Features
+          </a>
+          <a
+            href="#blogs"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Blogs
+          </a>
+          <a
+            href="#pricing"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            Pricing
+          </a>
           {!isSignedIn ? (
             <>
               <a

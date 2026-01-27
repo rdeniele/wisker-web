@@ -117,7 +117,7 @@ export async function getUserSubscription(
         subjectsLimit: freeConfig.subjectsLimit,
       },
     });
-    
+
     // Refetch user data after initialization
     const initializedUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -130,11 +130,11 @@ export async function getUserSubscription(
         subscriptionEndDate: true,
       },
     });
-    
+
     if (!initializedUser) {
       throw new Error("Failed to initialize user subscription");
     }
-    
+
     return {
       planType: initializedUser.planType,
       dailyCredits: initializedUser.dailyCredits,

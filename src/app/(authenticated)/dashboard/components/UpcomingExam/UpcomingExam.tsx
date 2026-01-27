@@ -51,18 +51,20 @@ function UpcomingExam() {
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Tomorrow";
     if (diffDays < 7) return `In ${diffDays} days`;
-    
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
   const getExamUrgency = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil(
+      (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    );
     return diffDays <= 3;
   };
 
@@ -98,9 +100,13 @@ function UpcomingExam() {
           </div>
         ) : topExams.length > 0 ? (
           topExams.map((exam, index) => {
-            const isUrgent = exam.examDate ? getExamUrgency(exam.examDate) : false;
-            const dayText = exam.examDate ? formatExamDate(exam.examDate) : "No date set";
-            
+            const isUrgent = exam.examDate
+              ? getExamUrgency(exam.examDate)
+              : false;
+            const dayText = exam.examDate
+              ? formatExamDate(exam.examDate)
+              : "No date set";
+
             return (
               <div key={exam.id} className="relative flex gap-4 pb-8 last:pb-0">
                 {/* Timeline Line + Icon */}
@@ -114,7 +120,7 @@ function UpcomingExam() {
                       });
                     }}
                     disabled={navigatingTo === exam.id}
-                    className={`relative z-10 w-14 h-14 rounded-full ${isUrgent ? 'bg-red-100' : 'bg-orange-100'} flex items-center justify-center text-2xl shadow-md hover:shadow-lg transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed`}
+                    className={`relative z-10 w-14 h-14 rounded-full ${isUrgent ? "bg-red-100" : "bg-orange-100"} flex items-center justify-center text-2xl shadow-md hover:shadow-lg transition-all hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed`}
                   >
                     {navigatingTo === exam.id ? (
                       <svg
@@ -144,7 +150,7 @@ function UpcomingExam() {
                   {/* Connecting Line */}
                   {index < topExams.length - 1 && (
                     <div
-                      className={`w-0.5 h-full absolute top-14 ${isUrgent ? 'bg-red-200' : 'bg-orange-200'}`}
+                      className={`w-0.5 h-full absolute top-14 ${isUrgent ? "bg-red-200" : "bg-orange-200"}`}
                     />
                   )}
                 </div>
@@ -179,7 +185,11 @@ function UpcomingExam() {
                       {/* Time Badge */}
                       {exam.examDate && (
                         <div className="shrink-0 px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-bold">
-                          {new Date(exam.examDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {new Date(exam.examDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </div>
                       )}
                     </div>
@@ -188,7 +198,8 @@ function UpcomingExam() {
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <span>📝</span>
                       <span>
-                        {exam._count?.notes || 0} {exam._count?.notes === 1 ? "note" : "notes"} available
+                        {exam._count?.notes || 0}{" "}
+                        {exam._count?.notes === 1 ? "note" : "notes"} available
                       </span>
                     </div>
                   </button>

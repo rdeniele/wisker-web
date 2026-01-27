@@ -153,7 +153,7 @@ export class AIService {
               "The AI service is temporarily unavailable. Please try again in a few minutes.",
             );
           }
-          
+
           // Try to parse error response to get the actual message
           let errorMessage = "Failed to process request with AI service";
           try {
@@ -161,8 +161,12 @@ export class AIService {
             if (errorData.error?.message) {
               // Extract the core message from Together AI
               const aiError = errorData.error.message;
-              if (aiError.includes("tokens") && aiError.includes("must be <=")) {
-                errorMessage = "Your note content is too large for AI processing. Please try with fewer notes or shorter content.";
+              if (
+                aiError.includes("tokens") &&
+                aiError.includes("must be <=")
+              ) {
+                errorMessage =
+                  "Your note content is too large for AI processing. Please try with fewer notes or shorter content.";
               } else {
                 errorMessage = aiError;
               }
@@ -171,7 +175,7 @@ export class AIService {
             // If parsing fails, use the raw error text
             errorMessage = errorText.substring(0, 200);
           }
-          
+
           throw new AIProcessingError(errorMessage);
         }
 
@@ -222,18 +226,24 @@ export class AIService {
     if (content.length <= maxChars) {
       return content;
     }
-    
+
     const truncated = content.substring(0, maxChars);
-    const lastParagraph = truncated.lastIndexOf('\n\n');
-    const lastSentence = truncated.lastIndexOf('. ');
-    
+    const lastParagraph = truncated.lastIndexOf("\n\n");
+    const lastSentence = truncated.lastIndexOf(". ");
+
     // Try to truncate at paragraph or sentence boundary
     if (lastParagraph > maxChars * 0.8) {
-      return truncated.substring(0, lastParagraph) + "\n\n[Content truncated due to length...]";
+      return (
+        truncated.substring(0, lastParagraph) +
+        "\n\n[Content truncated due to length...]"
+      );
     } else if (lastSentence > maxChars * 0.8) {
-      return truncated.substring(0, lastSentence + 1) + " [Content truncated due to length...]";
+      return (
+        truncated.substring(0, lastSentence + 1) +
+        " [Content truncated due to length...]"
+      );
     }
-    
+
     return truncated + " [Content truncated due to length...]";
   }
 
@@ -379,7 +389,8 @@ Guidelines:
         throw error;
       }
       // Preserve the original error message
-      const message = error instanceof Error ? error.message : "Failed to generate quiz";
+      const message =
+        error instanceof Error ? error.message : "Failed to generate quiz";
       throw new AIProcessingError(message, error);
     }
   }
@@ -446,7 +457,10 @@ Guidelines:
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      const message = error instanceof Error ? error.message : "Failed to generate flashcards";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate flashcards";
       throw new AIProcessingError(message, error);
     }
   }
@@ -549,7 +563,8 @@ Guidelines:
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      const message = error instanceof Error ? error.message : "Failed to generate summary";
+      const message =
+        error instanceof Error ? error.message : "Failed to generate summary";
       throw new AIProcessingError(message, error);
     }
   }
@@ -604,7 +619,10 @@ Guidelines:
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      const message = error instanceof Error ? error.message : "Failed to generate learning tool";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate learning tool";
       throw new AIProcessingError(message, error);
     }
   }

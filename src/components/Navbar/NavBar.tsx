@@ -160,12 +160,15 @@ function NavBar() {
           const response = await fetch("/api/learning-tools?pageSize=5");
           const result = await response.json();
           if (response.ok && result.data?.learningTools) {
-            const recentTools = result.data.learningTools.map((tool: LearningToolResponse) => ({
-              id: tool.id,
-              type: tool.type,
-              subjectName: tool.subject?.title || tool.note?.title || "Unknown",
-              createdAt: tool.createdAt,
-            }));
+            const recentTools = result.data.learningTools.map(
+              (tool: LearningToolResponse) => ({
+                id: tool.id,
+                type: tool.type,
+                subjectName:
+                  tool.subject?.title || tool.note?.title || "Unknown",
+                createdAt: tool.createdAt,
+              }),
+            );
             setNotifications(recentTools);
           }
         } catch (error) {
@@ -364,7 +367,9 @@ function NavBar() {
                             {notification.subjectName}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">
-                            {new Date(notification.createdAt).toLocaleDateString()}
+                            {new Date(
+                              notification.createdAt,
+                            ).toLocaleDateString()}
                           </p>
                         </div>
                       </div>

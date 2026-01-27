@@ -53,7 +53,10 @@ export default function QuizSetup({
 
         if (!response.ok) {
           const errorData = await response.json();
-          const errorMessage = errorData.error?.message || errorData.message || "Failed to generate quiz";
+          const errorMessage =
+            errorData.error?.message ||
+            errorData.message ||
+            "Failed to generate quiz";
           throw new Error(errorMessage);
         }
 
@@ -67,7 +70,10 @@ export default function QuizSetup({
         });
       } catch (error) {
         console.error("Error generating quiz:", error);
-        const errorMessage = error instanceof Error ? error.message : "Failed to generate quiz. Please try again.";
+        const errorMessage =
+          error instanceof Error
+            ? error.message
+            : "Failed to generate quiz. Please try again.";
         showToast(errorMessage, "error");
       }
     });
