@@ -71,9 +71,12 @@ function Hero() {
           </p>
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-5 mt-6 sm:mt-8 w-full">
-            <button className="bg-purple-100 text-gray-700 font-bold border-2 sm:border-4 border-gray-600 rounded-xl sm:rounded-2xl shadow-[2px_2px_0_#666] sm:shadow-[4px_4px_0_#666] px-4 sm:px-6 md:px-8 py-2 text-sm sm:text-base md:text-lg transition-transform duration-150 outline-none focus:outline-none active:scale-95 hover:scale-105 w-full sm:w-auto">
-              Let’s Ace That Exam
-            </button>
+            <a
+              href="/signup"
+              className="bg-purple-100 text-gray-700 font-bold border-2 sm:border-4 border-gray-600 rounded-xl sm:rounded-2xl shadow-[2px_2px_0_#666] sm:shadow-[4px_4px_0_#666] px-4 sm:px-6 md:px-8 py-2 text-sm sm:text-base md:text-lg transition-transform duration-150 outline-none focus:outline-none active:scale-95 hover:scale-105 w-full sm:w-auto text-center no-underline"
+            >
+              Let&apos;s Ace That Exam
+            </a>
           </div>
           {/* Metrics section */}
           <div className="flex flex-row flex-wrap gap-6 mt-6 sm:mt-8 w-full justify-start">
