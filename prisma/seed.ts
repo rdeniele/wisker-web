@@ -1,0 +1,127 @@
+/**
+ * Prisma Seed Script
+ * Populates the database with initial plan data
+ */
+
+import { PrismaClient, PlanType } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
+import 'dotenv/config';
+
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not configured');
+}
+
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
+
+async function main() {
+  console.log('🌱 Seeding database with plans...');
+
+  // Clear existing plans (optional - comment out if you don't want to reset)
+  await prisma.plan.deleteMany({});
+  console.log('  Cleared existing plans');
+
+  // Create FREE plan
+  const freePlan = await prisma.plan.upsert({
+    where: { planType: PlanType.FREE },
+    update: {},
+    create: {
+      name: 'free',
+      planType: PlanType.FREE,
+      displayName: 'Free',
+      description: 'Perfect for getting started with Wisker',
+      monthlyPrice: 0,
+      yearlyPrice: 0,
+      dailyCredits: 10,
+      notesLimit: 50,
+      subjectsLimit: 10,
+      features: [
+        '10 daily credits (fur real)',
+        'AI Cat Quizzes (purr-fect your smarts)',
+        'AI Flashcat Cards (study on fleek)',
+        'AI Cat-nnected Concept Maps (big brain energy)',
+      ],
+      isActive: true,
+      sortOrder: 1,
+      isMostPopular: false,
+    },
+  });
+  console.log('  ✓ Created FREE plan');
+
+  // Create PRO plan
+  const proPlan = await prisma.plan.upsert({
+    where: { planType: PlanType.PRO },
+    update: {},
+    create: {
+      name: 'pro',
+      planType: PlanType.PRO,
+      displayName: 'Pro',
+      description: 'For serious students who want more',
+      monthlyPrice: 50, // ₱50/month with early user discount
+      yearlyPrice: 480, // ₱480/year with early user discount + annual discount
+      dailyCredits: 1000,
+      notesLimit: 500,
+      subjectsLimit: 100,
+      features: [
+        '1000 daily credits (no cap)',
+        'AI Cat Quizzes (flex your whiskers)',
+        'AI Flashcat Cards (study glow-up)',
+        'AI Cat-nnected Concept Maps (mega mind mode)',
+        'Catnap Study Schedules (plan your catnaps)',
+        'Advanced analytics (stats for days)',
+        'Priority support (VIP paws only)',
+      ],
+      isActive: true,
+      sortOrder: 2,
+      isMostPopular: true,
+      discountPercent: 50,
+      discountLabel: '50% OFF for Early Users',
+    },
+  });
+  console.log('  ✓ Created PRO plan');
+
+  // Create PREMIUM plan
+  const premiumPlan = await prisma.plan.upsert({
+    where: { planType: PlanType.PREMIUM },
+    update: {},
+    create: {
+      name: 'premium',
+      planType: PlanType.PREMIUM,
+      displayName: 'Premium',
+      description: 'The ultimate learning experience',
+      monthlyPrice: 150, // ₱150/month
+      yearlyPrice: 1440, // ₱1,440/year with annual discount
+      dailyCredits: 4000,
+      notesLimit: -1, // Unlimited
+      subjectsLimit: -1, // Unlimited
+      features: [
+        '4000 daily credits (max catitude)',
+        'All Pro perks, but supercharged',
+        'Early access to new drops (first dibs, always)',
+        'Dedicated Cat Manager (your own hype human)',
+        'Custom integrations (make it your vibe)',
+      ],
+      isActive: true,
+      sortOrder: 3,
+      isMostPopular: false,
+    },
+  });
+  console.log('  ✓ Created PREMIUM plan');
+
+  console.log('✅ Database seeding completed!');
+  console.log('\nCreated plans:');
+  console.log(`  - ${freePlan.displayName}: Free`);
+  console.log(`  - ${proPlan.displayName}: ₱${proPlan.monthlyPrice}/mo or ₱${proPlan.yearlyPrice}/year`);
+  console.log(`  - ${premiumPlan.displayName}: ₱${premiumPlan.monthlyPrice}/mo or ₱${premiumPlan.yearlyPrice}/year`);
+}
+
+main()
+  .catch((e) => {
+    console.error('Error seeding database:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

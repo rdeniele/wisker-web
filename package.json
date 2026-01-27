@@ -7,7 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "pricing:update": "tsx scripts/update-pricing.ts",
+    "pricing:test": "tsx scripts/test-dynamic-pricing.ts",
+    "admin:mark-early-users": "tsx scripts/mark-early-users.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

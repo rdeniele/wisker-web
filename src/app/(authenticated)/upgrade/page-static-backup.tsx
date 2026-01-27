@@ -1,29 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
 type BillingPeriod = "yearly" | "monthly";
 
-interface PlanFromDB {
-  id: string;
-  name: string;
-  planType: string;
-  displayName: string;
-  description: string | null;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  dailyCredits: number;
-  notesLimit: number;
-  subjectsLimit: number;
-  features: string[];
-  isMostPopular: boolean;
-  discountPercent: number | null;
-  discountLabel: string | null;
-}
-
 interface PricingTier {
   name: string;
-  displayName: string;
   price: string;
   originalPrice?: string;
   period: string;
@@ -33,52 +15,31 @@ interface PricingTier {
   isMostPopular?: boolean;
   buttonText: string;
   buttonDisabled?: boolean;
-  actualAmount: number;
 }
 
 export default function UpgradePage() {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
   const [loading, setLoading] = useState<string | null>(null);
-  const [plansFromDB, setPlansFromDB] = useState<PlanFromDB[]>([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
   const router = useRouter();
-
-  // Fetch plans from API on mount
-  useEffect(() => {
-    async function fetchPlans() {
-      try {
-        const response = await fetch("/api/plans");
-        const data = await response.json();
-        
-        if (data.success) {
-          setPlansFromDB(data.plans);
-        } else {
-          console.error("Failed to fetch plans:", data.error);
-        }
-      } catch (error) {
-        console.error("Error fetching plans:", error);
-      } finally {
-        setLoadingPlans(false);
-      }
-    }
-
-    fetchPlans();
-  }, []);
 
   const handleSelectPlan = async (plan: PricingTier) => {
     if (plan.isCurrentPlan || plan.buttonDisabled) return;
 
-    setLoading(plan.displayName);
+    setLoading(plan.name);
 
     try {
+      // Calculate the actual amount to charge
+      const priceString = plan.price.replace("₱", "").replace(",", "");
+      const amount = parseFloat(priceString);
+
       const response = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          planName: plan.displayName,
-          amount: plan.actualAmount,
+          planName: plan.name,
+          amount: amount,
           billingPeriod: billingPeriod,
         }),
       });
@@ -100,49 +61,124 @@ export default function UpgradePage() {
     }
   };
 
-  // Transform database plans into display format
-  const transformPlanForDisplay = (plan: PlanFromDB, period: BillingPeriod): PricingTier => {
-    const isYearly = period === "yearly";
-    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-    const periodLabel = isYearly ? "/year" : "/mo";
-    
-    // Calculate original prices if discount exists
-    let originalPrice: string | undefined;
-    if (plan.discountPercent && plan.discountPercent > 0) {
-      const original = price / (1 - plan.discountPercent / 100);
-      originalPrice = `₱${original.toLocaleString()}`;
-    }
+  // Base monthly prices (before any discounts)
+  const BASE_PRO_MONTHLY = 100;
+  const BASE_PREMIUM_MONTHLY = 150;
 
-    return {
-      name: plan.name,
-      displayName: plan.displayName,
-      price: price === 0 ? "Free" : `₱${price.toLocaleString()}`,
-      originalPrice,
-      period: price === 0 ? "" : periodLabel,
-      discount: plan.discountLabel || undefined,
-      features: plan.features,
-      isCurrentPlan: plan.planType === "FREE", // TODO: Get from user's current plan
-      isMostPopular: plan.isMostPopular,
-      buttonText: plan.planType === "FREE" ? "Current Plan" : "Choose Plan",
-      buttonDisabled: plan.planType === "FREE",
-      actualAmount: price,
-    };
-  };
+  // Discount rates
+  const EARLY_USER_DISCOUNT = 0.5; // 50% off
+  const ANNUAL_DISCOUNT = 0.2; // 20% off for annual billing
 
-  // Generate current plans based on billing period
-  const currentPlans = plansFromDB.map(plan => transformPlanForDisplay(plan, billingPeriod));
+  // Calculate Pro pricing
+  const proMonthlyPrice = BASE_PRO_MONTHLY * (1 - EARLY_USER_DISCOUNT); // ₱50
+  const proMonthlyOriginal = BASE_PRO_MONTHLY; // ₱100
+  const proYearlyOriginal = BASE_PRO_MONTHLY * 12; // ₱1,200
+  const proYearlyPrice =
+    proYearlyOriginal * (1 - EARLY_USER_DISCOUNT) * (1 - ANNUAL_DISCOUNT); // ₱480
 
-  // Show loading state
-  if (loadingPlans) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading plans...</p>
-        </div>
-      </div>
-    );
-  }
+  // Calculate Premium pricing
+  const premiumMonthlyPrice = BASE_PREMIUM_MONTHLY; // ₱150 (no early user discount)
+  const premiumYearlyOriginal = BASE_PREMIUM_MONTHLY * 12; // ₱1,800
+  const premiumYearlyPrice = premiumYearlyOriginal * (1 - ANNUAL_DISCOUNT); // ₱1,440
+
+  const yearlyPlans: PricingTier[] = [
+    {
+      name: "Free",
+      price: "Free",
+      period: "",
+      features: [
+        "10 daily credits (fur real)",
+        "AI Cat Quizzes (purr-fect your smarts)",
+        "AI Flashcat Cards (study on fleek)",
+        "AI Cat-nnected Concept Maps (big brain energy)",
+      ],
+      isCurrentPlan: true,
+      buttonText: "Current Plan",
+      buttonDisabled: true,
+    },
+    {
+      name: "Pro",
+      price: `₱${proYearlyPrice.toLocaleString()}`,
+      originalPrice: `₱${proYearlyOriginal.toLocaleString()}`,
+      period: "/year",
+      discount: "50% OFF for Early Users",
+      features: [
+        "1000 daily credits (no cap)",
+        "AI Cat Quizzes (flex your whiskers)",
+        "AI Flashcat Cards (study glow-up)",
+        "AI Cat-nnected Concept Maps (mega mind mode)",
+        "Catnap Study Schedules (plan your catnaps)",
+        "Advanced analytics (stats for days)",
+        "Priority support (VIP paws only)",
+      ],
+      isMostPopular: true,
+      buttonText: "Choose Plan",
+    },
+    {
+      name: "Premium",
+      price: `₱${premiumYearlyPrice.toLocaleString()}`,
+      originalPrice: `₱${premiumYearlyOriginal.toLocaleString()}`,
+      period: "/year",
+      features: [
+        "4000 daily credits (max catitude)",
+        "All Pro perks, but supercharged",
+        "Early access to new drops (first dibs, always)",
+        "Dedicated Cat Manager (your own hype human)",
+        "Custom integrations (make it your vibe)",
+      ],
+      buttonText: "Choose Plan",
+    },
+  ];
+
+  const monthlyPlans: PricingTier[] = [
+    {
+      name: "Free",
+      price: "Free",
+      period: "",
+      features: [
+        "10 daily credits (fur real)",
+        "AI Cat Quizzes (purr-fect your smarts)",
+        "AI Flashcat Cards (study on fleek)",
+        "AI Cat-nnected Concept Maps (big brain energy)",
+      ],
+      isCurrentPlan: true,
+      buttonText: "Current Plan",
+      buttonDisabled: true,
+    },
+    {
+      name: "Pro",
+      price: `₱${proMonthlyPrice}`,
+      originalPrice: `₱${proMonthlyOriginal}`,
+      period: "/mo",
+      discount: "50% OFF for Early Users",
+      features: [
+        "1000 daily credits (no cap)",
+        "AI Cat Quizzes (flex your whiskers)",
+        "AI Flashcat Cards (study glow-up)",
+        "AI Cat-nnected Concept Maps (mega mind mode)",
+        "Catnap Study Schedules (plan your catnaps)",
+        "Advanced analytics (stats for days)",
+        "Priority support (VIP paws only)",
+      ],
+      isMostPopular: true,
+      buttonText: "Choose Plan",
+    },
+    {
+      name: "Premium",
+      price: `₱${premiumMonthlyPrice}`,
+      period: "/mo",
+      features: [
+        "4000 daily credits (max catitude)",
+        "All Pro perks, but supercharged",
+        "Early access to new drops (first dibs, always)",
+        "Dedicated Cat Manager (your own hype human)",
+        "Custom integrations (make it your vibe)",
+      ],
+      buttonText: "Choose Plan",
+    },
+  ];
+
+  const currentPlans = billingPeriod === "yearly" ? yearlyPlans : monthlyPlans;
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
@@ -218,7 +254,7 @@ export default function UpgradePage() {
 
               {/* Plan Name */}
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 mt-6 sm:mt-4">
-                {plan.displayName}
+                {plan.name}
               </h3>
 
               {/* Discount Badge */}
@@ -245,7 +281,7 @@ export default function UpgradePage() {
                     {plan.period}
                   </span>
                 </div>
-                {plan.displayName !== "Free" && billingPeriod === "yearly" && (
+                {plan.name !== "Free" && billingPeriod === "yearly" && (
                   <p className="text-sm text-gray-500 mt-1">
                     Save 20% with annual billing
                   </p>
@@ -283,7 +319,7 @@ export default function UpgradePage() {
                     : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
                 }}
               >
-                {loading === plan.displayName ? "Processing..." : plan.buttonText}
+                {loading === plan.name ? "Processing..." : plan.buttonText}
               </button>
             </div>
           ))}

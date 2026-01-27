@@ -29,6 +29,31 @@ enum LearningToolSource {
 }
 
 // Models
+model Plan {
+  id                String    @id @default(uuid())
+  name              String    @unique
+  planType          PlanType  @unique
+  displayName       String    @map("display_name")
+  description       String?
+  monthlyPrice      Float     @map("monthly_price")
+  yearlyPrice       Float     @map("yearly_price")
+  monthlyPriceId    String?   @map("monthly_price_id") // For payment provider reference
+  yearlyPriceId     String?   @map("yearly_price_id") // For payment provider reference
+  dailyCredits      Int       @map("daily_credits")
+  notesLimit        Int       @map("notes_limit") // -1 for unlimited
+  subjectsLimit     Int       @map("subjects_limit") // -1 for unlimited
+  features          String[]  // Array of feature strings
+  isActive          Boolean   @default(true) @map("is_active")
+  sortOrder         Int       @default(0) @map("sort_order") // For display ordering
+  isMostPopular     Boolean   @default(false) @map("is_most_popular")
+  discountPercent   Float?    @map("discount_percent") // Optional promotional discount
+  discountLabel     String?   @map("discount_label") // e.g., "50% OFF for Early Users"
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  @@map("plans")
+}
+
 model User {
   id                    String    @id @default(uuid())
   email                 String    @unique
@@ -42,11 +67,19 @@ model User {
   subscriptionPeriod    String?   @map("subscription_period")
   subscriptionStartDate DateTime? @map("subscription_start_date")
   subscriptionEndDate   DateTime? @map("subscription_end_date")
+  isEarlyUser           Boolean   @default(false) @map("is_early_user") // First 50 users flag
+  earlyUserNumber       Int?      @map("early_user_number") // Sequential number for early users (1-50)
+  adminDiscountPercent  Float?    @map("admin_discount_percent") // Admin-granted discount
+  adminNotes            String?   @map("admin_notes") @db.Text // Admin notes about user
+  marketingOptIn        Boolean   @default(true) @map("marketing_opt_in") // Marketing emails consent
+  lastMarketingEmailAt  DateTime? @map("last_marketing_email_at")
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   
   subjects              Subject[]
   
+  @@index([isEarlyUser])
+  @@index([createdAt])
   @@map("users")
 }
 

@@ -6,43 +6,69 @@
 import { PlanType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
-// Plan configurations
-export const PLAN_CONFIGS = {
-  FREE: {
-    dailyCredits: 10,
-    notesLimit: 50,
-    subjectsLimit: 10,
-    features: [
-      'AI Cat Quizzes',
-      'AI Flashcat Cards',
-      'AI Cat-nnected Concept Maps',
-    ],
-  },
-  PRO: {
-    dailyCredits: 1000,
-    notesLimit: 500,
-    subjectsLimit: 100,
-    features: [
-      'AI Cat Quizzes',
-      'AI Flashcat Cards',
-      'AI Cat-nnected Concept Maps',
-      'Catnap Study Schedules',
-      'Advanced analytics',
-      'Priority support',
-    ],
-  },
-  PREMIUM: {
-    dailyCredits: 4000,
-    notesLimit: -1, // Unlimited
-    subjectsLimit: -1, // Unlimited
-    features: [
-      'All Pro perks',
-      'Early access to new drops',
-      'Dedicated Cat Manager',
-      'Custom integrations',
-    ],
-  },
-} as const;
+// Cache for plan configs to avoid repeated database queries
+let planConfigsCache: Map<PlanType, any> | null = null;
+let planConfigsCacheTime: number = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get all plan configurations from the database
+ * Results are cached for 5 minutes
+ */
+async function getPlanConfigs() {
+  const now = Date.now();
+  
+  // Return cached plans if still valid
+  if (planConfigsCache && now - planConfigsCacheTime < CACHE_TTL) {
+    return planConfigsCache;
+  }
+
+  // Fetch plans from database
+  const plans = await prisma.plan.findMany({
+    where: { isActive: true },
+    orderBy: { sortOrder: 'asc' },
+  });
+
+  // Build map of plan configs
+  const configs = new Map<PlanType, any>();
+  for (const plan of plans) {
+    configs.set(plan.planType, {
+      dailyCredits: plan.dailyCredits,
+      notesLimit: plan.notesLimit,
+      subjectsLimit: plan.subjectsLimit,
+      features: plan.features,
+    });
+  }
+
+  // Update cache
+  planConfigsCache = configs;
+  planConfigsCacheTime = now;
+
+  return configs;
+}
+
+/**
+ * Get a specific plan configuration
+ */
+async function getPlanConfig(planType: PlanType) {
+  const configs = await getPlanConfigs();
+  const config = configs.get(planType);
+  
+  if (!config) {
+    throw new Error(`Plan configuration not found for ${planType}`);
+  }
+  
+  return config;
+}
+
+/**
+ * Clear the plan configs cache
+ * Call this after updating plan configurations
+ */
+export function clearPlanConfigsCache() {
+  planConfigsCache = null;
+  planConfigsCacheTime = 0;
+}
 
 export interface UserSubscriptionInfo {
   planType: PlanType;
@@ -164,7 +190,7 @@ export async function updateSubscriptionPlan(
   period: 'monthly' | 'yearly',
   paymentSuccessful: boolean = true
 ): Promise<void> {
-  const config = PLAN_CONFIGS[planType];
+  const config = await getPlanConfig(planType);
   const now = new Date();
   const endDate = new Date(now);
   
