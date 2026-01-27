@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import OptionWidget from "@/components/ui/OptionWidget";
@@ -30,6 +30,24 @@ export default function SubjectCard({
 }: SubjectCardProps) {
   const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Handle click outside to close menu
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showMenu]);
 
   return (
     <div
@@ -49,33 +67,35 @@ export default function SubjectCard({
           />
         </div>
 
-        <div className="relative">
-          {showMenu ? (
+        <div className="relative" ref={menuRef}>
+          <button
+            className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowMenu(!showMenu);
+            }}
+            aria-label="Options"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="currentColor" viewBox="0 0 16 16">
+              <circle cx="8" cy="3" r="1.5" />
+              <circle cx="8" cy="8" r="1.5" />
+              <circle cx="8" cy="13" r="1.5" />
+            </svg>
+          </button>
+          
+          {showMenu && (
             <OptionWidget
               onView={() => {
-                setShowMenu(false);
                 router.push(`/subjects/${subject.id}`);
               }}
               onEdit={() => {
-                setShowMenu(false);
                 onEdit(subject.id);
               }}
               onDelete={() => {
-                setShowMenu(false);
                 onDelete(subject.id);
               }}
+              onClose={() => setShowMenu(false)}
             />
-          ) : (
-            <button
-              className="w-8 h-8 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-600 flex items-center justify-center text-lg transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(true);
-              }}
-              aria-label="Options"
-            >
-              ⋮
-            </button>
           )}
         </div>
       </div>
