@@ -175,23 +175,6 @@ export class LearningToolService {
     data: GenerateLearningToolRequest,
   ): Promise<LearningToolDto> {
     try {
-      // Check AI usage limit
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          creditsUsedToday: true,
-          dailyCredits: true,
-        },
-      });
-
-      if (!user) {
-        throw new NotFoundError("User");
-      }
-
-      if (user.creditsUsedToday >= user.dailyCredits) {
-        throw new AIUsageLimitExceededError(user.dailyCredits);
-      }
-
       // Validate and fetch content based on source
       let contentToProcess: string;
       let subjectId: string | undefined;
@@ -314,12 +297,6 @@ export class LearningToolService {
             })),
           });
         }
-
-        // Increment AI usage
-        await tx.user.update({
-          where: { id: userId },
-          data: { creditsUsedToday: { increment: 1 } },
-        });
 
         return learningTool;
       });

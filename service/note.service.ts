@@ -129,8 +129,6 @@ export class NoteService {
         where: { id: userId },
         select: {
           notesLimit: true,
-          creditsUsedToday: true,
-          dailyCredits: true,
           subjects: {
             select: {
               _count: {
@@ -178,20 +176,6 @@ export class NoteService {
           );
         }
 
-        // Estimate AI credits needed (will be refined after processing)
-        const estimatedCredits = data.pdfText
-          ? Math.min(MAX_CHUNKS, Math.ceil(data.pdfText.length / 100000)) // Cap at max chunks
-          : 2; // Images use 2 credits
-
-        // Check AI usage limit
-        if (user.creditsUsedToday + estimatedCredits > user.dailyCredits) {
-          throw new AIUsageLimitExceededError(user.dailyCredits);
-        }
-
-        console.log(
-          `Estimated AI credits for this upload: ${estimatedCredits}`,
-        );
-
         try {
           if (data.pdfText) {
             // Process PDF text: Use extracted text to generate structured note
@@ -209,11 +193,7 @@ export class NoteService {
               Math.ceil(data.pdfText.length / 100000),
             );
 
-            // Increment AI usage for note generation
-            await prisma.user.update({
-              where: { id: userId },
-              data: { creditsUsedToday: { increment: actualCredits } },
-            });
+            console.log(`Actual credits used: ${actualCredits}`);
           } else if (data.pdfBase64) {
             // Legacy support: Handle base64 PDF (not used anymore but kept for compatibility)
             console.log("Processing PDF base64 with AI (legacy)...");
@@ -263,11 +243,7 @@ export class NoteService {
             fileSize = uploadResult.size;
             fileType = imageType;
 
-            // Increment AI usage for extraction (2 calls: extraction + note generation)
-            await prisma.user.update({
-              where: { id: userId },
-              data: { creditsUsedToday: { increment: 2 } },
-            });
+            console.log('Image extraction completed');
           }
         } catch (aiError) {
           console.error("AI processing error:", aiError);
@@ -404,38 +380,15 @@ export class NoteService {
       // Verify ownership
       const note = await this.getNoteById(noteId, userId);
 
-      // Check AI usage limit
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: {
-          creditsUsedToday: true,
-          dailyCredits: true,
-        },
-      });
-
-      if (!user) {
-        throw new NotFoundError("User");
-      }
-
-      if (user.creditsUsedToday >= user.dailyCredits) {
-        throw new AIUsageLimitExceededError(user.dailyCredits);
-      }
-
       // Process with AI service
       const organizedContent = await aiService.processNote(note.rawContent);
       const aiProcessedContent = JSON.stringify(organizedContent);
 
-      // Update note with AI processed content and increment AI usage
-      await prisma.$transaction([
-        prisma.note.update({
-          where: { id: noteId },
-          data: { aiProcessedContent },
-        }),
-        prisma.user.update({
-          where: { id: userId },
-          data: { creditsUsedToday: { increment: 1 } },
-        }),
-      ]);
+      // Update note with AI processed content
+      await prisma.note.update({
+        where: { id: noteId },
+        data: { aiProcessedContent },
+      });
 
       // Fetch the updated note to return
       return await this.getNoteById(noteId, userId);
