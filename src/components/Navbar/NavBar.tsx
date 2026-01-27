@@ -98,12 +98,21 @@ interface SearchResult {
   lastAccessed?: string;
 }
 
+interface Notification {
+  id: string;
+  type: string;
+  subjectName: string;
+  createdAt: string;
+}
+
 function NavBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -130,6 +139,34 @@ function NavBar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Fetch notifications when dropdown opens
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (showNotifications && notifications.length === 0) {
+        setIsLoadingNotifications(true);
+        try {
+          const response = await fetch("/api/learning-tools?pageSize=5");
+          const result = await response.json();
+          if (response.ok && result.data?.learningTools) {
+            const recentTools = result.data.learningTools.map((tool: any) => ({
+              id: tool.id,
+              type: tool.type,
+              subjectName: tool.subject?.title || tool.note?.title || "Unknown",
+              createdAt: tool.createdAt,
+            }));
+            setNotifications(recentTools);
+          }
+        } catch (error) {
+          console.error("Failed to fetch notifications:", error);
+        } finally {
+          setIsLoadingNotifications(false);
+        }
+      }
+    };
+
+    fetchNotifications();
+  }, [showNotifications, notifications.length]);
 
   // Search functionality
   useEffect(() => {
@@ -288,9 +325,45 @@ function NavBar() {
                 <h3 className="font-semibold text-gray-900">Notifications</h3>
               </div>
               <div className="max-h-96 overflow-y-auto">
-                <div className="p-4 text-center text-gray-500 text-sm">
-                  No new notifications
-                </div>
+                {isLoadingNotifications ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">
+                    Loading...
+                  </div>
+                ) : notifications.length > 0 ? (
+                  notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                      onClick={() => {
+                        router.push(`/learning-tools`);
+                        setShowNotifications(false);
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                          {notification.type === "QUIZ" && "📝"}
+                          {notification.type === "FLASHCARD" && "🗂️"}
+                          {notification.type === "SUMMARY" && "📄"}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900">
+                            New {notification.type.toLowerCase()} created
+                          </p>
+                          <p className="text-sm text-gray-500 truncate">
+                            {notification.subjectName}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notification.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-gray-500 text-sm">
+                    No new notifications
+                  </div>
+                )}
               </div>
             </div>
           )}

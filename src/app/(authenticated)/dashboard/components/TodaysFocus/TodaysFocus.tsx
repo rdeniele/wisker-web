@@ -1,22 +1,56 @@
 "use client";
 
 import React, { useState, useTransition, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-function TodaysFocus() {
-  // TODO: Fetch real data from backend
-  const todaysTasks: Array<{
-    id: number;
+interface LearningTool {
+  id: string;
+  type: string;
+  createdAt: string;
+  subject?: {
+    id: string;
     title: string;
-    type: "review" | "quiz" | "flashcard";
-    count: number;
-    urgent: boolean;
-    subjectId: number;
-  }> = [];
+  };
+  note?: {
+    id: string;
+    title: string;
+  };
+}
+
+function TodaysFocus() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [recentTools, setRecentTools] = useState<LearningTool[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      try {
+        const response = await fetch("/api/learning-tools?pageSize=5");
+        const result = await response.json();
+        if (response.ok && result.data.learningTools) {
+          // Filter to today's activities
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const todaysTools = result.data.learningTools.filter((tool: LearningTool) => {
+            const toolDate = new Date(tool.createdAt);
+            toolDate.setHours(0, 0, 0, 0);
+            return toolDate.getTime() === today.getTime();
+          });
+          
+          setRecentTools(todaysTools.slice(0, 5));
+        }
+      } catch (error) {
+        console.error("Failed to fetch learning tools:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRecentActivity();
+  }, []);
 
   // Clear loading state when navigation completes
   useEffect(() => {
@@ -40,39 +74,42 @@ function TodaysFocus() {
           boxShadow: "0 4px 0 #ececec",
         }}
       >
-        {todaysTasks.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
+            <p className="text-sm text-gray-500 mt-3">Loading activities...</p>
+          </div>
+        ) : recentTools.length > 0 ? (
           <div className="space-y-3">
-            {todaysTasks.map((task) => {
-              // Generate the correct link based on task type
-              const link =
-                task.type === "review"
-                  ? `/subjects/${task.subjectId}`
-                  : `/subjects/${task.subjectId}/${task.type}`;
+            {recentTools.map((tool) => {
+              const subjectId = tool.subject?.id || "";
+              const link = tool.subject
+                ? `/subjects/${subjectId}`
+                : `/notes/${tool.note?.id || ""}`;
 
               return (
                 <button
-                  key={task.id}
+                  key={tool.id}
                   onClick={() => {
-                    setNavigatingTo(`task-${task.id}`);
+                    setNavigatingTo(`tool-${tool.id}`);
                     startTransition(() => {
                       router.push(link);
                     });
                   }}
-                  disabled={navigatingTo === `task-${task.id}`}
+                  disabled={navigatingTo === `tool-${tool.id}`}
                   className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="flex items-center gap-3">
-                    {/* Icon based on type */}
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
-                        task.type === "review"
-                          ? "bg-blue-100"
-                          : task.type === "quiz"
-                            ? "bg-purple-100"
-                            : "bg-green-100"
+                        tool.type === "QUIZ"
+                          ? "bg-purple-100"
+                          : tool.type === "FLASHCARD"
+                            ? "bg-green-100"
+                            : "bg-blue-100"
                       }`}
                     >
-                      {navigatingTo === `task-${task.id}` ? (
+                      {navigatingTo === `tool-${tool.id}` ? (
                         <svg
                           className="animate-spin h-5 w-5 text-gray-600"
                           viewBox="0 0 24 24"
@@ -92,33 +129,27 @@ function TodaysFocus() {
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                           />
                         </svg>
-                      ) : task.type === "review" ? (
-                        "📖"
-                      ) : task.type === "quiz" ? (
+                      ) : tool.type === "QUIZ" ? (
                         "📝"
-                      ) : (
+                      ) : tool.type === "FLASHCARD" ? (
                         "🎴"
+                      ) : (
+                        "📄"
                       )}
                     </div>
-                    <div>
+                    <div className="text-left">
                       <p className="font-bold text-gray-800 group-hover:text-gray-900">
-                        {task.title}
+                        {tool.type === "QUIZ"
+                          ? "Quiz"
+                          : tool.type === "FLASHCARD"
+                            ? "Flashcards"
+                            : "Summary"}
                       </p>
                       <p className="text-sm text-gray-500">
-                        {task.count}{" "}
-                        {task.type === "review"
-                          ? "notes"
-                          : task.type === "quiz"
-                            ? "quiz"
-                            : "cards"}
+                        {tool.subject?.title || tool.note?.title || "Unknown"}
                       </p>
                     </div>
                   </div>
-                  {task.urgent && (
-                    <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">
-                      Due Today
-                    </span>
-                  )}
                   <span className="text-gray-400 group-hover:text-gray-600 text-xl">
                     →
                   </span>
@@ -129,9 +160,9 @@ function TodaysFocus() {
         ) : (
           <div className="text-center py-8">
             <p className="text-6xl mb-3">🎉</p>
-            <p className="text-lg font-bold text-gray-700">All caught up!</p>
+            <p className="text-lg font-bold text-gray-700">No activity today yet</p>
             <p className="text-sm text-gray-500 mt-1">
-              No tasks scheduled for today
+              Create a quiz, flashcard, or summary to get started!
             </p>
           </div>
         )}
