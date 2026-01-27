@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { CreditsDisplay } from "../ui/CreditsDisplay";
 
 // Icons
@@ -105,6 +104,18 @@ interface Notification {
   createdAt: string;
 }
 
+interface LearningToolResponse {
+  id: string;
+  type: string;
+  createdAt: string;
+  subject?: {
+    title: string;
+  };
+  note?: {
+    title: string;
+  };
+}
+
 function NavBar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -149,7 +160,7 @@ function NavBar() {
           const response = await fetch("/api/learning-tools?pageSize=5");
           const result = await response.json();
           if (response.ok && result.data?.learningTools) {
-            const recentTools = result.data.learningTools.map((tool: any) => ({
+            const recentTools = result.data.learningTools.map((tool: LearningToolResponse) => ({
               id: tool.id,
               type: tool.type,
               subjectName: tool.subject?.title || tool.note?.title || "Unknown",
@@ -340,7 +351,7 @@ function NavBar() {
                       }}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                           {notification.type === "QUIZ" && "📝"}
                           {notification.type === "FLASHCARD" && "🗂️"}
                           {notification.type === "SUMMARY" && "📄"}
