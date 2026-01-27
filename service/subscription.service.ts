@@ -102,6 +102,50 @@ export async function getUserSubscription(
     throw new Error("User not found");
   }
 
+  // Ensure user has proper subscription fields initialized
+  // If dailyCredits is 0 or undefined, initialize with FREE plan defaults
+  if (!user.dailyCredits || user.dailyCredits === 0) {
+    const freeConfig = await getPlanConfig("FREE");
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        dailyCredits: freeConfig.dailyCredits,
+        creditsUsedToday: 0,
+        lastCreditReset: new Date(),
+        planType: "FREE",
+        notesLimit: freeConfig.notesLimit,
+        subjectsLimit: freeConfig.subjectsLimit,
+      },
+    });
+    
+    // Refetch user data after initialization
+    const initializedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        planType: true,
+        dailyCredits: true,
+        creditsUsedToday: true,
+        lastCreditReset: true,
+        subscriptionStatus: true,
+        subscriptionEndDate: true,
+      },
+    });
+    
+    if (!initializedUser) {
+      throw new Error("Failed to initialize user subscription");
+    }
+    
+    return {
+      planType: initializedUser.planType,
+      dailyCredits: initializedUser.dailyCredits,
+      creditsRemaining: initializedUser.dailyCredits,
+      creditsUsedToday: 0,
+      subscriptionStatus: initializedUser.subscriptionStatus,
+      subscriptionEndDate: initializedUser.subscriptionEndDate,
+      isActive: true,
+    };
+  }
+
   // Reset daily credits if needed
   await resetDailyCreditsIfNeeded(userId, user.lastCreditReset);
 

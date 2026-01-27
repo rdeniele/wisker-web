@@ -19,6 +19,12 @@ export function errorResponse(
   error: Error | AppError,
   status?: number,
 ): NextResponse<ApiResponse> {
+  console.error("API Error Response:", {
+    type: error.constructor.name,
+    message: error.message,
+    isAppError: error instanceof AppError,
+  });
+
   if (error instanceof AppError) {
     return NextResponse.json(
       {
@@ -33,14 +39,14 @@ export function errorResponse(
     );
   }
 
-  // Unknown error
+  // For non-AppError errors, still return the error message instead of generic message
   console.error("Unhandled error:", error);
   return NextResponse.json(
     {
       success: false,
       error: {
         code: "INTERNAL_ERROR",
-        message: "An unexpected error occurred",
+        message: error.message || "An unexpected error occurred",
       },
     },
     { status: status || 500 },

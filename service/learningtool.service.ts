@@ -5,6 +5,7 @@ import {
   DatabaseError,
   ForbiddenError,
   InvalidInputError,
+  AIProcessingError,
 } from "../src/lib/errors";
 import { GenerateLearningToolRequest, LearningToolDto } from "../src/types/api";
 import { subjectService } from "./subject.service";
@@ -264,17 +265,24 @@ export class LearningToolService {
       }
 
       // Process with AI service based on type
-      const generatedContent = await aiService.generateLearningTool(
-        data.type,
-        contentToProcess,
-        {
-          questionCount: data.questionCount,
-          difficulty: data.difficulty,
-          cardCount: data.cardCount,
-          summaryLength: data.summaryLength,
-          summaryType: data.summaryType,
-        },
-      );
+      let generatedContent: string;
+      try {
+        generatedContent = await aiService.generateLearningTool(
+          data.type,
+          contentToProcess,
+          {
+            questionCount: data.questionCount,
+            difficulty: data.difficulty,
+            cardCount: data.cardCount,
+            summaryLength: data.summaryLength,
+            summaryType: data.summaryType,
+          },
+        );
+      } catch (aiError) {
+        console.error("AI Service Error:", aiError);
+        // Re-throw AI errors immediately to preserve the error message
+        throw aiError;
+      }
 
       // Create learning tool and increment AI usage in a transaction
       const result = await prisma.$transaction(async (tx) => {
@@ -304,17 +312,38 @@ export class LearningToolService {
       // Fetch the complete learning tool with relations
       return this.getLearningToolById(result.id, userId);
     } catch (error) {
+      console.error("Learning Tool Service Error:", error);
+      console.error("Error type:", error?.constructor?.name);
+      console.error("Error message:", error instanceof Error ? error.message : error);
+      
+      // Re-throw known error types to preserve error messages
       if (
         error instanceof NotFoundError ||
         error instanceof ForbiddenError ||
         error instanceof AIUsageLimitExceededError ||
-        error instanceof InvalidInputError
+        error instanceof InvalidInputError ||
+        error instanceof AIProcessingError
       ) {
         throw error;
       }
+      
+      // Check if it's an error with AI_PROCESSING_ERROR code (in case instanceof doesn't work)
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'AI_PROCESSING_ERROR') {
+        throw error;
+      }
+      
+      // For other errors, preserve the original error message
+      if (error instanceof Error) {
+        throw new DatabaseError(
+          error.message || "Failed to generate learning tool",
+          error,
+        );
+      }
+      
+      // For unknown error types
       throw new DatabaseError(
         "Failed to generate learning tool",
-        error instanceof Error ? error : undefined,
+        error,
       );
     }
   }

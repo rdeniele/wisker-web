@@ -60,8 +60,9 @@ export default function QuizSetup({
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to generate quiz");
+        const errorData = await response.json();
+        const errorMessage = errorData.error?.message || errorData.message || "Failed to generate quiz";
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -73,12 +74,8 @@ export default function QuizSetup({
       });
     } catch (error) {
       console.error("Error generating quiz:", error);
-      showToast(
-        error instanceof Error
-          ? error.message
-          : "Failed to generate quiz. Please try again.",
-        "error",
-      );
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate quiz. Please try again.";
+      showToast(errorMessage, "error");
     } finally {
       setIsGenerating(false);
     }

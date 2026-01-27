@@ -149,13 +149,30 @@ export class AIService {
 
           // Non-retryable error or max retries reached
           if (response.status === 503) {
-            throw new Error(
-              `The AI service is temporarily unavailable. This usually resolves within a few minutes. Please try again later or contact support if the issue persists.`,
+            throw new AIProcessingError(
+              "The AI service is temporarily unavailable. Please try again in a few minutes.",
             );
           }
-          throw new Error(
-            `Together AI API error: ${response.status} ${response.statusText} - ${errorText}`,
-          );
+          
+          // Try to parse error response to get the actual message
+          let errorMessage = "Failed to process request with AI service";
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.error?.message) {
+              // Extract the core message from Together AI
+              const aiError = errorData.error.message;
+              if (aiError.includes("tokens") && aiError.includes("must be <=")) {
+                errorMessage = "Your note content is too large for AI processing. Please try with fewer notes or shorter content.";
+              } else {
+                errorMessage = aiError;
+              }
+            }
+          } catch (e) {
+            // If parsing fails, use the raw error text
+            errorMessage = errorText.substring(0, 200);
+          }
+          
+          throw new AIProcessingError(errorMessage);
         }
 
         const data: TogetherAIResponse = await response.json();
@@ -193,6 +210,31 @@ export class AIService {
     throw new AIProcessingError(
       "Failed to process request with Together AI after all retries",
     );
+  }
+
+  /**
+   * Truncate content to fit within token limits
+   * Rough estimate: 1 token ≈ 4 characters
+   * Max tokens for input should be around 28000 to leave room for max_new_tokens
+   */
+  private truncateContent(content: string, maxTokens: number = 28000): string {
+    const maxChars = maxTokens * 4; // Rough estimate: 4 chars per token
+    if (content.length <= maxChars) {
+      return content;
+    }
+    
+    const truncated = content.substring(0, maxChars);
+    const lastParagraph = truncated.lastIndexOf('\n\n');
+    const lastSentence = truncated.lastIndexOf('. ');
+    
+    // Try to truncate at paragraph or sentence boundary
+    if (lastParagraph > maxChars * 0.8) {
+      return truncated.substring(0, lastParagraph) + "\n\n[Content truncated due to length...]";
+    } else if (lastSentence > maxChars * 0.8) {
+      return truncated.substring(0, lastSentence + 1) + " [Content truncated due to length...]";
+    }
+    
+    return truncated + " [Content truncated due to length...]";
   }
 
   /**
@@ -291,6 +333,9 @@ Return your response as a JSON object with this exact structure:
 
       const { questionCount = 10, difficulty = "medium" } = options;
 
+      // Truncate content if too large
+      const truncatedContent = this.truncateContent(content, 26000);
+
       const systemPrompt = `You are an expert educator creating quiz questions from study material.
 Generate ${questionCount} multiple-choice questions at ${difficulty} difficulty level.
 
@@ -314,7 +359,7 @@ Guidelines:
 - Cover different aspects of the content
 - correctAnswer is the index (0-3) of the correct option`;
 
-      const userPrompt = `Create ${questionCount} ${difficulty} quiz questions from this content:\n\n${content}`;
+      const userPrompt = `Create ${questionCount} ${difficulty} quiz questions from this content:\n\n${truncatedContent}`;
 
       const messages: TogetherAIMessage[] = [
         { role: "system", content: systemPrompt },
@@ -329,7 +374,13 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as QuizContent;
     } catch (error) {
-      throw new AIProcessingError("Failed to generate quiz", error);
+      console.error("Quiz generation error:", error);
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      // Preserve the original error message
+      const message = error instanceof Error ? error.message : "Failed to generate quiz";
+      throw new AIProcessingError(message, error);
     }
   }
 
@@ -352,6 +403,9 @@ Guidelines:
 
       const { cardCount = 15 } = options;
 
+      // Truncate content if too large
+      const truncatedContent = this.truncateContent(content, 26000);
+
       const systemPrompt = `You are an expert educator creating flashcards for effective studying.
 Generate ${cardCount} flashcards that help students memorize key concepts.
 
@@ -373,7 +427,7 @@ Guidelines:
 - Make cards atomic (one concept per card)
 - Use varied question types`;
 
-      const userPrompt = `Create ${cardCount} flashcards from this content:\n\n${content}`;
+      const userPrompt = `Create ${cardCount} flashcards from this content:\n\n${truncatedContent}`;
 
       const messages: TogetherAIMessage[] = [
         { role: "system", content: systemPrompt },
@@ -388,7 +442,12 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as FlashcardContent;
     } catch (error) {
-      throw new AIProcessingError("Failed to generate flashcards", error);
+      console.error("Flashcard generation error:", error);
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : "Failed to generate flashcards";
+      throw new AIProcessingError(message, error);
     }
   }
 
@@ -411,6 +470,9 @@ Guidelines:
       }
 
       const { summaryLength = "medium", summaryType = "paragraph" } = options;
+
+      // Truncate content if too large
+      const truncatedContent = this.truncateContent(content, 27000);
 
       // Map summaryLength to character count and bullet count
       const lengthConfig = {
@@ -468,7 +530,7 @@ Guidelines:
 - Focus on the most important information
 - For bullet/keypoints format: Each point should be substantial but concise (1-2 sentences)`;
 
-      const userPrompt = `Create a summary of this content:\n\n${content}`;
+      const userPrompt = `Create a summary of this content:\n\n${truncatedContent}`;
 
       const messages: TogetherAIMessage[] = [
         { role: "system", content: systemPrompt },
@@ -483,7 +545,12 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as SummaryContent;
     } catch (error) {
-      throw new AIProcessingError("Failed to generate summary", error);
+      console.error("Summary generation error:", error);
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      const message = error instanceof Error ? error.message : "Failed to generate summary";
+      throw new AIProcessingError(message, error);
     }
   }
 
@@ -533,10 +600,12 @@ Guidelines:
 
       return JSON.stringify(result);
     } catch (error) {
+      // Always re-throw AIProcessingError to preserve the message
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      throw new AIProcessingError("Failed to generate learning tool", error);
+      const message = error instanceof Error ? error.message : "Failed to generate learning tool";
+      throw new AIProcessingError(message, error);
     }
   }
 

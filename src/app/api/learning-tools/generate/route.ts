@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
 
     return successResponse(learningTool, 201);
   } catch (error) {
+    console.error("Error generating learning tool:", error);
     return errorResponse(error as Error);
   }
 }
