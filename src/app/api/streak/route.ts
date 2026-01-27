@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { getStreakData } from '@/service/streak.service';
 
@@ -6,7 +6,7 @@ import { getStreakData } from '@/service/streak.service';
  * GET /api/streak
  * Get user's streak data
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const user = await getAuthenticatedUser();
     const streakData = await getStreakData(user.id);
