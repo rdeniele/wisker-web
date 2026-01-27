@@ -35,8 +35,8 @@ const features = [
   },
   {
     icon: <FaCalendarAlt size={28} style={{ color: "#40C4FF" }} />,
-    title: "Catnap Study Schedules",
-    desc: "AI sets up study schedules that fit your vibe, so you can chill, nap, and still ace your exams. Study = pawsome.",
+    title: "Audio-Text Magic",
+    desc: "Record your lectures and turn them into notes, or have your notes read aloud to you. Study on-the-go with voice superpowers!",
     color: "#eaf8ff",
     border: "#40C4FF",
     comingSoon: true,
@@ -51,8 +51,8 @@ const features = [
   },
   {
     icon: <FaMagic size={28} style={{ color: "#A3CFFF" }} />,
-    title: "Meowgic AI",
-    desc: "Next-gen AI that learns your study habits and keeps leveling up your experience. Study smarter, not harder. Coming soon, stay tuned!",
+    title: "Link-to-Notes Magic",
+    desc: "Drop any YouTube link or web article and watch it transform into study notes instantly. Turn videos and articles into pawsome study material!",
     color: "#f4faff",
     border: "#A3CFFF",
     comingSoon: true,
