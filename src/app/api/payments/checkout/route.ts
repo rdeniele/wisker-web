@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
           quantity: 1,
         },
       ],
-      successUrl: `${baseUrl}/upgrade/success?session_id={CHECKOUT_SESSION_ID}`,
+      successUrl: `${baseUrl}/upgrade/success`,
       cancelUrl: `${baseUrl}/upgrade`,
       description: `Wisker ${planName} Subscription`,
       metadata: {
@@ -45,6 +45,11 @@ export async function POST(request: NextRequest) {
         planName,
         billingPeriod: billingPeriod || 'monthly',
       },
+    });
+
+    console.log('Checkout session created:', {
+      id: checkoutSession.id,
+      checkout_url: checkoutSession.attributes.checkout_url,
     });
 
     return NextResponse.json({

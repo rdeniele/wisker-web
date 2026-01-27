@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 type BillingPeriod = "yearly" | "monthly";
 
@@ -41,7 +40,6 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [plansFromDB, setPlansFromDB] = useState<PlanFromDB[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
-  const router = useRouter();
 
   // Fetch plans from API on mount
   useEffect(() => {
@@ -86,6 +84,8 @@ export default function UpgradePage() {
       const data = await response.json();
 
       if (data.success && data.checkoutUrl) {
+        // Store session ID in sessionStorage before redirecting
+        sessionStorage.setItem('paymongoSessionId', data.sessionId);
         // Redirect to PayMongo checkout page
         window.location.href = data.checkoutUrl;
       } else {

@@ -25,11 +25,18 @@ export async function GET(request: NextRequest) {
     // Retrieve the checkout session from PayMongo
     const checkoutSession = await retrieveCheckoutSession(sessionId);
 
-    const status = checkoutSession.attributes.payment_status;
+    console.log('Checkout session retrieved:', {
+      id: checkoutSession.id,
+      status: checkoutSession.attributes.status,
+      paid_at: checkoutSession.attributes.paid_at,
+    });
+
+    const isPaid = checkoutSession.attributes.paid_at !== null && 
+                   checkoutSession.attributes.paid_at !== undefined;
     const metadata = checkoutSession.attributes.metadata;
 
-    // Check if payment was successful
-    if (status === 'paid') {
+    // Check if payment was successful (paid_at timestamp exists)
+    if (isPaid) {
       // Map plan name to PlanType enum
       const planName = (metadata.planName as string)?.toUpperCase();
       const planType: PlanType = planName === 'PRO' ? 'PRO' : planName === 'PREMIUM' ? 'PREMIUM' : 'FREE';
@@ -51,8 +58,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      status: status,
-      message: status === 'unpaid' ? 'Payment pending' : 'Payment failed',
+      status: checkoutSession.attributes.status,
+      message: 'Payment not completed yet',
     });
   } catch (error: unknown) {
     console.error('Payment verification error:', error);

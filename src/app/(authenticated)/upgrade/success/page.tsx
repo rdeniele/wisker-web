@@ -18,10 +18,19 @@ export default function PaymentSuccessPage() {
 
   const verifyPayment = useCallback(async () => {
     try {
-      const response = await fetch(`/api/payments/verify?session_id=${sessionId}`);
+      // Get session ID from sessionStorage if not in URL
+      const finalSessionId = sessionId || sessionStorage.getItem('paymongoSessionId');
+      
+      if (!finalSessionId) {
+        setStatus("error");
+        setMessage("No payment session found");
+        return;
+      }
+
+      const response = await fetch(`/api/payments/verify?session_id=${finalSessionId}`);
       const data = await response.json();
 
-      if (data.success && data.status === "paid") {
+      if (data.success) {
         setStatus("success");
         setMessage(data.message);
         setPlanDetails(data.data);
@@ -37,19 +46,11 @@ export default function PaymentSuccessPage() {
   }, [sessionId]);
 
   useEffect(() => {
-    if (!sessionId) {
-      queueMicrotask(() => {
-        setStatus("error");
-        setMessage("No payment session found");
-      });
-      return;
-    }
-
     // Verify payment with backend (avoid setState sync in effect)
     queueMicrotask(() => {
       verifyPayment();
     });
-  }, [sessionId, verifyPayment]);
+  }, [verifyPayment]);
 
   if (status === "loading") {
     return (

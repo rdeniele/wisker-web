@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 type BillingPeriod = "yearly" | "monthly";
 
@@ -41,7 +40,6 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [plansFromDB, setPlansFromDB] = useState<PlanFromDB[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
-  const router = useRouter();
 
   // Fetch plans from API on mount
   useEffect(() => {

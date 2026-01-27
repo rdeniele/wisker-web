@@ -12,7 +12,7 @@ import { PlanType } from '@prisma/client';
 import { clearPlanConfigsCache } from '@/service/subscription.service';
 
 // GET all plans (including inactive)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const plans = await prisma.plan.findMany({
       orderBy: { sortOrder: 'asc' },
