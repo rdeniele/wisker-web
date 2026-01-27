@@ -136,7 +136,7 @@ function SubjectsPage() {
     name: subject.title,
     notes: subject._count?.notes || 0,
     time: getRelativeTime(subject.updatedAt),
-    img: "/images/wisky-read.png",
+    img: "/images/wisky-laptop.png",
   }));
 
   return (

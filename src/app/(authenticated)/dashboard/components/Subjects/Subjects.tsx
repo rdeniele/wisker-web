@@ -166,7 +166,7 @@ function Subjects() {
                     </svg>
                   ) : (
                     <Image
-                      src="/images/wisky-read.png"
+                      src="/images/wisky-laptop.png"
                       alt={subject.title}
                       width={32}
                       height={32}
