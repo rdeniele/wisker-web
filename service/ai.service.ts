@@ -173,9 +173,10 @@ export class AIService {
             !(error instanceof Error && error.message.includes("429")))
         ) {
           console.error("Together AI API error:", error);
-          const errorMessage = error instanceof Error && error.message.includes("503")
-            ? "The AI service is temporarily unavailable. Please try again in a few minutes."
-            : "Failed to process request with AI service. Please try again.";
+          const errorMessage =
+            error instanceof Error && error.message.includes("503")
+              ? "The AI service is temporarily unavailable. Please try again in a few minutes."
+              : "Failed to process request with AI service. Please try again.";
           throw new AIProcessingError(errorMessage, error);
         }
 
@@ -215,7 +216,7 @@ export class AIService {
       if (!cleanContent.startsWith("{") && !cleanContent.startsWith("[")) {
         console.error("AI returned non-JSON response:", content);
         throw new AIProcessingError(
-          "Insufficient content to generate the requested tool. Please ensure your note has enough detailed content."
+          "Insufficient content to generate the requested tool. Please ensure your note has enough detailed content.",
         );
       }
 
@@ -284,7 +285,7 @@ Return your response as a JSON object with this exact structure:
       // Validate content
       if (!content || content.trim().length < 50) {
         throw new AIProcessingError(
-          "Note content is too short to generate a quiz. Please add more detailed content (at least 50 characters)."
+          "Note content is too short to generate a quiz. Please add more detailed content (at least 50 characters).",
         );
       }
 
@@ -345,7 +346,7 @@ Guidelines:
       // Validate content
       if (!content || content.trim().length < 50) {
         throw new AIProcessingError(
-          "Note content is too short to generate flashcards. Please add more detailed content (at least 50 characters)."
+          "Note content is too short to generate flashcards. Please add more detailed content (at least 50 characters).",
         );
       }
 
@@ -405,7 +406,7 @@ Guidelines:
       // Validate content
       if (!content || content.trim().length < 50) {
         throw new AIProcessingError(
-          "Note content is too short to generate a summary. Please add more detailed content (at least 50 characters)."
+          "Note content is too short to generate a summary. Please add more detailed content (at least 50 characters).",
         );
       }
 

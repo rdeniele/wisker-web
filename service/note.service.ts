@@ -129,8 +129,8 @@ export class NoteService {
         where: { id: userId },
         select: {
           notesLimit: true,
-          aiUsageCount: true,
-          aiUsageLimit: true,
+          creditsUsedToday: true,
+          dailyCredits: true,
           subjects: {
             select: {
               _count: {
@@ -184,8 +184,8 @@ export class NoteService {
           : 2; // Images use 2 credits
 
         // Check AI usage limit
-        if (user.aiUsageCount + estimatedCredits > user.aiUsageLimit) {
-          throw new AIUsageLimitExceededError(user.aiUsageLimit);
+        if (user.creditsUsedToday + estimatedCredits > user.dailyCredits) {
+          throw new AIUsageLimitExceededError(user.dailyCredits);
         }
 
         console.log(
@@ -212,7 +212,7 @@ export class NoteService {
             // Increment AI usage for note generation
             await prisma.user.update({
               where: { id: userId },
-              data: { aiUsageCount: { increment: actualCredits } },
+              data: { creditsUsedToday: { increment: actualCredits } },
             });
           } else if (data.pdfBase64) {
             // Legacy support: Handle base64 PDF (not used anymore but kept for compatibility)
@@ -266,7 +266,7 @@ export class NoteService {
             // Increment AI usage for extraction (2 calls: extraction + note generation)
             await prisma.user.update({
               where: { id: userId },
-              data: { aiUsageCount: { increment: 2 } },
+              data: { creditsUsedToday: { increment: 2 } },
             });
           }
         } catch (aiError) {
@@ -408,8 +408,8 @@ export class NoteService {
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
-          aiUsageCount: true,
-          aiUsageLimit: true,
+          creditsUsedToday: true,
+          dailyCredits: true,
         },
       });
 
@@ -417,8 +417,8 @@ export class NoteService {
         throw new NotFoundError("User");
       }
 
-      if (user.aiUsageCount >= user.aiUsageLimit) {
-        throw new AIUsageLimitExceededError(user.aiUsageLimit);
+      if (user.creditsUsedToday >= user.dailyCredits) {
+        throw new AIUsageLimitExceededError(user.dailyCredits);
       }
 
       // Process with AI service
@@ -433,7 +433,7 @@ export class NoteService {
         }),
         prisma.user.update({
           where: { id: userId },
-          data: { aiUsageCount: { increment: 1 } },
+          data: { creditsUsedToday: { increment: 1 } },
         }),
       ]);
 

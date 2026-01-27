@@ -47,7 +47,7 @@ export default function UpgradePage() {
       try {
         const response = await fetch("/api/plans");
         const data = await response.json();
-        
+
         if (data.success) {
           setPlansFromDB(data.plans);
         } else {
@@ -99,11 +99,14 @@ export default function UpgradePage() {
   };
 
   // Transform database plans into display format
-  const transformPlanForDisplay = (plan: PlanFromDB, period: BillingPeriod): PricingTier => {
+  const transformPlanForDisplay = (
+    plan: PlanFromDB,
+    period: BillingPeriod,
+  ): PricingTier => {
     const isYearly = period === "yearly";
     const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     const periodLabel = isYearly ? "/year" : "/mo";
-    
+
     // Calculate original prices if discount exists
     let originalPrice: string | undefined;
     if (plan.discountPercent && plan.discountPercent > 0) {
@@ -128,7 +131,9 @@ export default function UpgradePage() {
   };
 
   // Generate current plans based on billing period
-  const currentPlans = plansFromDB.map(plan => transformPlanForDisplay(plan, billingPeriod));
+  const currentPlans = plansFromDB.map((plan) =>
+    transformPlanForDisplay(plan, billingPeriod),
+  );
 
   // Show loading state
   if (loadingPlans) {
@@ -276,12 +281,15 @@ export default function UpgradePage() {
                       : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
                 }`}
                 style={{
-                  boxShadow: plan.buttonDisabled || loading !== null
-                    ? "none"
-                    : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
+                  boxShadow:
+                    plan.buttonDisabled || loading !== null
+                      ? "none"
+                      : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
                 }}
               >
-                {loading === plan.displayName ? "Processing..." : plan.buttonText}
+                {loading === plan.displayName
+                  ? "Processing..."
+                  : plan.buttonText}
               </button>
             </div>
           ))}

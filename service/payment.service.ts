@@ -3,14 +3,14 @@
  * Handles payment processing via PayMongo API
  */
 
-import crypto from 'crypto';
+import crypto from "crypto";
 
-const PAYMONGO_API_URL = 'https://api.paymongo.com/v1';
+const PAYMONGO_API_URL = "https://api.paymongo.com/v1";
 
 // Get the appropriate secret key based on mode
 const getSecretKey = () => {
-  const mode = process.env.PAYMONGO_MODE || 'test';
-  return mode === 'test'
+  const mode = process.env.PAYMONGO_MODE || "test";
+  return mode === "test"
     ? process.env.PAYMONGO_TEST_SECRET_KEY
     : process.env.PAYMONGO_SECRET_KEY;
 };
@@ -19,9 +19,9 @@ const getSecretKey = () => {
 const getAuthHeader = () => {
   const secretKey = getSecretKey();
   if (!secretKey) {
-    throw new Error('PayMongo secret key is not configured');
+    throw new Error("PayMongo secret key is not configured");
   }
-  return `Basic ${Buffer.from(secretKey).toString('base64')}`;
+  return `Basic ${Buffer.from(secretKey).toString("base64")}`;
 };
 
 export interface PaymentIntentData {
@@ -33,7 +33,7 @@ export interface PaymentIntentData {
 }
 
 export interface PaymentMethodData {
-  type: 'card' | 'gcash' | 'grab_pay' | 'paymaya';
+  type: "card" | "gcash" | "grab_pay" | "paymaya";
   billing?: {
     name: string;
     email: string;
@@ -94,28 +94,23 @@ export interface AttachPaymentIntentResponse {
  * This is the first step in processing a payment
  */
 export async function createPaymentIntent(
-  data: PaymentIntentData
+  data: PaymentIntentData,
 ): Promise<CreatePaymentIntentResponse> {
   const response = await fetch(`${PAYMONGO_API_URL}/payment_intents`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: getAuthHeader(),
     },
     body: JSON.stringify({
       data: {
         attributes: {
           amount: data.amount,
-          currency: data.currency || 'PHP',
+          currency: data.currency || "PHP",
           description: data.description,
           statement_descriptor: data.statement_descriptor,
           metadata: data.metadata,
-          payment_method_allowed: [
-            'card',
-            'gcash',
-            'grab_pay',
-            'paymaya',
-          ],
+          payment_method_allowed: ["card", "gcash", "grab_pay", "paymaya"],
         },
       },
     }),
@@ -124,7 +119,7 @@ export async function createPaymentIntent(
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -137,12 +132,12 @@ export async function createPaymentIntent(
  * This creates a payment method (card, e-wallet, etc.)
  */
 export async function createPaymentMethod(
-  data: PaymentMethodData
+  data: PaymentMethodData,
 ): Promise<{ id: string; type: string; attributes: Record<string, unknown> }> {
   const response = await fetch(`${PAYMONGO_API_URL}/payment_methods`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: getAuthHeader(),
     },
     body: JSON.stringify({
@@ -155,7 +150,7 @@ export async function createPaymentMethod(
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -171,14 +166,14 @@ export async function attachPaymentIntent(
   paymentIntentId: string,
   paymentMethodId: string,
   clientKey: string,
-  returnUrl?: string
+  returnUrl?: string,
 ): Promise<AttachPaymentIntentResponse> {
   const response = await fetch(
     `${PAYMONGO_API_URL}/payment_intents/${paymentIntentId}/attach`,
     {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: getAuthHeader(),
       },
       body: JSON.stringify({
@@ -190,13 +185,13 @@ export async function attachPaymentIntent(
           },
         },
       }),
-    }
+    },
   );
 
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -209,23 +204,23 @@ export async function attachPaymentIntent(
  * Check the status of a payment intent
  */
 export async function retrievePaymentIntent(
-  paymentIntentId: string
+  paymentIntentId: string,
 ): Promise<CreatePaymentIntentResponse> {
   const response = await fetch(
     `${PAYMONGO_API_URL}/payment_intents/${paymentIntentId}`,
     {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: getAuthHeader(),
       },
-    }
+    },
   );
 
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -243,9 +238,9 @@ export async function createPaymentLink(data: {
   remarks?: string;
 }): Promise<{ id: string; type: string; attributes: Record<string, unknown> }> {
   const response = await fetch(`${PAYMONGO_API_URL}/links`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: getAuthHeader(),
     },
     body: JSON.stringify({
@@ -262,7 +257,7 @@ export async function createPaymentLink(data: {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -273,11 +268,13 @@ export async function createPaymentLink(data: {
 /**
  * Retrieve a Payment Link
  */
-export async function retrievePaymentLink(linkId: string): Promise<{ id: string; type: string; attributes: Record<string, unknown> }> {
+export async function retrievePaymentLink(
+  linkId: string,
+): Promise<{ id: string; type: string; attributes: Record<string, unknown> }> {
   const response = await fetch(`${PAYMONGO_API_URL}/links/${linkId}`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: getAuthHeader(),
     },
   });
@@ -285,7 +282,7 @@ export async function retrievePaymentLink(linkId: string): Promise<{ id: string;
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -309,11 +306,19 @@ export async function createCheckoutSession(data: {
   cancelUrl?: string;
   description?: string;
   metadata?: Record<string, unknown>;
-}): Promise<{ id: string; type: string; attributes: { checkout_url: string; payment_status: string; metadata: Record<string, unknown> } }> {
+}): Promise<{
+  id: string;
+  type: string;
+  attributes: {
+    checkout_url: string;
+    payment_status: string;
+    metadata: Record<string, unknown>;
+  };
+}> {
   const response = await fetch(`${PAYMONGO_API_URL}/checkout_sessions`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: getAuthHeader(),
     },
     body: JSON.stringify({
@@ -322,11 +327,11 @@ export async function createCheckoutSession(data: {
           line_items: data.lineItems.map((item) => ({
             name: item.name,
             amount: item.amount,
-            currency: item.currency || 'PHP',
+            currency: item.currency || "PHP",
             description: item.description,
             quantity: item.quantity || 1,
           })),
-          payment_method_types: ['card', 'gcash', 'grab_pay', 'paymaya'],
+          payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
           success_url: data.successUrl,
           cancel_url: data.cancelUrl,
           description: data.description,
@@ -339,7 +344,7 @@ export async function createCheckoutSession(data: {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -350,22 +355,33 @@ export async function createCheckoutSession(data: {
 /**
  * Retrieve a Checkout Session
  */
-export async function retrieveCheckoutSession(sessionId: string): Promise<{ id: string; type: string; attributes: { payment_status: string; metadata: Record<string, unknown> } }> {
+export async function retrieveCheckoutSession(
+  sessionId: string,
+): Promise<{
+  id: string;
+  type: string;
+  attributes: { 
+    payment_status: string; 
+    metadata: Record<string, unknown>;
+    status?: string;
+    paid_at?: number | null;
+  };
+}> {
   const response = await fetch(
     `${PAYMONGO_API_URL}/checkout_sessions/${sessionId}`,
     {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: getAuthHeader(),
       },
-    }
+    },
   );
 
   if (!response.ok) {
     const error = await response.json();
     throw new Error(
-      `PayMongo API Error: ${error.errors?.[0]?.detail || 'Unknown error'}`
+      `PayMongo API Error: ${error.errors?.[0]?.detail || "Unknown error"}`,
     );
   }
 
@@ -379,11 +395,11 @@ export async function retrieveCheckoutSession(sessionId: string): Promise<{ id: 
 export function verifyWebhookSignature(
   payload: string,
   signature: string,
-  secret: string
+  secret: string,
 ): boolean {
   const expectedSignature = crypto
-    .createHmac('sha256', secret)
+    .createHmac("sha256", secret)
     .update(payload)
-    .digest('hex');
+    .digest("hex");
   return signature === expectedSignature;
 }

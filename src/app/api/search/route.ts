@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/search?q=query
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await getAuthenticatedUser();
     const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('q');
+    const query = searchParams.get("q");
 
     if (!query || query.trim().length === 0) {
       return NextResponse.json({ results: [] });
@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
       where: {
         userId: user.id,
         OR: [
-          { title: { contains: searchTerm, mode: 'insensitive' } },
-          { description: { contains: searchTerm, mode: 'insensitive' } },
+          { title: { contains: searchTerm, mode: "insensitive" } },
+          { description: { contains: searchTerm, mode: "insensitive" } },
         ],
       },
       select: {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         updatedAt: true,
       },
       take: 5,
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updatedAt: "desc" },
     });
 
     // Search notes
@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
           userId: user.id,
         },
         OR: [
-          { title: { contains: searchTerm, mode: 'insensitive' } },
-          { rawContent: { contains: searchTerm, mode: 'insensitive' } },
+          { title: { contains: searchTerm, mode: "insensitive" } },
+          { rawContent: { contains: searchTerm, mode: "insensitive" } },
         ],
       },
       select: {
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
         },
       },
       take: 5,
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updatedAt: "desc" },
     });
 
     // Format results
@@ -67,13 +67,13 @@ export async function GET(request: NextRequest) {
       ...subjects.map((subject) => ({
         id: subject.id,
         title: subject.title,
-        type: 'subject' as const,
+        type: "subject" as const,
         lastAccessed: new Date(subject.updatedAt).toLocaleDateString(),
       })),
       ...notes.map((note) => ({
         id: note.subjectId,
         title: note.title,
-        type: 'note' as const,
+        type: "note" as const,
         subjectName: note.subject.title,
         lastAccessed: new Date(note.updatedAt).toLocaleDateString(),
       })),
@@ -81,10 +81,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ results });
   } catch (error) {
-    console.error('Search error:', error);
-    return NextResponse.json(
-      { error: 'Failed to search' },
-      { status: 500 }
-    );
+    console.error("Search error:", error);
+    return NextResponse.json({ error: "Failed to search" }, { status: 500 });
   }
 }

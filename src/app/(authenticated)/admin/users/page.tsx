@@ -166,7 +166,8 @@ export default function AdminUsersPage() {
               onClick={handleExportEmails}
               className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
             >
-              📧 Export Marketing Emails ({users.filter((u) => u.marketingOptIn).length})
+              📧 Export Marketing Emails (
+              {users.filter((u) => u.marketingOptIn).length})
             </button>
           </div>
         </div>
@@ -200,7 +201,10 @@ export default function AdminUsersPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    <td
+                      colSpan={6}
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
                       No users found
                     </td>
                   </tr>
@@ -213,7 +217,8 @@ export default function AdminUsersPage() {
                             {user.email}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Joined {new Date(user.createdAt).toLocaleDateString()}
+                            Joined{" "}
+                            {new Date(user.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </td>
@@ -401,7 +406,8 @@ export default function AdminUsersPage() {
                     <div>
                       <span className="text-gray-600">Credits:</span>{" "}
                       <span className="font-medium">
-                        {editingUser.creditsUsedToday} / {editingUser.dailyCredits}
+                        {editingUser.creditsUsedToday} /{" "}
+                        {editingUser.dailyCredits}
                       </span>
                     </div>
                     <div>

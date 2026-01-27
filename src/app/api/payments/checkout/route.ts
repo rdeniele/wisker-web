@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createCheckoutSession } from '@/service/payment.service';
-import { getAuthenticatedUser } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server";
+import { createCheckoutSession } from "@/service/payment.service";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 /**
  * POST /api/payments/checkout
@@ -16,15 +16,16 @@ export async function POST(request: NextRequest) {
 
     if (!planName || !amount) {
       return NextResponse.json(
-        { error: 'Missing required fields: planName, amount' },
-        { status: 400 }
+        { error: "Missing required fields: planName, amount" },
+        { status: 400 },
       );
     }
 
     // Get the base URL for redirect URLs
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   request.headers.get('origin') || 
-                   'http://localhost:3000';
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      request.headers.get("origin") ||
+      "http://localhost:3000";
 
     // Create checkout session
     const checkoutSession = await createCheckoutSession({
@@ -32,8 +33,8 @@ export async function POST(request: NextRequest) {
         {
           name: `Wisker ${planName} Plan`,
           amount: amount * 100, // Convert to cents
-          currency: 'PHP',
-          description: `${planName} subscription - ${billingPeriod || 'monthly'}`,
+          currency: "PHP",
+          description: `${planName} subscription - ${billingPeriod || "monthly"}`,
           quantity: 1,
         },
       ],
@@ -43,11 +44,11 @@ export async function POST(request: NextRequest) {
       metadata: {
         userId: user.id,
         planName,
-        billingPeriod: billingPeriod || 'monthly',
+        billingPeriod: billingPeriod || "monthly",
       },
     });
 
-    console.log('Checkout session created:', {
+    console.log("Checkout session created:", {
       id: checkoutSession.id,
       checkout_url: checkoutSession.attributes.checkout_url,
     });
@@ -58,13 +59,16 @@ export async function POST(request: NextRequest) {
       sessionId: checkoutSession.id,
     });
   } catch (error: unknown) {
-    console.error('Checkout session creation error:', error);
+    console.error("Checkout session creation error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create checkout session' 
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to create checkout session",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

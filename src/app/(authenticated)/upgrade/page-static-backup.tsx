@@ -314,9 +314,10 @@ export default function UpgradePage() {
                       : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
                 }`}
                 style={{
-                  boxShadow: plan.buttonDisabled || loading !== null
-                    ? "none"
-                    : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
+                  boxShadow:
+                    plan.buttonDisabled || loading !== null
+                      ? "none"
+                      : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
                 }}
               >
                 {loading === plan.name ? "Processing..." : plan.buttonText}

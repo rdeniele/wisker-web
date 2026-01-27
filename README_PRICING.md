@@ -15,12 +15,14 @@ Your Wisker app now has a **fully database-driven pricing system**. All plan con
 ## 🚀 Quick Start
 
 ### 1. View Your Plans
+
 - **User-facing**: http://localhost:3000/upgrade
 - **Admin panel**: http://localhost:3000/admin/plans
 
 ### 2. Update Pricing
 
 **Option A - Admin UI (Easiest)**
+
 ```
 Visit: http://localhost:3000/admin/plans
 Click: Edit on any plan
@@ -29,20 +31,25 @@ Click: Save Changes
 ```
 
 **Option B - Command Line Tool**
+
 ```bash
 npm run pricing:update
 ```
+
 Interactive menu for common tasks!
 
 **Option C - Prisma Studio**
+
 ```bash
 npx prisma studio
 ```
+
 Visual database editor at http://localhost:5555
 
 ## 📋 Common Tasks
 
 ### Change Prices
+
 ```bash
 # Interactive CLI
 npm run pricing:update
@@ -50,6 +57,7 @@ npm run pricing:update
 ```
 
 ### Add a Discount
+
 ```bash
 npm run pricing:update
 # Choose option 4 (Add promotional discount)
@@ -57,6 +65,7 @@ npm run pricing:update
 ```
 
 ### Add a Feature
+
 ```bash
 npm run pricing:update
 # Choose option 6 (Add a feature)
@@ -64,6 +73,7 @@ npm run pricing:update
 ```
 
 ### Test Everything Works
+
 ```bash
 npm run pricing:test
 ```
@@ -99,27 +109,30 @@ npm run pricing:test
 ## 🔧 API Examples
 
 ### Fetch Plans
+
 ```javascript
-const response = await fetch('/api/plans');
+const response = await fetch("/api/plans");
 const { plans } = await response.json();
 ```
 
 ### Update Pro Plan Price
+
 ```javascript
-await fetch('/api/plans/admin', {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/plans/admin", {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    id: 'pro-plan-id',
+    id: "pro-plan-id",
     monthlyPrice: 99,
-    yearlyPrice: 950
-  })
+    yearlyPrice: 950,
+  }),
 });
 ```
 
 ## 🎯 Example Workflows
 
 ### Black Friday Sale (50% off everything)
+
 ```bash
 npm run pricing:update
 # Option 4: Add promotional discount
@@ -129,6 +142,7 @@ npm run pricing:update
 ```
 
 ### Hide Premium Plan Temporarily
+
 ```bash
 npm run pricing:update
 # Option 7: Toggle plan visibility
@@ -136,6 +150,7 @@ npm run pricing:update
 ```
 
 ### Launch a New Feature
+
 ```bash
 npm run pricing:update
 # Option 6: Add a feature
@@ -146,23 +161,28 @@ npm run pricing:update
 ## ⚠️ Important Notes
 
 ### Security
+
 The admin API endpoints are **currently unprotected**. Before production:
+
 1. Add authentication middleware
 2. Check for admin role
 3. Add rate limiting
 
 ### Caching
+
 - Plans are cached for 5 minutes in the subscription service
 - API updates clear the cache automatically
 - Direct DB changes may take 5 minutes to show
 
 ### Backup
+
 Your original hardcoded pricing page is saved at:
 `src/app/(authenticated)/upgrade/page-static-backup.tsx`
 
 ## 📚 Full Documentation
 
 See `docs/DYNAMIC_PRICING.md` for:
+
 - Complete API reference
 - Database schema details
 - Advanced customization
@@ -172,11 +192,13 @@ See `docs/DYNAMIC_PRICING.md` for:
 ## 🧪 Testing
 
 ### Quick Test
+
 ```bash
 npm run pricing:test
 ```
 
 ### Manual Test Checklist
+
 - [ ] Visit `/upgrade` - see plans from database
 - [ ] Toggle monthly/yearly - see correct prices
 - [ ] Visit `/admin/plans` - see admin UI
@@ -193,6 +215,7 @@ npm run pricing:test
 ## 🎨 Customization
 
 ### Add More Plans
+
 ```bash
 npx prisma studio
 # Add new row to plans table
@@ -200,12 +223,15 @@ npx prisma studio
 ```
 
 ### Change Plan Display Order
+
 Lower `sortOrder` = appears first
+
 ```sql
 UPDATE plans SET sort_order = 1 WHERE plan_type = 'PREMIUM';
 ```
 
 ### Add Custom Fields
+
 1. Edit `prisma/schema.prisma`
 2. Run `npx prisma db push`
 3. Update forms in admin UI
@@ -213,21 +239,25 @@ UPDATE plans SET sort_order = 1 WHERE plan_type = 'PREMIUM';
 ## 🚨 Troubleshooting
 
 **Plans not showing?**
+
 - Check `isActive = true` in database
 - Clear browser cache
 - Check console for errors
 
 **Prices not updating?**
+
 - Wait 5 minutes (cache TTL)
 - Or restart the dev server
 
 **Admin page not working?**
+
 - Verify `/api/plans/admin` endpoint works
 - Check browser console for errors
 
 ## 📞 Support
 
 Questions? Check:
+
 1. Full docs: `docs/DYNAMIC_PRICING.md`
 2. Test results: `npm run pricing:test`
 3. Database: `npx prisma studio`

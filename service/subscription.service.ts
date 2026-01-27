@@ -3,8 +3,8 @@
  * Manages user subscription plans, credits, and limits
  */
 
-import { PlanType } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { PlanType } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 // Cache for plan configs to avoid repeated database queries
 let planConfigsCache: Map<PlanType, any> | null = null;
@@ -17,7 +17,7 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
  */
 async function getPlanConfigs() {
   const now = Date.now();
-  
+
   // Return cached plans if still valid
   if (planConfigsCache && now - planConfigsCacheTime < CACHE_TTL) {
     return planConfigsCache;
@@ -26,7 +26,7 @@ async function getPlanConfigs() {
   // Fetch plans from database
   const plans = await prisma.plan.findMany({
     where: { isActive: true },
-    orderBy: { sortOrder: 'asc' },
+    orderBy: { sortOrder: "asc" },
   });
 
   // Build map of plan configs
@@ -53,11 +53,11 @@ async function getPlanConfigs() {
 async function getPlanConfig(planType: PlanType) {
   const configs = await getPlanConfigs();
   const config = configs.get(planType);
-  
+
   if (!config) {
     throw new Error(`Plan configuration not found for ${planType}`);
   }
-  
+
   return config;
 }
 
@@ -83,7 +83,9 @@ export interface UserSubscriptionInfo {
 /**
  * Get user's current subscription information
  */
-export async function getUserSubscription(userId: string): Promise<UserSubscriptionInfo> {
+export async function getUserSubscription(
+  userId: string,
+): Promise<UserSubscriptionInfo> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -97,7 +99,7 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   // Reset daily credits if needed
@@ -116,13 +118,15 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
   });
 
   if (!updatedUser) {
-    throw new Error('User not found after reset');
+    throw new Error("User not found after reset");
   }
 
-  const creditsRemaining = updatedUser.dailyCredits - updatedUser.creditsUsedToday;
-  const isActive = 
-    updatedUser.subscriptionStatus === 'active' &&
-    (!updatedUser.subscriptionEndDate || updatedUser.subscriptionEndDate > new Date());
+  const creditsRemaining =
+    updatedUser.dailyCredits - updatedUser.creditsUsedToday;
+  const isActive =
+    updatedUser.subscriptionStatus === "active" &&
+    (!updatedUser.subscriptionEndDate ||
+      updatedUser.subscriptionEndDate > new Date());
 
   return {
     planType: updatedUser.planType,
@@ -138,9 +142,13 @@ export async function getUserSubscription(userId: string): Promise<UserSubscript
 /**
  * Reset daily credits if 24 hours have passed
  */
-async function resetDailyCreditsIfNeeded(userId: string, lastReset: Date): Promise<void> {
+async function resetDailyCreditsIfNeeded(
+  userId: string,
+  lastReset: Date,
+): Promise<void> {
   const now = new Date();
-  const hoursSinceReset = (now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
+  const hoursSinceReset =
+    (now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
 
   if (hoursSinceReset >= 24) {
     await prisma.user.update({
@@ -156,7 +164,10 @@ async function resetDailyCreditsIfNeeded(userId: string, lastReset: Date): Promi
 /**
  * Check if user has enough credits for an operation
  */
-export async function checkCredits(userId: string, creditsNeeded: number = 1): Promise<boolean> {
+export async function checkCredits(
+  userId: string,
+  creditsNeeded: number = 1,
+): Promise<boolean> {
   const subscription = await getUserSubscription(userId);
   return subscription.creditsRemaining >= creditsNeeded;
 }
@@ -164,11 +175,14 @@ export async function checkCredits(userId: string, creditsNeeded: number = 1): P
 /**
  * Consume credits for an operation
  */
-export async function consumeCredits(userId: string, creditsToConsume: number = 1): Promise<void> {
+export async function consumeCredits(
+  userId: string,
+  creditsToConsume: number = 1,
+): Promise<void> {
   const hasCredits = await checkCredits(userId, creditsToConsume);
-  
+
   if (!hasCredits) {
-    throw new Error('Insufficient credits');
+    throw new Error("Insufficient credits");
   }
 
   await prisma.user.update({
@@ -187,15 +201,15 @@ export async function consumeCredits(userId: string, creditsToConsume: number = 
 export async function updateSubscriptionPlan(
   userId: string,
   planType: PlanType,
-  period: 'monthly' | 'yearly',
-  paymentSuccessful: boolean = true
+  period: "monthly" | "yearly",
+  paymentSuccessful: boolean = true,
 ): Promise<void> {
   const config = await getPlanConfig(planType);
   const now = new Date();
   const endDate = new Date(now);
-  
+
   // Calculate end date based on period
-  if (period === 'yearly') {
+  if (period === "yearly") {
     endDate.setFullYear(endDate.getFullYear() + 1);
   } else {
     endDate.setMonth(endDate.getMonth() + 1);
@@ -208,7 +222,7 @@ export async function updateSubscriptionPlan(
       dailyCredits: config.dailyCredits,
       notesLimit: config.notesLimit,
       subjectsLimit: config.subjectsLimit,
-      subscriptionStatus: paymentSuccessful ? 'active' : 'inactive',
+      subscriptionStatus: paymentSuccessful ? "active" : "inactive",
       subscriptionPeriod: period,
       subscriptionStartDate: paymentSuccessful ? now : undefined,
       subscriptionEndDate: paymentSuccessful ? endDate : undefined,
@@ -222,7 +236,7 @@ export async function updateSubscriptionPlan(
  * Cancel user's subscription (downgrade to FREE)
  */
 export async function cancelSubscription(userId: string): Promise<void> {
-  await updateSubscriptionPlan(userId, 'FREE', 'monthly', false);
+  await updateSubscriptionPlan(userId, "FREE", "monthly", false);
 }
 
 /**
@@ -230,7 +244,7 @@ export async function cancelSubscription(userId: string): Promise<void> {
  */
 export async function checkPlanLimit(
   userId: string,
-  limitType: 'notes' | 'subjects'
+  limitType: "notes" | "subjects",
 ): Promise<{ allowed: boolean; current: number; limit: number }> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -247,16 +261,16 @@ export async function checkPlanLimit(
   });
 
   if (!user) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   let current = 0;
   let limit = 0;
 
-  if (limitType === 'subjects') {
+  if (limitType === "subjects") {
     current = user._count.subjects;
     limit = user.subjectsLimit;
-  } else if (limitType === 'notes') {
+  } else if (limitType === "notes") {
     // Count all notes across all subjects
     const noteCount = await prisma.note.count({
       where: {
@@ -280,12 +294,12 @@ export async function checkPlanLimit(
  */
 export function getOperationCost(operation: string): number {
   const costs: Record<string, number> = {
-    'generate_quiz': 2,
-    'generate_flashcards': 2,
-    'generate_concept_map': 3,
-    'generate_summary': 1,
-    'process_note': 1,
-    'analyze_document': 2,
+    generate_quiz: 2,
+    generate_flashcards: 2,
+    generate_concept_map: 3,
+    generate_summary: 1,
+    process_note: 1,
+    analyze_document: 2,
   };
 
   return costs[operation] || 1;

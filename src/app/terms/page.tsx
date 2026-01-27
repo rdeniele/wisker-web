@@ -22,9 +22,10 @@ export default function TermsPage() {
 
         <div className="prose prose-lg max-w-none space-y-6 text-gray-700">
           <p>
-            Welcome to Wisker, a product of Acqron (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;).
-            By accessing or using Wisker, you (&quot;User,&quot; &quot;you,&quot; or &quot;your&quot;) agree to these Terms
-            and Conditions.
+            Welcome to Wisker, a product of Acqron (&quot;Company,&quot;
+            &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By accessing or
+            using Wisker, you (&quot;User,&quot; &quot;you,&quot; or
+            &quot;your&quot;) agree to these Terms and Conditions.
           </p>
 
           <section>
@@ -89,8 +90,8 @@ export default function TermsPage() {
             </h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                All subscription payments are billed in PHP (Philippine Peso) and are
-                non-refundable unless required by law.
+                All subscription payments are billed in PHP (Philippine Peso)
+                and are non-refundable unless required by law.
               </li>
               <li>
                 Prices are subject to change, but changes will not affect active
@@ -141,7 +142,8 @@ export default function TermsPage() {
             </h2>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                Wisker is provided &quot;as is&quot; without warranties of any kind.
+                Wisker is provided &quot;as is&quot; without warranties of any
+                kind.
               </li>
               <li>
                 We do not guarantee accuracy, completeness, or availability of
@@ -167,9 +169,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-4">
               10. Governing Law
             </h2>
-            <p>
-              These Terms are governed by the laws of the Philippines.
-            </p>
+            <p>These Terms are governed by the laws of the Philippines.</p>
           </section>
 
           <section>

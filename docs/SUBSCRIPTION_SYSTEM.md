@@ -1,12 +1,15 @@
 # Subscription System Implementation
 
 ## Overview
+
 Successfully implemented a complete subscription management system with credit-based usage tracking for Free, Pro, and Premium plans.
 
 ## What Was Implemented
 
 ### 1. Database Schema Updates (Prisma)
+
 Updated User model with subscription fields:
+
 - `dailyCredits` - Daily credit limit based on plan
 - `creditsUsedToday` - Credits consumed today
 - `lastCreditReset` - Timestamp for 24-hour reset cycle
@@ -18,18 +21,21 @@ Updated User model with subscription fields:
 ### 2. Plan Configurations
 
 **FREE Plan:**
+
 - 10 daily credits
 - 50 notes limit
 - 10 subjects limit
 - Basic features (Quizzes, Flashcards, Concept Maps)
 
 **PRO Plan:**
+
 - 1,000 daily credits
 - 500 notes limit
 - 100 subjects limit
 - All basic features + Study Schedules, Analytics, Priority Support
 
 **PREMIUM Plan:**
+
 - 4,000 daily credits
 - Unlimited notes
 - Unlimited subjects
@@ -38,6 +44,7 @@ Updated User model with subscription fields:
 ### 3. Subscription Service (`service/subscription.service.ts`)
 
 **Key Functions:**
+
 - `getUserSubscription(userId)` - Get user's current subscription info
 - `checkCredits(userId, amount)` - Check if user has enough credits
 - `consumeCredits(userId, amount)` - Consume credits for operations
@@ -47,6 +54,7 @@ Updated User model with subscription fields:
 - `getOperationCost(operation)` - Get credit cost per operation
 
 **Credit Costs:**
+
 - Generate Quiz: 2 credits
 - Generate Flashcards: 2 credits
 - Generate Concept Map: 3 credits
@@ -57,11 +65,13 @@ Updated User model with subscription fields:
 ### 4. API Endpoints
 
 **Payment Routes:**
+
 - `POST /api/payments/checkout` - Create checkout session
 - `GET /api/payments/verify` - Verify payment and update subscription
 - `POST /api/payments/webhook` - Handle PayMongo webhooks
 
 **Subscription Routes:**
+
 - `GET /api/subscription/status` - Get current user's subscription info
 
 ### 5. React Hook (`hook/useSubscription.ts`)
@@ -71,6 +81,7 @@ const { subscription, loading, error, refresh } = useSubscription();
 ```
 
 Returns:
+
 - `planType` - Current plan (FREE/PRO/PREMIUM)
 - `dailyCredits` - Total daily limit
 - `creditsRemaining` - Available credits today
@@ -82,6 +93,7 @@ Returns:
 ### 6. UI Component (`components/ui/CreditsDisplay.tsx`)
 
 Visual display of remaining credits with:
+
 - Circular progress indicator
 - Current/total credits
 - Color coding (red when low)
@@ -95,7 +107,7 @@ import { useSubscription } from '@/hook/useSubscription';
 
 function MyComponent() {
   const { subscription } = useSubscription();
-  
+
   return (
     <div>
       <p>Plan: {subscription?.planType}</p>
@@ -108,25 +120,25 @@ function MyComponent() {
 ### In Your API Routes
 
 ```typescript
-import { checkCredits, consumeCredits } from '@/service/subscription.service';
+import { checkCredits, consumeCredits } from "@/service/subscription.service";
 
 export async function POST(request: NextRequest) {
   const user = await getAuthenticatedUser();
-  
+
   // Check if user has enough credits
   const hasCredits = await checkCredits(user.id, 2);
   if (!hasCredits) {
     return NextResponse.json(
-      { error: 'Insufficient credits' },
-      { status: 402 }
+      { error: "Insufficient credits" },
+      { status: 402 },
     );
   }
-  
+
   // Perform operation...
-  
+
   // Consume credits
   await consumeCredits(user.id, 2);
-  
+
   return NextResponse.json({ success: true });
 }
 ```
@@ -134,13 +146,13 @@ export async function POST(request: NextRequest) {
 ### Check Plan Limits
 
 ```typescript
-import { checkPlanLimit } from '@/service/subscription.service';
+import { checkPlanLimit } from "@/service/subscription.service";
 
-const noteLimit = await checkPlanLimit(userId, 'notes');
+const noteLimit = await checkPlanLimit(userId, "notes");
 if (!noteLimit.allowed) {
   return NextResponse.json(
     { error: `Note limit reached (${noteLimit.limit})` },
-    { status: 403 }
+    { status: 403 },
   );
 }
 ```
@@ -211,13 +223,13 @@ Example for learning tools endpoint:
 
 ```typescript
 // In /api/learning-tools/generate
-const cost = getOperationCost('generate_quiz'); // 2 credits
+const cost = getOperationCost("generate_quiz"); // 2 credits
 const hasCredits = await checkCredits(user.id, cost);
 
 if (!hasCredits) {
   return NextResponse.json(
-    { error: 'Insufficient credits. Upgrade your plan.' },
-    { status: 402 }
+    { error: "Insufficient credits. Upgrade your plan." },
+    { status: 402 },
   );
 }
 
@@ -247,6 +259,7 @@ Track which features users are using most to optimize credit costs.
 The schema changes have been applied using `prisma db push`.
 
 To create a proper migration later:
+
 ```bash
 npx prisma migrate dev --name add_subscription_fields
 ```
@@ -254,6 +267,7 @@ npx prisma migrate dev --name add_subscription_fields
 ## Environment Variables
 
 Make sure these are set in your `.env`:
+
 ```env
 PAYMONGO_TEST_SECRET_KEY=sk_test_...
 PAYMONGO_TEST_PUBLIC_KEY=pk_test_...

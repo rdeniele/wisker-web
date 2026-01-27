@@ -147,7 +147,9 @@ export default function AdminDashboard() {
               <p className="text-sm text-gray-600">Total Users</p>
               <span className="text-2xl">👤</span>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.totalUsers}
+            </p>
           </div>
 
           <div className="bg-white rounded-lg shadow-md p-6 border-2 border-orange-500">
@@ -215,7 +217,9 @@ export default function AdminDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm text-gray-600">Pro</span>
-                  <span className="text-sm font-semibold">{stats.proUsers}</span>
+                  <span className="text-sm font-semibold">
+                    {stats.proUsers}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -308,8 +312,8 @@ export default function AdminDashboard() {
               📧 Marketing Emails
             </h3>
             <p className="text-sm text-green-800 mb-3">
-              {stats.marketingOptIns} users opted in for marketing emails. Export
-              their emails from the Users page.
+              {stats.marketingOptIns} users opted in for marketing emails.
+              Export their emails from the Users page.
             </p>
             <Link
               href="/admin/users"

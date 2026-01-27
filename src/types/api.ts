@@ -26,8 +26,8 @@ export interface UserDto {
   planType: PlanType;
   notesLimit: number;
   subjectsLimit: number;
-  aiUsageLimit: number;
-  aiUsageCount: number;
+  dailyCredits: number;
+  creditsUsedToday: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -167,8 +167,8 @@ export interface UsageStats {
   notesLimit: number;
   subjectsUsed: number;
   subjectsLimit: number;
-  aiUsageCount: number;
-  aiUsageLimit: number;
+  aiUsageCount: number; // Maps to creditsUsedToday
+  aiUsageLimit: number; // Maps to dailyCredits
 }
 
 // Error Codes

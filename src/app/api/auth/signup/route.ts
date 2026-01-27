@@ -14,12 +14,13 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Signup API error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: "Server error", 
-        error: error instanceof Error ? error.message : "Unknown error occurred" 
-      }, 
-      { status: 500 }
+      {
+        success: false,
+        message: "Server error",
+        error:
+          error instanceof Error ? error.message : "Unknown error occurred",
+      },
+      { status: 500 },
     );
   }
 }

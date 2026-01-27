@@ -50,7 +50,8 @@ PAYMONGO_WEBHOOK_SECRET="whsec_YOUR_WEBHOOK_SECRET"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
-**Important:** 
+**Important:**
+
 - Replace all placeholder values with your actual keys
 - Never commit real API keys to version control
 - Use test keys during development
@@ -63,16 +64,19 @@ NEXT_PUBLIC_APP_URL="http://localhost:3000"
 PayMongo provides test card numbers for testing:
 
 **Successful Payment:**
+
 - Card Number: `4343 4343 4343 4345`
 - Expiry: Any future date (e.g., `12/25`)
 - CVC: Any 3 digits (e.g., `123`)
 
 **Failed Payment:**
+
 - Card Number: `4571 7360 0000 0008`
 - Expiry: Any future date
 - CVC: Any 3 digits
 
 **3D Secure (Authentication Required):**
+
 - Card Number: `4571 7360 0000 0016`
 - Expiry: Any future date
 - CVC: Any 3 digits
@@ -80,6 +84,7 @@ PayMongo provides test card numbers for testing:
 ### Testing E-Wallets
 
 When testing GCash, GrabPay, or PayMaya in test mode:
+
 1. Click on the e-wallet option
 2. You'll be redirected to a PayMongo test page
 3. Click "Authorize Test Payment" to simulate successful payment
@@ -124,20 +129,21 @@ model User {
   id                    String   @id @default(cuid())
   email                 String   @unique
   // ... existing fields ...
-  
+
   // Subscription fields
   subscriptionStatus    String?  // 'active', 'inactive', 'cancelled'
   subscriptionPlan      String?  // 'Free', 'Pro', 'Premium'
   subscriptionPeriod    String?  // 'monthly', 'yearly'
   subscriptionStartDate DateTime?
   subscriptionEndDate   DateTime?
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 ```
 
 Then run:
+
 ```bash
 npx prisma migrate dev --name add_subscription_fields
 ```
@@ -145,6 +151,7 @@ npx prisma migrate dev --name add_subscription_fields
 ## Step 6: Test the Integration
 
 1. Start your development server:
+
    ```bash
    npm run dev
    ```
@@ -199,15 +206,18 @@ Shows success message
 ## Troubleshooting
 
 ### "PayMongo secret key is not configured"
+
 - Check that your `.env` file has the correct keys
 - Restart your development server after updating `.env`
 
 ### Payment succeeds but user not updated
+
 - Check the webhook configuration
 - Verify the user ID is correctly passed in metadata
 - Check server logs for errors
 
 ### Redirect URL not working
+
 - Ensure `NEXT_PUBLIC_APP_URL` is set correctly
 - For production, use your actual domain
 - For local dev, use `http://localhost:3000`
@@ -231,6 +241,7 @@ Before deploying to production:
 ## Support
 
 If you encounter issues:
+
 - Check PayMongo Dashboard for transaction status
 - Review server logs for error messages
 - Contact PayMongo support: support@paymongo.com

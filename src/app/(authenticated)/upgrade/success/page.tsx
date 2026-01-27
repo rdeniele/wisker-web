@@ -11,23 +11,28 @@ interface PlanDetails {
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
-  
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+
+  const [status, setStatus] = useState<"loading" | "success" | "error">(
+    "loading",
+  );
   const [message, setMessage] = useState("");
   const [planDetails, setPlanDetails] = useState<PlanDetails | null>(null);
 
   const verifyPayment = useCallback(async () => {
     try {
       // Get session ID from sessionStorage if not in URL
-      const finalSessionId = sessionId || sessionStorage.getItem('paymongoSessionId');
-      
+      const finalSessionId =
+        sessionId || sessionStorage.getItem("paymongoSessionId");
+
       if (!finalSessionId) {
         setStatus("error");
         setMessage("No payment session found");
         return;
       }
 
-      const response = await fetch(`/api/payments/verify?session_id=${finalSessionId}`);
+      const response = await fetch(
+        `/api/payments/verify?session_id=${finalSessionId}`,
+      );
       const data = await response.json();
 
       if (data.success) {
@@ -82,7 +87,9 @@ export default function PaymentSuccessPage() {
               />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Payment Error</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Payment Error
+          </h1>
           <p className="text-gray-600 mb-6">{message}</p>
           <Link
             href="/upgrade"
@@ -120,16 +127,20 @@ export default function PaymentSuccessPage() {
           Payment Successful! 🎉
         </h1>
         <p className="text-gray-600 mb-6">
-          Welcome to Wisker {planDetails?.planName}! Your subscription is now active.
+          Welcome to Wisker {planDetails?.planName}! Your subscription is now
+          active.
         </p>
 
         {/* Plan Details */}
         {planDetails && (
           <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <h3 className="font-semibold text-gray-900 mb-2">Subscription Details</h3>
+            <h3 className="font-semibold text-gray-900 mb-2">
+              Subscription Details
+            </h3>
             <div className="space-y-1 text-sm text-gray-600">
               <p>
-                <span className="font-medium">Plan:</span> {planDetails.planName}
+                <span className="font-medium">Plan:</span>{" "}
+                {planDetails.planName}
               </p>
               <p>
                 <span className="font-medium">Billing:</span>{" "}

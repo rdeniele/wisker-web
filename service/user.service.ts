@@ -7,17 +7,17 @@ const PLAN_LIMITS = {
   FREE: {
     notesLimit: 50,
     subjectsLimit: 10,
-    aiUsageLimit: 100,
+    dailyCredits: 100,
   },
   PRO: {
     notesLimit: 500,
     subjectsLimit: 50,
-    aiUsageLimit: 1000,
+    dailyCredits: 1000,
   },
   PREMIUM: {
     notesLimit: -1, // Unlimited
     subjectsLimit: -1, // Unlimited
-    aiUsageLimit: 5000,
+    dailyCredits: 5000,
   },
 };
 
@@ -80,14 +80,14 @@ export class UserService {
           planType,
           notesLimit: limits.notesLimit,
           subjectsLimit: limits.subjectsLimit,
-          aiUsageLimit: limits.aiUsageLimit,
-          ...(acceptedTerms !== undefined && { 
-            acceptedTerms, 
-            termsAcceptedAt: acceptedTerms ? now : null 
+          dailyCredits: limits.dailyCredits,
+          ...(acceptedTerms !== undefined && {
+            acceptedTerms,
+            termsAcceptedAt: acceptedTerms ? now : null,
           }),
-          ...(acceptedPrivacy !== undefined && { 
-            acceptedPrivacy, 
-            privacyAcceptedAt: acceptedPrivacy ? now : null 
+          ...(acceptedPrivacy !== undefined && {
+            acceptedPrivacy,
+            privacyAcceptedAt: acceptedPrivacy ? now : null,
           }),
         },
       });
@@ -112,9 +112,9 @@ export class UserService {
           planType,
           notesLimit: limits.notesLimit,
           subjectsLimit: limits.subjectsLimit,
-          aiUsageLimit: limits.aiUsageLimit,
+          dailyCredits: limits.dailyCredits,
           // Optionally reset AI usage count when upgrading
-          ...(planType !== user.planType && { aiUsageCount: 0 }),
+          ...(planType !== user.planType && { creditsUsedToday: 0 }),
         },
       });
 
@@ -137,8 +137,8 @@ export class UserService {
         select: {
           notesLimit: true,
           subjectsLimit: true,
-          aiUsageLimit: true,
-          aiUsageCount: true,
+          dailyCredits: true,
+          creditsUsedToday: true,
           _count: {
             select: {
               subjects: true,
@@ -170,8 +170,8 @@ export class UserService {
         notesLimit: user.notesLimit,
         subjectsUsed: user._count.subjects,
         subjectsLimit: user.subjectsLimit,
-        aiUsageCount: user.aiUsageCount,
-        aiUsageLimit: user.aiUsageLimit,
+        aiUsageCount: user.creditsUsedToday,
+        aiUsageLimit: user.dailyCredits,
       };
     } catch (error) {
       if (error instanceof NotFoundError) {
@@ -188,7 +188,7 @@ export class UserService {
     try {
       await prisma.user.update({
         where: { id: userId },
-        data: { aiUsageCount: 0 },
+        data: { creditsUsedToday: 0 },
       });
     } catch (error) {
       throw new DatabaseError("Failed to reset AI usage", error);

@@ -173,7 +173,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "monthlyPrice",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -190,7 +190,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "yearlyPrice",
-                            parseFloat(e.target.value)
+                            parseFloat(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -207,7 +207,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "dailyCredits",
-                            parseInt(e.target.value)
+                            parseInt(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -224,7 +224,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "notesLimit",
-                            parseInt(e.target.value)
+                            parseInt(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -241,7 +241,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "subjectsLimit",
-                            parseInt(e.target.value)
+                            parseInt(e.target.value),
                           )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -256,7 +256,10 @@ export default function AdminPlansPage() {
                         type="number"
                         value={editingPlan.sortOrder}
                         onChange={(e) =>
-                          updateEditingPlan("sortOrder", parseInt(e.target.value))
+                          updateEditingPlan(
+                            "sortOrder",
+                            parseInt(e.target.value),
+                          )
                         }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md"
                       />
@@ -272,7 +275,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "discountPercent",
-                            e.target.value ? parseFloat(e.target.value) : null
+                            e.target.value ? parseFloat(e.target.value) : null,
                           )
                         }
                         placeholder="e.g., 50 for 50% off"
@@ -290,7 +293,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan(
                             "discountLabel",
-                            e.target.value || null
+                            e.target.value || null,
                           )
                         }
                         placeholder="e.g., 50% OFF for Early Users"
@@ -433,13 +436,9 @@ export default function AdminPlansPage() {
                     <div>
                       <p className="text-sm text-gray-600">Notes/Subjects</p>
                       <p className="text-lg font-semibold">
-                        {plan.notesLimit === -1
-                          ? "∞"
-                          : plan.notesLimit}
+                        {plan.notesLimit === -1 ? "∞" : plan.notesLimit}
                         {" / "}
-                        {plan.subjectsLimit === -1
-                          ? "∞"
-                          : plan.subjectsLimit}
+                        {plan.subjectsLimit === -1 ? "∞" : plan.subjectsLimit}
                       </p>
                     </div>
                   </div>

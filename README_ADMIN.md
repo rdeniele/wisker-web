@@ -3,20 +3,23 @@
 ## What Was Created
 
 ### 🔐 Admin Authentication
+
 - **Email-based access control**
-- Authorized domains: `@wisker.app`, `@acqron.com`  
+- Authorized domains: `@wisker.app`, `@acqron.com`
 - Authorized email: `rondenielep13@gmail.com`
 - File: `src/lib/admin-auth.ts`
 
 ### 📊 Admin Pages
 
 #### Dashboard (`/admin`)
+
 - Total users, early users, active subscriptions
 - Plan distribution visualization
 - Recent user signups
 - Quick action buttons
 
 #### User Management (`/admin/users`)
+
 - View all users with search and filters
 - Edit subscriptions and plans
 - Grant custom discounts (0-100%)
@@ -25,22 +28,27 @@
 - Export marketing emails (one-click download)
 
 #### Plan Management (`/admin/plans`)
+
 - Already existed, now integrated into admin dashboard
 
 ### 🎯 Early User Tracking
+
 - **Automatic 50% discount** for first 50 users
 - Sequential numbering (1-50)
 - Displayed with ⭐ badge
 - Track spots remaining on dashboard
 
 ### 📧 Marketing Features
+
 - Users opted-in by default
 - Export emails as `.txt` file
 - Track total opt-ins
 - Track last email sent date (for future use)
 
 ### 🗃️ Database Updates
+
 New fields added to User model:
+
 ```prisma
 isEarlyUser           Boolean   // First 50 flag
 earlyUserNumber       Int?      // 1-50
@@ -55,25 +63,29 @@ lastMarketingEmailAt  DateTime? // Campaign tracking
 **GET /api/admin/stats** - Dashboard statistics  
 **GET /api/admin/users** - List all users  
 **PUT /api/admin/users** - Update user subscription  
-**POST /api/admin/users** - Grant free subscription  
+**POST /api/admin/users** - Grant free subscription
 
 All endpoints require admin authentication.
 
 ## 🚀 Quick Start
 
 ### 1. Access Admin Dashboard
+
 ```
 Visit: http://localhost:3000/admin
 Log in with an authorized email
 ```
 
 ### 2. Mark First 50 Users
+
 ```bash
 npm run admin:mark-early-users
 ```
+
 This gives the first 50 registered users automatic 50% discount.
 
 ### 3. Manage a User
+
 ```
 1. Go to http://localhost:3000/admin/users
 2. Click Edit on any user
@@ -82,6 +94,7 @@ This gives the first 50 registered users automatic 50% discount.
 ```
 
 ### 4. Export Marketing Emails
+
 ```
 1. Go to /admin/users
 2. Click "📧 Export Marketing Emails"
@@ -91,22 +104,26 @@ This gives the first 50 registered users automatic 50% discount.
 ## 💡 Common Use Cases
 
 ### Give VIP Free Premium
+
 ```
 Edit User → Plan: Premium → Status: Active → Discount: 100% → Save
 ```
 
 ### First 50 Launch Promo
+
 ```
 Run: npm run admin:mark-early-users
 Result: First 50 users get 50% OFF automatically
 ```
 
 ### Apply 30% Influencer Discount
+
 ```
 Edit User → Admin Discount: 30 → Admin Notes: "Influencer partnership"
 ```
 
 ### Export Early Users for Thank You Email
+
 ```
 Admin Dashboard shows who's an early user (⭐)
 Export marketing emails → Send personalized campaign
@@ -120,7 +137,7 @@ Export marketing emails → Send personalized campaign
 ✅ Marketing email opt-ins  
 ✅ Plan distribution (Free/Pro/Premium)  
 ✅ Recent signups  
-✅ User notes and special arrangements  
+✅ User notes and special arrangements
 
 ## 🎁 Early User Benefits
 
@@ -133,6 +150,7 @@ Export marketing emails → Send personalized campaign
 ## 🛠️ Admin Capabilities
 
 ### For Each User You Can:
+
 - ✅ Change their plan (Free/Pro/Premium)
 - ✅ Set subscription status (Active/Inactive/Canceled)
 - ✅ Apply custom discounts (0-100%)
@@ -142,6 +160,7 @@ Export marketing emails → Send personalized campaign
 - ✅ Check marketing opt-in status
 
 ### System-Wide:
+
 - ✅ View aggregate statistics
 - ✅ Export all marketing emails
 - ✅ Filter and search users
@@ -151,12 +170,14 @@ Export marketing emails → Send personalized campaign
 ## 📧 Marketing Email Management
 
 ### Export Format
+
 - Plain text file
 - One email per line
 - Only opted-in users
 - Ready for import to MailChimp, SendGrid, etc.
 
 ### Best Practices
+
 1. Export weekly for backup
 2. Segment early users separately
 3. Track when you send campaigns
@@ -165,19 +186,24 @@ Export marketing emails → Send personalized campaign
 ## 🔒 Security
 
 ### Current Protection
+
 - Email whitelist checked on every admin API call
 - Unauthorized users get 403 Forbidden
 - No admin actions without valid credentials
 
 ### Admin Emails
+
 Edit in `src/lib/admin-auth.ts`:
+
 ```typescript
-const ADMIN_EMAILS = ['rondenielep13@gmail.com'];
-const ADMIN_DOMAINS = ['@wisker.app', '@acqron.com'];
+const ADMIN_EMAILS = ["rondenielep13@gmail.com"];
+const ADMIN_DOMAINS = ["@wisker.app", "@acqron.com"];
 ```
 
 ### Before Production
+
 Consider adding:
+
 - Admin role database table
 - Audit logging for admin actions
 - Two-factor authentication
@@ -209,6 +235,7 @@ Consider adding:
 ## 🚨 Current Users
 
 Already marked as early users:
+
 - ⭐ #1 - rondenielep13@gmail.com
 - ⭐ #2 - poyhidalgo@gmail.com
 - ⭐ #3 - shua.vdl@gmail.com
@@ -218,18 +245,21 @@ Already marked as early users:
 ## 💪 What's Next?
 
 ### Immediate
+
 1. Visit `/admin` with your wisker.app email
 2. Explore the dashboard
 3. Try editing a user
 4. Export the email list
 
 ### Soon
+
 1. Set up email campaign service
 2. Create welcome email for early users
 3. Plan launch marketing strategy
 4. Monitor growth metrics
 
 ### Later
+
 1. Add admin audit logs
 2. Create email templates in-app
 3. Add analytics charts
@@ -239,21 +269,22 @@ Already marked as early users:
 
 **Dashboard not loading?**  
 → Check browser console for errors  
-→ Verify your email is in the admin list  
+→ Verify your email is in the admin list
 
 **Can't edit users?**  
 → Ensure you're logged in with admin email  
-→ Check API response in Network tab  
+→ Check API response in Network tab
 
 **Early users not marked?**  
 → Run `npm run admin:mark-early-users`  
-→ Check database with `npx prisma studio`  
+→ Check database with `npx prisma studio`
 
 ---
 
-**You're all set!** 🎉 
+**You're all set!** 🎉
 
 Your admin dashboard is ready to:
+
 - ✅ Track first 50 users
 - ✅ Collect marketing emails
 - ✅ Manage subscriptions

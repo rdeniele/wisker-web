@@ -1,21 +1,21 @@
 /**
  * Admin Plans API Route
  * Manage subscription plans (CRUD operations)
- * 
+ *
  * NOTE: This should be protected by admin authentication in production!
  * For now, it's open for development purposes.
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { PlanType } from '@prisma/client';
-import { clearPlanConfigsCache } from '@/service/subscription.service';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { PlanType } from "@prisma/client";
+import { clearPlanConfigsCache } from "@/service/subscription.service";
 
 // GET all plans (including inactive)
 export async function GET() {
   try {
     const plans = await prisma.plan.findMany({
-      orderBy: { sortOrder: 'asc' },
+      orderBy: { sortOrder: "asc" },
     });
 
     return NextResponse.json({
@@ -23,13 +23,13 @@ export async function GET() {
       plans,
     });
   } catch (error) {
-    console.error('Error fetching plans:', error);
+    console.error("Error fetching plans:", error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch plans',
+        error: "Failed to fetch plans",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -38,7 +38,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     const {
       name,
       planType,
@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: name, planType, displayName',
+          error: "Missing required fields: name, planType, displayName",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -97,25 +97,30 @@ export async function POST(request: NextRequest) {
       plan,
     });
   } catch (error: unknown) {
-    console.error('Error creating plan:', error);
-    
+    console.error("Error creating plan:", error);
+
     // Handle unique constraint violations
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'A plan with this name or type already exists',
+          error: "A plan with this name or type already exists",
         },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to create plan',
+        error: "Failed to create plan",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -130,9 +135,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Plan ID is required',
+          error: "Plan ID is required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -149,24 +154,29 @@ export async function PUT(request: NextRequest) {
       plan,
     });
   } catch (error: unknown) {
-    console.error('Error updating plan:', error);
+    console.error("Error updating plan:", error);
 
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2025"
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Plan not found',
+          error: "Plan not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to update plan',
+        error: "Failed to update plan",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -175,15 +185,15 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Plan ID is required',
+          error: "Plan ID is required",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -196,27 +206,32 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Plan deleted successfully',
+      message: "Plan deleted successfully",
     });
   } catch (error: unknown) {
-    console.error('Error deleting plan:', error);
+    console.error("Error deleting plan:", error);
 
-    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2025"
+    ) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Plan not found',
+          error: "Plan not found",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to delete plan',
+        error: "Failed to delete plan",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

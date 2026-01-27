@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { getStreakData } from '@/service/streak.service';
+import { NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { getStreakData } from "@/service/streak.service";
 
 /**
  * GET /api/streak
@@ -16,13 +16,14 @@ export async function GET() {
       data: streakData,
     });
   } catch (error) {
-    console.error('Get streak error:', error);
+    console.error("Get streak error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get streak data',
+        error:
+          error instanceof Error ? error.message : "Failed to get streak data",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

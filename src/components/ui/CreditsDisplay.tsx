@@ -1,6 +1,6 @@
 "use client";
-import React from 'react';
-import { useSubscription } from '@/hook/useSubscription';
+import React from "react";
+import { useSubscription } from "@/hook/useSubscription";
 
 export function CreditsDisplay() {
   const { subscription, loading, error } = useSubscription();
@@ -17,7 +17,8 @@ export function CreditsDisplay() {
     return null;
   }
 
-  const percentage = (subscription.creditsRemaining / subscription.dailyCredits) * 100;
+  const percentage =
+    (subscription.creditsRemaining / subscription.dailyCredits) * 100;
   const isLow = percentage < 20;
 
   return (

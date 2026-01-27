@@ -8,39 +8,40 @@ config();
 async function syncUsers() {
   try {
     console.log("Syncing users from Supabase to Prisma...\n");
-    
+
     // Get Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Supabase credentials not found");
     }
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
-    
+
     // Get all Supabase users
-    const { data: supabaseUsers, error } = await supabase.auth.admin.listUsers();
-    
+    const { data: supabaseUsers, error } =
+      await supabase.auth.admin.listUsers();
+
     if (error) {
       throw error;
     }
-    
+
     console.log(`Found ${supabaseUsers.users.length} users in Supabase\n`);
-    
+
     for (const user of supabaseUsers.users) {
       console.log(`Processing: ${user.email} (${user.id})`);
-      
+
       // Check if user exists in Prisma
       const existingUser = await prisma.user.findUnique({
         where: { id: user.id },
       });
-      
+
       if (existingUser) {
         console.log(`  ✓ Already exists in Prisma\n`);
         continue;
       }
-      
+
       // Create user in Prisma
       try {
         await prisma.user.create({
@@ -59,10 +60,9 @@ async function syncUsers() {
         console.error(`  ✗ Failed to create: ${createError.message}\n`);
       }
     }
-    
+
     console.log("=".repeat(50));
     console.log("\n✓ User sync complete!\n");
-    
   } catch (error) {
     console.error("✗ Error:", error);
     process.exit(1);

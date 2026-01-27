@@ -3,7 +3,11 @@ import { successResponse, errorResponse } from "@/lib/api-response";
 import { noteService } from "@/service/note.service";
 import { validateRequest, createNoteSchema } from "@/lib/validation";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { checkCredits, consumeCredits, getOperationCost } from "@/service/subscription.service";
+import {
+  checkCredits,
+  consumeCredits,
+  getOperationCost,
+} from "@/service/subscription.service";
 import { insufficientCreditsResponse } from "@/lib/credit-errors";
 import { recordActivity } from "@/service/streak.service";
 
@@ -36,10 +40,13 @@ export async function POST(request: NextRequest) {
     };
 
     // Check if this note requires AI processing (PDF or image upload)
-    const requiresAI = validatedData.pdfText || validatedData.pdfBase64 || validatedData.imageBase64;
-    
+    const requiresAI =
+      validatedData.pdfText ||
+      validatedData.pdfBase64 ||
+      validatedData.imageBase64;
+
     if (requiresAI) {
-      const creditCost = getOperationCost('analyze_document');
+      const creditCost = getOperationCost("analyze_document");
       const hasCredits = await checkCredits(user.id, creditCost);
       if (!hasCredits) {
         return insufficientCreditsResponse(creditCost);
@@ -51,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     // Consume credits after successful document processing
     if (requiresAI) {
-      await consumeCredits(user.id, getOperationCost('analyze_document'));
+      await consumeCredits(user.id, getOperationCost("analyze_document"));
     }
 
     // Record activity for streak tracking
@@ -59,7 +66,7 @@ export async function POST(request: NextRequest) {
       await recordActivity(user.id);
     } catch (error) {
       // Don't fail the request if streak update fails
-      console.error('Failed to update streak:', error);
+      console.error("Failed to update streak:", error);
     }
 
     return successResponse(note, 201);

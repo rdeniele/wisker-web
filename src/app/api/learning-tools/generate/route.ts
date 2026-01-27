@@ -3,7 +3,11 @@ import { successResponse, errorResponse } from "@/lib/api-response";
 import { learningToolService } from "@/service/learningtool.service";
 import { validateRequest, generateLearningToolSchema } from "@/lib/validation";
 import { createClient } from "@/lib/supabase/server";
-import { checkCredits, consumeCredits, getOperationCost } from "@/service/subscription.service";
+import {
+  checkCredits,
+  consumeCredits,
+  getOperationCost,
+} from "@/service/subscription.service";
 import { insufficientCreditsResponse } from "@/lib/credit-errors";
 import { recordActivity } from "@/service/streak.service";
 
@@ -29,10 +33,14 @@ export async function POST(request: NextRequest) {
     const validatedData = validateRequest(generateLearningToolSchema, body);
 
     // Determine operation type and cost
-    const operationType = validatedData.type === 'QUIZ' ? 'generate_quiz' 
-      : validatedData.type === 'FLASHCARDS' ? 'generate_flashcards'
-      : validatedData.type === 'SUMMARY' ? 'generate_summary'
-      : 'generate_concept_map';
+    const operationType =
+      validatedData.type === "QUIZ"
+        ? "generate_quiz"
+        : validatedData.type === "FLASHCARDS"
+          ? "generate_flashcards"
+          : validatedData.type === "SUMMARY"
+            ? "generate_summary"
+            : "generate_concept_map";
     const creditCost = getOperationCost(operationType);
 
     // Check if user has enough credits
@@ -55,7 +63,7 @@ export async function POST(request: NextRequest) {
       await recordActivity(user.id);
     } catch (error) {
       // Don't fail the request if streak update fails
-      console.error('Failed to update streak:', error);
+      console.error("Failed to update streak:", error);
     }
 
     return successResponse(learningTool, 201);

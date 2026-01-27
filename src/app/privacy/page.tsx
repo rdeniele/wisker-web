@@ -22,9 +22,10 @@ export default function PrivacyPage() {
 
         <div className="prose prose-lg max-w-none space-y-6 text-gray-700">
           <p>
-            Acqron (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) respects your privacy. This
-            Privacy Policy explains how we collect, use, and protect your
-            information when you use Wisker.
+            Acqron (&quot;Company,&quot; &quot;we,&quot; &quot;our,&quot; or
+            &quot;us&quot;) respects your privacy. This Privacy Policy explains
+            how we collect, use, and protect your information when you use
+            Wisker.
           </p>
 
           <section>
@@ -56,9 +57,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 space-y-2">
               <li>To provide, maintain, and improve Wisker</li>
               <li>To process payments and subscriptions</li>
-              <li>
-                To communicate updates, promotions, or important notices
-              </li>
+              <li>To communicate updates, promotions, or important notices</li>
               <li>To monitor usage and prevent fraud or abuse</li>
             </ul>
           </section>
@@ -145,8 +144,9 @@ export default function PrivacyPage() {
             </h2>
             <p>
               Wisker is not intended for children under 13. We do not knowingly
-              collect personal information from children under 13. If you believe
-              we have collected such information, please contact us immediately.
+              collect personal information from children under 13. If you
+              believe we have collected such information, please contact us
+              immediately.
             </p>
           </section>
 
@@ -196,7 +196,8 @@ export default function PrivacyPage() {
             <p>
               At Wisker, we are committed to protecting your privacy and being
               transparent about how we handle your data. If you have any
-              concerns or questions, please don&apos;t hesitate to reach out to us.
+              concerns or questions, please don&apos;t hesitate to reach out to
+              us.
             </p>
           </section>
         </div>

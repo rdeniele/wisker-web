@@ -3,10 +3,10 @@
  * Manage users and their subscriptions
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getAdminUser } from '@/lib/admin-auth';
-import { PlanType } from '@prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { getAdminUser } from "@/lib/admin-auth";
+import { PlanType } from "@prisma/client";
 
 // GET all users
 export async function GET() {
@@ -15,13 +15,13 @@ export async function GET() {
     const { isAdmin } = await getAdminUser();
     if (!isAdmin) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
       );
     }
 
     const users = await prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         email: true,
@@ -44,10 +44,10 @@ export async function GET() {
       users,
     });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch users' },
-      { status: 500 }
+      { success: false, error: "Failed to fetch users" },
+      { status: 500 },
     );
   }
 }
@@ -59,8 +59,8 @@ export async function PUT(request: NextRequest) {
     const { isAdmin } = await getAdminUser();
     if (!isAdmin) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
       );
     }
 
@@ -76,8 +76,8 @@ export async function PUT(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json(
-        { success: false, error: 'User ID is required' },
-        { status: 400 }
+        { success: false, error: "User ID is required" },
+        { status: 400 },
       );
     }
 
@@ -88,8 +88,8 @@ export async function PUT(request: NextRequest) {
 
     if (!plan) {
       return NextResponse.json(
-        { success: false, error: 'Invalid plan type' },
-        { status: 400 }
+        { success: false, error: "Invalid plan type" },
+        { status: 400 },
       );
     }
 
@@ -109,7 +109,7 @@ export async function PUT(request: NextRequest) {
         });
 
         const nextNumber = (maxEarlyUserNumber._max.earlyUserNumber || 0) + 1;
-        
+
         // Only assign if we haven't reached 50
         if (nextNumber <= 50) {
           earlyUserNumber = nextNumber;
@@ -140,10 +140,10 @@ export async function PUT(request: NextRequest) {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to update user' },
-      { status: 500 }
+      { success: false, error: "Failed to update user" },
+      { status: 500 },
     );
   }
 }
@@ -155,8 +155,8 @@ export async function POST(request: NextRequest) {
     const { isAdmin } = await getAdminUser();
     if (!isAdmin) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 403 }
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
       );
     }
 
@@ -165,8 +165,8 @@ export async function POST(request: NextRequest) {
 
     if (!userId || !planType) {
       return NextResponse.json(
-        { success: false, error: 'User ID and plan type are required' },
-        { status: 400 }
+        { success: false, error: "User ID and plan type are required" },
+        { status: 400 },
       );
     }
 
@@ -177,8 +177,8 @@ export async function POST(request: NextRequest) {
 
     if (!plan) {
       return NextResponse.json(
-        { success: false, error: 'Invalid plan type' },
-        { status: 400 }
+        { success: false, error: "Invalid plan type" },
+        { status: 400 },
       );
     }
 
@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
       where: { id: userId },
       data: {
         planType: planType as PlanType,
-        subscriptionStatus: 'active',
-        subscriptionPeriod: 'monthly',
+        subscriptionStatus: "active",
+        subscriptionPeriod: "monthly",
         subscriptionStartDate: now,
         subscriptionEndDate: endDate,
         dailyCredits: plan.dailyCredits,
@@ -207,10 +207,10 @@ export async function POST(request: NextRequest) {
       user: updatedUser,
     });
   } catch (error) {
-    console.error('Error granting free subscription:', error);
+    console.error("Error granting free subscription:", error);
     return NextResponse.json(
-      { success: false, error: 'Failed to grant subscription' },
-      { status: 500 }
+      { success: false, error: "Failed to grant subscription" },
+      { status: 500 },
     );
   }
 }

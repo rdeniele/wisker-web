@@ -1,6 +1,7 @@
 # Vercel Deployment - Quick Checklist
 
 ## ✅ Pre-Deployment (Done)
+
 - [x] Fixed all TypeScript errors
 - [x] Build passes locally (`pnpm build`)
 - [x] Created `.env.example` for reference
@@ -9,6 +10,7 @@
 ## 🚀 Deploy to Vercel
 
 ### Step 1: Prepare Your Repository
+
 ```bash
 # Commit all changes
 git add .
@@ -48,11 +50,13 @@ TOGETHER_AI_MODEL=Qwen/Qwen2.5-72B-Instruct-Turbo
 TOGETHER_AI_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct
 ```
 
-**Important**: 
+**Important**:
+
 - Set variables for **Production**, **Preview**, and **Development**
 - Use the **Direct Connection** URL from Supabase, not the pooled connection
 
 ### Step 4: Deploy
+
 Click **"Deploy"** and wait ~2-5 minutes
 
 ## 📋 Post-Deployment Checklist
@@ -62,6 +66,7 @@ Click **"Deploy"** and wait ~2-5 minutes
 After getting your Vercel URL (e.g., `https://your-app.vercel.app`):
 
 #### Authentication URLs:
+
 1. Go to: **Supabase Dashboard → Authentication → URL Configuration**
 2. **Site URL**: `https://your-app.vercel.app`
 3. **Redirect URLs**: Add:
@@ -69,6 +74,7 @@ After getting your Vercel URL (e.g., `https://your-app.vercel.app`):
    - `https://*.vercel.app/api/auth/callback` (for preview deployments)
 
 #### CORS Settings:
+
 1. Go to: **Supabase Dashboard → Settings → API**
 2. Add to **Additional Allowed Origins**:
    - `https://your-app.vercel.app`
@@ -77,6 +83,7 @@ After getting your Vercel URL (e.g., `https://your-app.vercel.app`):
 ### 2. Test Your Deployment
 
 Visit your deployed app and test:
+
 - [ ] Home page loads
 - [ ] Sign up new user
 - [ ] Log in
@@ -92,6 +99,7 @@ Visit your deployed app and test:
 ### 3. Monitor for Issues
 
 Check for errors in:
+
 - **Vercel Dashboard → Logs**: Runtime errors
 - **Browser Console**: Client-side errors
 - **Supabase Dashboard → Logs**: Database/auth errors
@@ -100,6 +108,7 @@ Check for errors in:
 ## 🔧 Common Issues & Fixes
 
 ### Build Fails
+
 ```bash
 # Test locally first
 pnpm build
@@ -109,27 +118,32 @@ pnpm lint
 ```
 
 ### Database Connection Errors
+
 - Verify `DATABASE_URL` is the **direct connection** (port 5432), not pooled (port 6543)
 - Format: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres`
 - Get from: Supabase Dashboard → Settings → Database → Connection String → Direct
 
 ### Authentication Not Working
+
 - Check Supabase redirect URLs include your Vercel domain
 - Verify `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - Check CORS settings allow your Vercel domain
 
 ### AI Features Return Errors
+
 - Verify `TOGETHER_API_KEY` is set correctly
 - Check Together AI account has available credits
 - Ensure note content is sufficient (>50 characters)
 
 ### Environment Variables Not Working
+
 - Make sure you set them for the right environment (Production/Preview/Development)
 - After adding/changing env vars, **Redeploy**: Deployments → Latest → Redeploy
 
 ## 🎯 Production Best Practices
 
 ### Security
+
 - [x] All secrets in environment variables
 - [x] `.env.local` in `.gitignore`
 - [x] RLS enabled on all tables
@@ -137,16 +151,19 @@ pnpm lint
 - [ ] Monitor for suspicious activity
 
 ### Performance
+
 - Monitor Vercel Analytics (Settings → Analytics)
 - Check database query performance in Supabase
 - Monitor AI credit usage in Together AI dashboard
 
 ### Cost Management
+
 - **Vercel Free Tier**: 100GB bandwidth, unlimited deployments
 - **Supabase Free Tier**: 500MB database, 2GB bandwidth, 5GB storage
 - **Together AI**: Pay-per-use, set usage alerts
 
 ### Monitoring
+
 - Set up alerts in Vercel for errors
 - Monitor database size in Supabase
 - Track AI usage in Together AI dashboard
@@ -161,6 +178,7 @@ pnpm lint
 ## 🆘 Need Help?
 
 If something goes wrong:
+
 1. Check Vercel deployment logs
 2. Check browser console for client errors
 3. Check Supabase logs for database/auth errors

@@ -17,9 +17,9 @@ function StudyStreak() {
   useEffect(() => {
     const fetchStreakData = async () => {
       try {
-        const response = await fetch('/api/streak');
+        const response = await fetch("/api/streak");
         const result = await response.json();
-        
+
         if (result.success) {
           setStreakData({
             currentStreak: result.data.currentStreak,
@@ -27,7 +27,7 @@ function StudyStreak() {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch streak data:', error);
+        console.error("Failed to fetch streak data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -70,15 +70,16 @@ function StudyStreak() {
                   {streakData.currentStreak}
                 </p>
               </div>
-              <p className="text-2xl font-bold text-gray-800 mb-4">Day Streak!</p>
+              <p className="text-2xl font-bold text-gray-800 mb-4">
+                Day Streak!
+              </p>
               <p className="text-sm font-medium text-gray-600">
                 Longest streak: {streakData.longestStreak} days
               </p>
               <p className="text-xs text-gray-500 mt-2 text-center max-w-xs">
-                {streakData.currentStreak === 0 
+                {streakData.currentStreak === 0
                   ? "Start studying today to begin your streak! 🎯"
-                  : "Study today to keep your streak alive! 🎯"
-                }
+                  : "Study today to keep your streak alive! 🎯"}
               </p>
             </>
           )}

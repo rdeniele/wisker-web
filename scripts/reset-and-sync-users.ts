@@ -7,11 +7,11 @@ config();
 async function resetAndSync() {
   try {
     console.log("Resetting user database...\n");
-    
+
     // Delete all users
     const deleted = await prisma.user.deleteMany({});
     console.log(`✓ Deleted ${deleted.count} users\n`);
-    
+
     // Create users with correct Supabase IDs
     const users = [
       {
@@ -23,9 +23,9 @@ async function resetAndSync() {
         email: "poyhidalgo@gmail.com",
       },
     ];
-    
+
     console.log("Creating users with correct Supabase IDs...\n");
-    
+
     for (const userData of users) {
       const user = await prisma.user.create({
         data: {
@@ -40,10 +40,9 @@ async function resetAndSync() {
       });
       console.log(`✓ Created: ${user.email} (${user.id})`);
     }
-    
+
     console.log("\n" + "=".repeat(50));
     console.log("✓ Reset and sync complete!\n");
-    
   } catch (error) {
     console.error("✗ Error:", error);
     process.exit(1);

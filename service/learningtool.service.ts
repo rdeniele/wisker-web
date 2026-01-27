@@ -179,8 +179,8 @@ export class LearningToolService {
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
-          aiUsageCount: true,
-          aiUsageLimit: true,
+          creditsUsedToday: true,
+          dailyCredits: true,
         },
       });
 
@@ -188,8 +188,8 @@ export class LearningToolService {
         throw new NotFoundError("User");
       }
 
-      if (user.aiUsageCount >= user.aiUsageLimit) {
-        throw new AIUsageLimitExceededError(user.aiUsageLimit);
+      if (user.creditsUsedToday >= user.dailyCredits) {
+        throw new AIUsageLimitExceededError(user.dailyCredits);
       }
 
       // Validate and fetch content based on source
@@ -318,7 +318,7 @@ export class LearningToolService {
         // Increment AI usage
         await tx.user.update({
           where: { id: userId },
-          data: { aiUsageCount: { increment: 1 } },
+          data: { creditsUsedToday: { increment: 1 } },
         });
 
         return learningTool;

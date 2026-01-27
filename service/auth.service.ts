@@ -5,7 +5,14 @@ import { AuthCredentials, AuthResponse, SignupCredentials } from "@/types/auth";
 export async function signUp(
   credentials: SignupCredentials,
 ): Promise<AuthResponse> {
-  const { email, password, firstName, lastName, acceptedTerms, acceptedPrivacy } = credentials;
+  const {
+    email,
+    password,
+    firstName,
+    lastName,
+    acceptedTerms,
+    acceptedPrivacy,
+  } = credentials;
 
   const passwordValidation = validatePassword(password);
   if (!passwordValidation.isValid) {
@@ -110,7 +117,11 @@ export async function signIn(
     password,
   });
 
-  console.log("Supabase signIn response:", { data: !!data.user, session: !!data.session, error: error?.message });
+  console.log("Supabase signIn response:", {
+    data: !!data.user,
+    session: !!data.session,
+    error: error?.message,
+  });
 
   if (error) {
     // Provide more specific error messages
@@ -121,7 +132,8 @@ export async function signIn(
       errorMessage =
         "Please confirm your email address before signing in. Check your inbox for the confirmation link.";
     } else if (error.message.includes("Invalid login credentials")) {
-      errorMessage = "Invalid email or password. Please check your credentials and try again. If you just signed up, you may need to confirm your email first.";
+      errorMessage =
+        "Invalid email or password. Please check your credentials and try again. If you just signed up, you may need to confirm your email first.";
     }
 
     return {

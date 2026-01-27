@@ -193,20 +193,24 @@ function Sidebar() {
 
         // Fetch user's subscription plan from the same endpoint as navbar
         try {
-          const response = await fetch('/api/subscription/status');
+          const response = await fetch("/api/subscription/status");
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.data) {
               const subData = data.data;
-              
+
               // Format plan type (FREE -> Free, PRO -> Pro, PREMIUM -> Premium)
               const planType = subData.planType || "FREE";
-              const formattedPlan = planType.charAt(0) + planType.slice(1).toLowerCase();
-              
+              const formattedPlan =
+                planType.charAt(0) + planType.slice(1).toLowerCase();
+
               // Check if subscription is active
-              const isActive = subData.isActive && subData.subscriptionStatus === "active";
-              const planLabel = isActive ? `${formattedPlan} (Active)` : formattedPlan;
-              
+              const isActive =
+                subData.isActive && subData.subscriptionStatus === "active";
+              const planLabel = isActive
+                ? `${formattedPlan} (Active)`
+                : formattedPlan;
+
               setUserPlan(`${planLabel} Plan`);
             } else {
               setUserPlan("Free Plan");
@@ -262,7 +266,7 @@ function Sidebar() {
       <aside className="hidden lg:flex group/sidebar sticky top-0 z-40 h-screen w-16 hover:w-56 bg-white flex-col py-6 px-2 hover:px-4 border-r border-gray-200 rounded-br-2xl transition-all duration-300 ease-in-out overflow-x-hidden">
         {/* Logo */}
         <button
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push("/dashboard")}
           className="flex items-center justify-center gap-2 mb-4 transition-all duration-300 hover:opacity-80 cursor-pointer"
         >
           <Image
@@ -396,7 +400,7 @@ function Sidebar() {
                                   key={note.id}
                                   onClick={() => {
                                     router.push(
-                                      `/subjects/${subject.id}?noteId=${note.id}`
+                                      `/subjects/${subject.id}?noteId=${note.id}`,
                                     );
                                   }}
                                   className="flex items-center gap-2 px-2 py-1 rounded text-xs text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left"
@@ -490,7 +494,7 @@ function Sidebar() {
         {/* Logo */}
         <button
           onClick={() => {
-            router.push('/dashboard');
+            router.push("/dashboard");
             setIsOpen(false);
           }}
           className="flex items-center justify-start gap-2 mb-4 hover:opacity-80 transition-opacity cursor-pointer"
@@ -620,7 +624,7 @@ function Sidebar() {
                                   key={note.id}
                                   onClick={() => {
                                     router.push(
-                                      `/subjects/${subject.id}?noteId=${note.id}`
+                                      `/subjects/${subject.id}?noteId=${note.id}`,
                                     );
                                     setIsOpen(false);
                                   }}

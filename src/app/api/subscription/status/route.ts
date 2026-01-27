@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getAuthenticatedUser } from '@/lib/auth';
-import { getUserSubscription } from '@/service/subscription.service';
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { getUserSubscription } from "@/service/subscription.service";
 
 /**
  * GET /api/subscription/status
@@ -16,13 +16,16 @@ export async function GET(request: NextRequest) {
       data: subscription,
     });
   } catch (error: unknown) {
-    console.error('Subscription status error:', error);
+    console.error("Subscription status error:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get subscription status',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to get subscription status",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

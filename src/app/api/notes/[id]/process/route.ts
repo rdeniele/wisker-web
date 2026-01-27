@@ -2,7 +2,11 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { noteService } from "@/service/note.service";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { checkCredits, consumeCredits, getOperationCost } from "@/service/subscription.service";
+import {
+  checkCredits,
+  consumeCredits,
+  getOperationCost,
+} from "@/service/subscription.service";
 import { insufficientCreditsResponse } from "@/lib/credit-errors";
 
 type RouteParams = {
@@ -23,7 +27,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const user = await getAuthenticatedUser();
 
     // Check if user has enough credits
-    const creditCost = getOperationCost('process_note');
+    const creditCost = getOperationCost("process_note");
     const hasCredits = await checkCredits(user.id, creditCost);
     if (!hasCredits) {
       return insufficientCreditsResponse(creditCost);

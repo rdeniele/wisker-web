@@ -69,7 +69,10 @@ export default function SignupPage() {
     }
 
     if (!acceptedTerms) {
-      showToast("Please accept the Terms and Conditions and Privacy Policy", "error");
+      showToast(
+        "Please accept the Terms and Conditions and Privacy Policy",
+        "error",
+      );
       return;
     }
 
@@ -79,13 +82,13 @@ export default function SignupPage() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email, 
-          password, 
-          firstName, 
+        body: JSON.stringify({
+          email,
+          password,
+          firstName,
           lastName,
           acceptedTerms: true,
-          acceptedPrivacy: true
+          acceptedPrivacy: true,
         }),
       });
 

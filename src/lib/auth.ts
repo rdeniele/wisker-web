@@ -6,7 +6,7 @@ import { User } from "@supabase/supabase-js";
 /**
  * Get the authenticated user and ensure they exist in the Prisma database.
  * If the user doesn't exist in Prisma, they will be created automatically.
- * 
+ *
  * @throws Error if user is not authenticated
  * @returns The authenticated Supabase user
  */
@@ -32,13 +32,13 @@ export async function getAuthenticatedUser(): Promise<User> {
         // Get T&C acceptance from user metadata if available
         const acceptedTerms = user.user_metadata?.accepted_terms || false;
         const acceptedPrivacy = user.user_metadata?.accepted_privacy || false;
-        
+
         await userService.createUser(
-          user.email || user.id, 
-          "FREE", 
+          user.email || user.id,
+          "FREE",
           user.id,
           acceptedTerms,
-          acceptedPrivacy
+          acceptedPrivacy,
         );
         console.log(`Successfully created user ${user.id} in database`);
       } catch (createError) {

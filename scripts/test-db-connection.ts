@@ -7,11 +7,11 @@ config();
 async function testConnection() {
   try {
     console.log("Testing database connection...");
-    
+
     // Test connection
     await prisma.$connect();
     console.log("✓ Successfully connected to database");
-    
+
     // Try to query users
     const users = await prisma.user.findMany({
       take: 5,
@@ -22,7 +22,7 @@ async function testConnection() {
         createdAt: true,
       },
     });
-    
+
     console.log(`✓ Found ${users.length} users in database`);
     if (users.length > 0) {
       console.log("Sample users:");
@@ -32,7 +32,7 @@ async function testConnection() {
     } else {
       console.log("⚠ No users found in database");
     }
-    
+
     await prisma.$disconnect();
     console.log("✓ Database connection test complete");
   } catch (error) {
