@@ -279,8 +279,9 @@ async function resetPricing() {
     data: {
       monthlyPrice: 50,
       yearlyPrice: 480,
+      dailyCredits: 300,
       discountPercent: 50,
-      discountLabel: '50% OFF for Early Users',
+      discountLabel: '50% OFF for First 50 Users',
       isActive: true,
     },
   });
@@ -289,10 +290,11 @@ async function resetPricing() {
   await prisma.plan.updateMany({
     where: { planType: PlanType.PREMIUM },
     data: {
-      monthlyPrice: 150,
-      yearlyPrice: 1440,
-      discountPercent: null,
-      discountLabel: null,
+      monthlyPrice: 100,
+      yearlyPrice: 960,
+      dailyCredits: 1500,
+      discountPercent: 50,
+      discountLabel: '50% OFF for First 50 Users',
       isActive: true,
     },
   });

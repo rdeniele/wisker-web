@@ -59,13 +59,13 @@ async function main() {
       planType: PlanType.PRO,
       displayName: 'Pro',
       description: 'For serious students who want more',
-      monthlyPrice: 50, // ₱50/month with early user discount
-      yearlyPrice: 480, // ₱480/year with early user discount + annual discount
-      dailyCredits: 1000,
+      monthlyPrice: 50, // ₱50/month (₱99 original with 50% off)
+      yearlyPrice: 480, // ₱480/year (₱950 original with 50% off + annual discount)
+      dailyCredits: 300,
       notesLimit: 500,
       subjectsLimit: 100,
       features: [
-        '1000 daily credits (no cap)',
+        '300 daily credits (no cap)',
         'AI Cat Quizzes (flex your whiskers)',
         'AI Flashcat Cards (study glow-up)',
         'AI Cat-nnected Concept Maps (mega mind mode)',
@@ -77,7 +77,7 @@ async function main() {
       sortOrder: 2,
       isMostPopular: true,
       discountPercent: 50,
-      discountLabel: '50% OFF for Early Users',
+      discountLabel: '50% OFF for First 50 Users',
     },
   });
   console.log('  ✓ Created PRO plan');
@@ -91,13 +91,13 @@ async function main() {
       planType: PlanType.PREMIUM,
       displayName: 'Premium',
       description: 'The ultimate learning experience',
-      monthlyPrice: 150, // ₱150/month
-      yearlyPrice: 1440, // ₱1,440/year with annual discount
-      dailyCredits: 4000,
+      monthlyPrice: 100, // ₱100/month (₱199 original with 50% off)
+      yearlyPrice: 960, // ₱960/year (₱1,910 original with 50% off + annual discount)
+      dailyCredits: 1500,
       notesLimit: -1, // Unlimited
       subjectsLimit: -1, // Unlimited
       features: [
-        '4000 daily credits (max catitude)',
+        '1500 daily credits (max catitude)',
         'All Pro perks, but supercharged',
         'Early access to new drops (first dibs, always)',
         'Dedicated Cat Manager (your own hype human)',
@@ -106,6 +106,8 @@ async function main() {
       isActive: true,
       sortOrder: 3,
       isMostPopular: false,
+      discountPercent: 50,
+      discountLabel: '50% OFF for First 50 Users',
     },
   });
   console.log('  ✓ Created PREMIUM plan');
