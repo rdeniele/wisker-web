@@ -169,7 +169,10 @@ function Sidebar() {
       {/* Desktop Sidebar - hidden on mobile/tablet */}
       <aside className="hidden lg:flex group/sidebar sticky top-0 z-40 h-screen w-16 hover:w-56 bg-white flex-col py-6 px-2 hover:px-4 border-r border-gray-200 rounded-br-2xl transition-all duration-300 ease-in-out overflow-x-hidden">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-4 transition-all duration-300">
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="flex items-center justify-center gap-2 mb-4 transition-all duration-300 hover:opacity-80 cursor-pointer"
+        >
           <Image
             src="/images/wisker_text_pic_logo.png"
             alt="Wisker Logo"
@@ -186,7 +189,7 @@ function Sidebar() {
             className="h-8 w-8 group-hover/sidebar:hidden block"
             priority
           />
-        </div>
+        </button>
 
         {/* User Info (moved to top) */}
         <div className="flex items-center gap-3 mb-4">
@@ -331,7 +334,13 @@ function Sidebar() {
         </button>
 
         {/* Logo */}
-        <div className="flex items-center justify-start gap-2 mb-4">
+        <button
+          onClick={() => {
+            router.push('/dashboard');
+            setIsOpen(false);
+          }}
+          className="flex items-center justify-start gap-2 mb-4 hover:opacity-80 transition-opacity cursor-pointer"
+        >
           <Image
             src="/images/wiskyer_icon_text.png"
             alt="Wisker Logo"
@@ -340,7 +349,7 @@ function Sidebar() {
             className="h-8 w-auto"
             priority
           />
-        </div>
+        </button>
 
         {/* User Info */}
         <div className="flex items-center gap-3 mb-4">
