@@ -5,6 +5,7 @@ import { validateRequest, createNoteSchema } from "@/lib/validation";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { checkCredits, consumeCredits, getOperationCost } from "@/service/subscription.service";
 import { insufficientCreditsResponse } from "@/lib/credit-errors";
+import { recordActivity } from "@/service/streak.service";
 
 /**
  * POST /api/notes/create
@@ -51,6 +52,14 @@ export async function POST(request: NextRequest) {
     // Consume credits after successful document processing
     if (requiresAI) {
       await consumeCredits(user.id, getOperationCost('analyze_document'));
+    }
+
+    // Record activity for streak tracking
+    try {
+      await recordActivity(user.id);
+    } catch (error) {
+      // Don't fail the request if streak update fails
+      console.error('Failed to update streak:', error);
     }
 
     return successResponse(note, 201);

@@ -5,6 +5,7 @@ import { validateRequest, generateLearningToolSchema } from "@/lib/validation";
 import { createClient } from "@/lib/supabase/server";
 import { checkCredits, consumeCredits, getOperationCost } from "@/service/subscription.service";
 import { insufficientCreditsResponse } from "@/lib/credit-errors";
+import { recordActivity } from "@/service/streak.service";
 
 /**
  * POST /api/learning-tools/generate
@@ -48,6 +49,14 @@ export async function POST(request: NextRequest) {
 
     // Consume credits after successful generation
     await consumeCredits(user.id, creditCost);
+
+    // Record activity for streak tracking
+    try {
+      await recordActivity(user.id);
+    } catch (error) {
+      // Don't fail the request if streak update fails
+      console.error('Failed to update streak:', error);
+    }
 
     return successResponse(learningTool, 201);
   } catch (error) {

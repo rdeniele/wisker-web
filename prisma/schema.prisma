@@ -73,6 +73,9 @@ model User {
   adminNotes            String?   @map("admin_notes") @db.Text // Admin notes about user
   marketingOptIn        Boolean   @default(true) @map("marketing_opt_in") // Marketing emails consent
   lastMarketingEmailAt  DateTime? @map("last_marketing_email_at")
+  currentStreak         Int       @default(0) @map("current_streak") // Current consecutive days of activity
+  longestStreak         Int       @default(0) @map("longest_streak") // Longest streak ever achieved
+  lastActivityDate      DateTime? @map("last_activity_date") // Last date user had activity
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   
