@@ -30,17 +30,22 @@ enum LearningToolSource {
 
 // Models
 model User {
-  id              String    @id @default(uuid())
-  email           String    @unique
-  planType        PlanType  @default(FREE) @map("plan_type")
-  notesLimit      Int       @default(50) @map("notes_limit")
-  subjectsLimit   Int       @default(10) @map("subjects_limit")
-  aiUsageLimit    Int       @default(100) @map("ai_usage_limit")
-  aiUsageCount    Int       @default(0) @map("ai_usage_count")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  planType              PlanType  @default(FREE) @map("plan_type")
+  notesLimit            Int       @default(50) @map("notes_limit")
+  subjectsLimit         Int       @default(10) @map("subjects_limit")
+  dailyCredits          Int       @default(10) @map("daily_credits")
+  creditsUsedToday      Int       @default(0) @map("credits_used_today")
+  lastCreditReset       DateTime  @default(now()) @map("last_credit_reset")
+  subscriptionStatus    String?   @default("inactive") @map("subscription_status")
+  subscriptionPeriod    String?   @map("subscription_period")
+  subscriptionStartDate DateTime? @map("subscription_start_date")
+  subscriptionEndDate   DateTime? @map("subscription_end_date")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
   
-  subjects        Subject[]
+  subjects              Subject[]
   
   @@map("users")
 }

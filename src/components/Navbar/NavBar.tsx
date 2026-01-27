@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 
 import SearchBar from "../ui/SearchBar";
+import { CreditsDisplay } from "../ui/CreditsDisplay";
 
 // Heroicons SVGs (free, MIT)
 const SearchIcon = () => (
@@ -68,10 +69,11 @@ function NavBar() {
         )}
       </div>
 
-      {/* Right: Notification - slide when search opens */}
+      {/* Right: Credits and Notification - slide when search opens */}
       <div
-        className={`flex items-center gap-3 md:gap-8 ml-2 md:ml-4 transition-all duration-300 ${isSearchOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}`}
+        className={`flex items-center gap-3 md:gap-4 ml-2 md:ml-4 transition-all duration-300 ${isSearchOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}`}
       >
+        <CreditsDisplay />
         <div className="flex items-center gap-4">
           <div className="relative">
             <BellIcon />

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type BillingPeriod = "yearly" | "monthly";
 
@@ -18,6 +19,47 @@ interface PricingTier {
 
 export default function UpgradePage() {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
+  const [loading, setLoading] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSelectPlan = async (plan: PricingTier) => {
+    if (plan.isCurrentPlan || plan.buttonDisabled) return;
+
+    setLoading(plan.name);
+
+    try {
+      // Calculate the actual amount to charge
+      const priceString = plan.price.replace("₱", "").replace(",", "");
+      const amount = parseFloat(priceString);
+
+      const response = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          planName: plan.name,
+          amount: amount,
+          billingPeriod: billingPeriod,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.checkoutUrl) {
+        // Redirect to PayMongo checkout page
+        window.location.href = data.checkoutUrl;
+      } else {
+        console.error("Checkout error:", data.error);
+        alert("Failed to create checkout session. Please try again.");
+        setLoading(null);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("An error occurred. Please try again.");
+      setLoading(null);
+    }
+  };
 
   // Base monthly prices (before any discounts)
   const BASE_PRO_MONTHLY = 100;
@@ -262,21 +304,22 @@ export default function UpgradePage() {
 
               {/* CTA Button */}
               <button
-                disabled={plan.buttonDisabled}
+                disabled={plan.buttonDisabled || loading !== null}
+                onClick={() => handleSelectPlan(plan)}
                 className={`w-full py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all duration-200 ${
-                  plan.buttonDisabled
+                  plan.buttonDisabled || loading !== null
                     ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                     : plan.isMostPopular
                       ? "bg-orange-500 text-white hover:bg-orange-600 active:scale-95"
                       : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
                 }`}
                 style={{
-                  boxShadow: plan.buttonDisabled
+                  boxShadow: plan.buttonDisabled || loading !== null
                     ? "none"
                     : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
                 }}
               >
-                {plan.buttonText}
+                {loading === plan.name ? "Processing..." : plan.buttonText}
               </button>
             </div>
           ))}
