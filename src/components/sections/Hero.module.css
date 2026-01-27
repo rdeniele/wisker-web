@@ -1,0 +1,9 @@
+.multicolor-shadow {
+  box-shadow:
+    0 0 0 4px #000,
+    0 0 0 8px #e0e7ef,
+    20px 20px 0 0 #a5cffd,
+    -20px -20px 0 0 #e3d6fa,
+    32px 32px 0 0 #f7e3fa;
+  border-radius: 1rem;
+}
