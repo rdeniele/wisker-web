@@ -22,9 +22,9 @@ export default async function AuthenticatedLayout({
     <ToastProvider>
       <div className="flex min-h-screen bg-background font-fredoka overflow-x-hidden">
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 lg:ml-16">
           <NavBar />
-          <main className="flex-1 overflow-x-hidden">{children}</main>
+          <main className="flex-1 overflow-x-hidden pt-[57px]">{children}</main>
         </div>
       </div>
     </ToastProvider>
