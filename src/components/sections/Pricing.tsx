@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FiCheck } from "react-icons/fi";
 
 interface Plan {
   name: string;
   price: number;
   originalPrice?: number;
   features: string[];
+  highlighted?: boolean;
 }
 
 const plans: Plan[] = [
@@ -14,24 +16,26 @@ const plans: Plan[] = [
     name: "Free",
     price: 0,
     features: [
-      "10 daily credits (fur real)",
-      "AI Cat Quizzes (purr-fect your smarts)",
-      "AI Flashcat Cards (study on fleek)",
-      "AI Cat-nnected Concept Maps (big brain energy)",
+      "10 daily credits",
+      "AI-powered quizzes",
+      "Smart flashcards",
+      "Basic progress tracking",
+      "Study streak tracking",
     ],
   },
   {
     name: "Pro",
     price: 50,
     originalPrice: 99,
+    highlighted: true,
     features: [
-      "300 daily credits (no cap)",
-      "AI Cat Quizzes (flex your whiskers)",
-      "AI Flashcat Cards (study glow-up)",
-      "AI Cat-nnected Concept Maps (mega mind mode)",
-      "Catnap Study Schedules (plan your catnaps)",
-      "Advanced analytics (stats for days)",
-      "Priority support (VIP paws only)",
+      "300 daily credits",
+      "All Free features",
+      "Advanced analytics",
+      "Priority AI processing",
+      "Custom study schedules",
+      "Export study materials",
+      "Priority support",
     ],
   },
   {
@@ -39,19 +43,20 @@ const plans: Plan[] = [
     price: 100,
     originalPrice: 199,
     features: [
-      "1500 daily credits (max catitude)",
-      "All Pro perks, but supercharged",
-      "Early access to new drops (first dibs, always)",
-      "Dedicated Cat Manager (your own hype human)",
-      "Custom integrations (make it your vibe)",
+      "1500 daily credits",
+      "All Pro features",
+      "Early access to new features",
+      "Dedicated account manager",
+      "Custom integrations",
+      "API access",
+      "White-glove onboarding",
     ],
   },
 ];
 
 function getDiscountedPrice(base: number, isYearly: boolean) {
   if (isYearly) {
-    // Monthly price * 12 months * 0.8 (20% annual discount)
-    return base * 12 * 0.8;
+    return base * 12 * 0.8; // 20% annual discount
   }
   return base;
 }
@@ -64,144 +69,153 @@ function formatPrice(price: number) {
 
 const Pricing = () => {
   const [isYearly, setIsYearly] = useState(true);
-  const [animKey, setAnimKey] = useState(0);
   const router = useRouter();
 
-  const handleTab = (yearly: boolean) => {
-    if (yearly !== isYearly) {
-      setIsYearly(yearly);
-      setAnimKey((k) => k + 1);
+  const handleSelectPlan = (planName: string) => {
+    if (planName !== "Free") {
+      router.push("/signup");
     }
   };
 
-  const handleLogin = () => {
-    router.push("/login");
-  };
-
   return (
-    <section className="w-full flex flex-col items-center py-12 px-2 sm:px-4 rounded-3xl">
-      <h2
-        className="font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gray-700 text-center mb-8 sm:mb-12 drop-shadow-[2px_2px_0_#a3cfff,4px_4px_0_#d8c8f5] tracking-tight leading-tight"
-        id="pricing"
-      >
-        Choose Your
-        <br className="hidden sm:block" />
-        Cat-egory
-      </h2>
-      {/* Tab Switcher */}
-      <div className="mb-10 flex gap-2 bg-white rounded-xl shadow-sm p-1">
-        <button
-          className={`px-6 py-3 font-bold text-lg rounded-lg transition-all border-b-4 ${!isYearly ? "bg-indigo-500 text-white shadow border-indigo-500" : "bg-slate-50 text-gray-900 border-transparent hover:border-indigo-300 hover:text-orange-500"} hover:bg-indigo-50`}
-          onClick={() => handleTab(false)}
-        >
-          Monthly
-        </button>
-        <button
-          className={`px-6 py-3 font-bold text-lg rounded-lg transition-all flex items-center gap-1 border-b-4 ${isYearly ? "bg-indigo-500 text-white shadow border-indigo-500" : "bg-slate-50 text-gray-900 border-transparent hover:border-indigo-300 hover:text-orange-500"} hover:bg-indigo-50`}
-          onClick={() => handleTab(true)}
-        >
-          Yearly{" "}
-          <span className="text-green-600 font-bold text-base ml-1">
-            (-20%)
-          </span>
-        </button>
-      </div>
-      {/* Pricing Cards */}
-      <div className="flex flex-col md:flex-row gap-6 justify-center w-full max-w-5xl">
-        {plans.map((plan) => {
-          const price = getDiscountedPrice(plan.price, isYearly);
-          const per = isYearly ? "year" : "mo";
-          return (
-            <div
-              key={plan.name}
-              className={`flex-1 flex flex-col items-center rounded-2xl px-8 py-10 min-w-60 max-w-xs mx-auto relative border-4 transition-transform duration-200 ease-in-out
-                hover:scale-[1.045] hover:-translate-y-1 focus:scale-[1.045] focus:-translate-y-1 active:scale-100
-                border-[#5c5c5c] shadow-[12px_12px_0_#5c5c5c,0_4px_24px_rgba(0,0,0,0.10)]
-                ${
-                  plan.name === "Pro"
-                    ? "bg-indigo-100 text-[#5c5c5c]"
-                    : plan.name === "Premium"
-                      ? "bg-orange-100 text-[#5c5c5c]"
-                      : "bg-slate-100 text-[#5c5c5c]"
-                }
-              `}
+    <section className="font-fredoka w-full flex flex-col items-center py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50" id="pricing">
+      <div className="max-w-7xl mx-auto w-full">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-block bg-[#F5B17F]/10 text-[#6B5CE0] px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            Simple Pricing
+          </div>
+          <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#111016] mb-6 tracking-tight">
+            Choose Your Plan
+          </h2>
+          <p className="text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto mb-8">
+            Start free and upgrade as you grow. All plans include our core features.
+          </p>
+        </div>
+
+        {/* Tab Switcher */}
+        <div className="mb-12 flex justify-center">
+          <div className="inline-flex gap-1 bg-white rounded-xl shadow-sm p-1 border border-gray-200">
+            <button
+              className={`px-6 py-3 font-semibold text-base rounded-lg transition-all ${!isYearly ? "bg-[#7678ed] text-white shadow-md" : "text-[#333132] hover:text-[#7678ed]"}`}
+              onClick={() => setIsYearly(false)}
             >
-              {plan.name === "Pro" && (
-                <span className="absolute top-3 right-3 bg-indigo-700 text-white rounded-md px-3 py-1 text-xs font-bold shadow">
-                  Most Popular
-                </span>
-              )}
-              <h3 className="text-xl font-bold mb-2 tracking-wide text-[#5c5c5c]">
-                {plan.name}
-              </h3>
-              {/* Animated Price */}
-              {/* 50% OFF badge for paid plans, above price */}
-              {plan.price !== 0 && (
-                <div className="mb-1 flex flex-col items-center w-full">
-                  <span className="bg-green-600 text-white rounded px-3 py-1 text-xs font-bold shadow z-10 mb-1">
-                    50% OFF for First 50 Users
-                  </span>
-                  {plan.originalPrice && (
-                    <span className="text-lg font-semibold text-red-500 line-through">
-                      ₱
-                      {isYearly
-                        ? (plan.originalPrice * 12 * 0.8).toLocaleString(
-                            "en-PH",
-                            { maximumFractionDigits: 0 },
-                          )
-                        : plan.originalPrice.toLocaleString("en-PH", {
-                            maximumFractionDigits: 0,
-                          })}
+              Monthly
+            </button>
+            <button
+              className={`px-6 py-3 font-semibold text-base rounded-lg transition-all flex items-center gap-2 ${isYearly ? "bg-[#7678ed] text-white shadow-md" : "text-[#333132] hover:text-[#7678ed]"}`}
+              onClick={() => setIsYearly(true)}
+            >
+              Yearly
+              <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                Save 20%
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Launch Offer Banner */}
+        <div className="mb-8 text-center">
+          <div className="inline-block bg-green-50 border-2 border-green-500 text-green-700 px-6 py-3 rounded-xl font-semibold">
+            🎉 Launch Offer: <span className="text-green-600 font-bold">50% OFF</span> for first 50 users!
+          </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {plans.map((plan) => {
+            const price = getDiscountedPrice(plan.price, isYearly);
+            const per = isYearly ? "year" : "month";
+            
+            return (
+              <div
+                key={plan.name}
+                className={`relative bg-white rounded-2xl border-2 p-8 transition-all duration-300 hover:-translate-y-1 ${
+                  plan.highlighted
+                    ? "border-[#7678ed] shadow-2xl scale-105"
+                    : "border-gray-200 shadow-lg hover:border-[#7678ed]/30"
+                }`}
+              >
+                {/* Most Popular Badge */}
+                {plan.highlighted && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-[#7678ed] text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg">
+                      Most Popular
                     </span>
+                  </div>
+                )}
+
+                {/* Plan Name */}
+                <h3 className="text-2xl font-bold text-[#111016] mb-2">
+                  {plan.name}
+                </h3>
+
+                {/* Original Price (if discounted) */}
+                {plan.originalPrice && (
+                  <div className="mb-2">
+                    <span className="text-lg text-red-500 line-through font-semibold">
+                      ₱{isYearly
+                        ? (plan.originalPrice * 12 * 0.8).toLocaleString("en-PH", { maximumFractionDigits: 0 })
+                        : plan.originalPrice.toLocaleString("en-PH", { maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                )}
+
+                {/* Price */}
+                <div className="mb-6">
+                  <div className="flex items-end gap-1">
+                    <span className="text-5xl font-bold text-[#111016]">
+                      {formatPrice(price)}
+                    </span>
+                    {plan.price !== 0 && (
+                      <span className="text-[#333132] text-lg font-medium mb-2">
+                        /{per}
+                      </span>
+                    )}
+                  </div>
+                  {isYearly && plan.price !== 0 && (
+                    <p className="text-green-600 text-sm font-semibold mt-1">
+                      Save ₱{(plan.price * 12 * 0.2).toLocaleString("en-PH", { maximumFractionDigits: 0 })} per year
+                    </p>
                   )}
                 </div>
-              )}
-              <div
-                key={animKey + "-" + plan.name}
-                className={`transition-all duration-400 ease-in-out text-4xl font-extrabold my-2 flex items-end gap-1 text-[#5c5c5c]`}
-              >
-                {formatPrice(price)}
-                {plan.price !== 0 && (
-                  <span className="text-base font-medium ml-1 text-[#5c5c5c]">
-                    /{per}
-                  </span>
-                )}
+
+                {/* Features */}
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3">
+                      <FiCheck className="text-[#7678ed] shrink-0 mt-0.5" size={20} />
+                      <span className="text-gray-700">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA Button */}
+                <button
+                  className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
+                    plan.highlighted
+                      ? "bg-[#7678ed] text-white hover:bg-[#6B5CE0] shadow-lg hover:shadow-xl"
+                      : plan.price === 0
+                        ? "bg-gray-100 text-[#9298A9] cursor-default"
+                        : "bg-white text-[#7678ed] border-2 border-[#7678ed] hover:bg-[#7678ed]/5"
+                  }`}
+                  onClick={() => handleSelectPlan(plan.name)}
+                  disabled={plan.price === 0}
+                >
+                  {plan.price === 0 ? "Current Plan" : "Get Started"}
+                </button>
               </div>
-              {isYearly && plan.price !== 0 && (
-                <div className="text-green-600 text-xs font-semibold mb-2">
-                  Save 20% with annual billing
-                </div>
-              )}
-              <ul className="list-none p-0 my-4 w-full">
-                {plan.features.map((feature) => (
-                  <li
-                    key={feature}
-                    className="mb-2 text-[15px] font-medium text-[#5c5c5c]"
-                  >
-                    • {feature}
-                  </li>
-                ))}
-              </ul>
-              <button
-                className={`mt-auto w-full py-3 rounded-lg font-bold text-lg transition-all ${plan.name === "Pro" ? "bg-white text-indigo-700 hover:bg-indigo-100" : plan.name === "Premium" ? "bg-orange-500 text-white hover:bg-orange-400" : "bg-indigo-500 text-white hover:bg-indigo-600"} ${plan.price === 0 ? "opacity-70 cursor-default" : "hover:scale-[1.03] active:scale-95"}`}
-                disabled={plan.price === 0}
-                onClick={plan.price === 0 ? undefined : handleLogin}
-              >
-                {plan.price === 0 ? "Current Plan" : "Choose Plan"}
-              </button>
-            </div>
-          );
-        })}
-      </div>
-      <div className="mt-10 text-gray-400 text-sm text-center max-w-xl font-medium">
-        <strong className="text-gray-700">Launch Offer:</strong> All plans are{" "}
-        <span className="text-green-600 font-bold">50% off</span> for a limited
-        time!
-        <br />
-        <span>
-          Get an extra <span className="text-green-600 font-bold">20% off</span>{" "}
-          when you choose annual billing.
-        </span>
+            );
+          })}
+        </div>
+
+        {/* Bottom Note */}
+        <div className="mt-12 text-center text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm">
+            All plans include a 14-day free trial. No credit card required to start. 
+            Cancel anytime with no questions asked.
+          </p>
+        </div>
       </div>
     </section>
   );

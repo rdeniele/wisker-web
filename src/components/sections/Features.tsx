@@ -1,111 +1,112 @@
 "use client";
 import React from "react";
 import {
-  FaMagic,
-  FaCalendarAlt,
-  FaTags,
-  FaMapMarkedAlt,
-  FaClipboardList,
-} from "react-icons/fa";
+  FiZap,
+  FiTarget,
+  FiTrendingUp,
+  FiCalendar,
+  FiClock,
+  FiAward,
+} from "react-icons/fi";
 
 const features = [
   {
-    icon: <FaMagic size={28} style={{ color: "#FFD600" }} />,
-    title: "Purr-sonalized Cat Quizzes",
-    desc: "AI whips up quizzes from your notes, hunting your weak spots like a laser pointer. Study game = next level, fr fr.",
-    color: "#fffbea",
-    border: "#FFD600",
-    secured: true,
+    icon: <FiZap size={28} />,
+    title: "AI-Powered Quizzes",
+    desc: "Automatically generate personalized quizzes from your notes. Test your knowledge and identify weak areas instantly.",
+    color: "bg-[#7678ed]/10",
+    iconColor: "text-[#7678ed]",
+    borderColor: "border-[#7678ed]/20",
   },
   {
-    icon: <FaClipboardList size={28} style={{ color: "#FF69B4" }} />,
-    title: "Flashcat Cards",
-    desc: "Flashcards that vibe with your study flow, using spaced repetition so you never fur-get. Big brain energy, no cap.",
-    color: "#fff0fa",
-    border: "#FF69B4",
-    secured: true,
+    icon: <FiTarget size={28} />,
+    title: "Smart Flashcards",
+    desc: "Create flashcards with spaced repetition algorithms to maximize retention and minimize study time.",
+    color: "bg-[#6B5CE0]/10",
+    iconColor: "text-[#6B5CE0]",
+    borderColor: "border-[#6B5CE0]/20",
   },
   {
-    icon: <FaMapMarkedAlt size={28} style={{ color: "#00E676" }} />,
-    title: "Cat-nnected Concept Maps",
-    desc: "Visual learning that slaps! Build your own cat-tastic maps to see how ideas are all tangled up like yarn.",
-    color: "#f0fff4",
-    border: "#00E676",
-    comingSoon: true,
+    icon: <FiTrendingUp size={28} />,
+    title: "Progress Tracking",
+    desc: "Monitor your study progress with detailed analytics and insights. See your improvement over time.",
+    color: "bg-[#FD9E2F]/10",
+    iconColor: "text-[#FD9E2F]",
+    borderColor: "border-[#FD9E2F]/20",
   },
   {
-    icon: <FaCalendarAlt size={28} style={{ color: "#40C4FF" }} />,
-    title: "Audio-Text Magic",
-    desc: "Record your lectures and turn them into notes, or have your notes read aloud to you. Study on-the-go with voice superpowers!",
-    color: "#eaf8ff",
-    border: "#40C4FF",
-    comingSoon: true,
+    icon: <FiCalendar size={28} />,
+    title: "Study Streaks",
+    desc: "Stay motivated with daily study streaks. Build consistency and maintain your learning momentum.",
+    color: "bg-[#F5B17F]/10",
+    iconColor: "text-[#F5B17F]",
+    borderColor: "border-[#F5B17F]/20",
   },
   {
-    icon: <FaTags size={28} style={{ color: "#FF9100" }} />,
-    title: "Tag-a-Long Cat Exams",
-    desc: "Exams built from all your notes with the same subject tag. Prep like a top cat, no stress, just flex.",
-    color: "#fff7e6",
-    border: "#FF9100",
-    comingSoon: true,
+    icon: <FiClock size={28} />,
+    title: "Smart Summaries",
+    desc: "Get concise AI-generated summaries of your notes. Perfect for quick reviews before exams.",
+    color: "bg-[#9298A9]/10",
+    iconColor: "text-[#9298A9]",
+    borderColor: "border-[#9298A9]/20",
   },
   {
-    icon: <FaMagic size={28} style={{ color: "#A3CFFF" }} />,
-    title: "Link-to-Notes Magic",
-    desc: "Drop any YouTube link or web article and watch it transform into study notes instantly. Turn videos and articles into pawsome study material!",
-    color: "#f4faff",
-    border: "#A3CFFF",
-    comingSoon: true,
+    icon: <FiAward size={28} />,
+    title: "Subject Organization",
+    desc: "Organize your notes by subjects and topics. Keep everything structured and easy to find.",
+    color: "bg-[#7678ed]/10",
+    iconColor: "text-[#7678ed]",
+    borderColor: "border-[#7678ed]/20",
   },
 ];
 
 export default function Features() {
   return (
-    <section className="w-full bg-gray-50 py-10 sm:py-16" id="features">
-      <div className="max-w-5xl mx-auto px-2 sm:px-4">
-        <h1 className="font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gray-700 text-center mb-6 sm:mb-8 tracking-tight leading-tight">
-          All the Cat-tastic Tools to
-          <br />
-          Slay Your Exams
-        </h1>
-        <p className="text-gray-600 text-base sm:text-lg md:text-xl text-center mb-8 sm:mb-12">
-          Our AI turns your notes into purr-fect, personalized study vibes.
-          Study smarter, not harder. Paw-sitive results only!
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <section className="font-fredoka w-full bg-gray-50 py-16 sm:py-20 lg:py-24" id="features">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-block bg-[#F5B17F]/10 text-[#6B5CE0] px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            Everything You Need
+          </div>
+          <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#111016] mb-6 tracking-tight">
+            Powerful Features for
+            <br />
+            <span className="text-[#7678ed]">Smarter Studying</span>
+          </h2>
+          <p className="text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto">
+            Everything you need to transform your study routine and achieve better results
+          </p>
+        </div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {features.map((feature) => (
             <div
               key={feature.title}
-              className={`transition-transform duration-150 cursor-pointer flex flex-col items-center bg-white rounded-2xl border-4 shadow-sm px-3 sm:px-4 py-5 sm:py-6 gap-2 sm:gap-3 ${feature.comingSoon ? "opacity-60" : ""}`}
-              style={{
-                background: feature.color,
-                borderColor: feature.border,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "scale(1.03)")
-              }
-              onMouseLeave={(e) => (e.currentTarget.style.transform = "")}
+              className={`${feature.color} ${feature.borderColor} border-2 rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-all duration-200 group hover:-translate-y-1`}
             >
-              <div className="mb-1 sm:mb-2">{feature.icon}</div>
-              <h3 className="font-semibold text-base sm:text-lg text-gray-800 text-center mb-1">
+              <div className={`${feature.iconColor} mb-4 transform group-hover:scale-110 transition-transform`}>
+                {feature.icon}
+              </div>
+              <h3 className="font-bold text-xl text-gray-900 mb-3">
                 {feature.title}
               </h3>
-              <p className="text-gray-600 text-sm sm:text-base text-center m-0 mb-2">
+              <p className="text-gray-600 leading-relaxed">
                 {feature.desc}
               </p>
-              {feature.comingSoon && (
-                <span className="text-xs font-medium text-purple-500 bg-purple-100 px-2 py-1 rounded-full">
-                  Coming Soon
-                </span>
-              )}
-              {feature.secured && (
-                <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded-full">
-                  Secured
-                </span>
-              )}
             </div>
           ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-16 text-center">
+          <a
+            href="/signup"
+            className="inline-block bg-[#7678ed] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#6B5CE0] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            Get Started for Free
+          </a>
         </div>
       </div>
     </section>

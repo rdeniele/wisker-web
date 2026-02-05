@@ -38,6 +38,8 @@ html {
   --color-border: var(--border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-fredoka: var(--font-fredoka);
+  --font-poppins: var(--font-poppins);
 }
 
 body {

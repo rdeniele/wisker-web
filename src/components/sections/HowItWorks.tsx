@@ -1,107 +1,103 @@
 "use client";
 import React from "react";
-import Image from "next/image";
-import { FaUpload, FaMagic, FaCheckCircle } from "react-icons/fa";
+import { FiUpload, FiZap, FiTrendingUp, FiCheckCircle } from "react-icons/fi";
 
 const steps = [
   {
-    icon: <FaUpload size={32} style={{ color: "#40c4ff" }} />,
+    icon: <FiUpload size={32} />,
     title: "Upload Your Notes",
-    desc: "Simply upload your study materials, lecture notes, or textbook content to get started.",
-    color: "#fafafa",
-    border: "#5c5c5c",
+    desc: "Upload your study materials, lecture notes, or PDFs. Our system handles the rest.",
+    color: "bg-[#7678ed]",
   },
   {
-    icon: <FaMagic size={32} style={{ color: "#ffea00" }} />,
-    title: "AI Creates Magic",
-    desc: "Our AI analyzes your content and generates personalized quizzes, flashcards, and study plans.",
-    color: "#b8e5c8",
-    border: "#5c5c5c",
+    icon: <FiZap size={32} />,
+    title: "AI Generates Content",
+    desc: "Our AI instantly creates quizzes, flashcards, and summaries tailored to your content.",
+    color: "bg-[#6B5CE0]",
   },
   {
-    icon: <FaCheckCircle size={32} style={{ color: "#00e676" }} />,
-    title: "Study & Succeed",
-    desc: "Use your personalized study materials to learn efficiently and ace your exams!",
-    color: "#ffe7a1",
-    border: "#5c5c5c",
+    icon: <FiTrendingUp size={32} />,
+    title: "Study & Track Progress",
+    desc: "Use your personalized materials and watch your progress grow with detailed analytics.",
+    color: "bg-[#FD9E2F]",
+  },
+  {
+    icon: <FiCheckCircle size={32} />,
+    title: "Ace Your Exams",
+    desc: "Stay consistent with study streaks and achieve better grades with confidence.",
+    color: "bg-[#F5B17F]",
   },
 ];
 
 export default function HowItWorks() {
   return (
     <section
-      className="w-full bg-[#f5faff] rounded-3xl py-10 sm:py-16"
+      className="font-fredoka w-full bg-white py-16 sm:py-20 lg:py-24"
       id="how-it-works"
     >
-      <div className="max-w-[1200px] mx-auto px-2 sm:px-6">
-        <h2 className="font-extrabold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-gray-700 text-center mb-8 sm:mb-12 drop-shadow-[2px_2px_0_#a3cfff,4px_4px_0_#d8c8f5] tracking-tight leading-tight">
-          How Wisker
-          <br />
-          Works Magic
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center justify-center">
-          {/* Left: Huge Streak Image */}
-          <div className="flex flex-col items-center justify-center min-h-[220px] sm:min-h-[420px] w-full sm:w-[420px] mx-auto">
-            <Image
-              src="/images/wisker_sample.png"
-              alt="Streak Preview"
-              width={420}
-              height={420}
-              className="w-full max-w-xs sm:max-w-[420px] h-auto rounded-2xl sm:rounded-[40px] shadow-lg border-4 border-yellow-400 bg-yellow-50 mb-4 object-cover"
-              priority
-            />
-            <div className="font-bold text-base sm:text-lg text-orange-500 text-center mb-1">
-              Track your streaks and study journey!
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-block bg-[#F5B17F]/10 text-[#6B5CE0] px-4 py-2 rounded-full text-sm font-semibold mb-4">
+            Simple Process
           </div>
-          {/* Right: 3 Wide Cards Stacked Vertically */}
-          <div className="flex-1 flex flex-col gap-6 sm:gap-8 justify-center relative">
-            <div className="relative flex flex-col gap-6 sm:gap-8 items-stretch">
-              {steps.map((step, idx) => (
-                <div key={step.title} className="relative flex items-center">
-                  {/* Connector line above (except first step) */}
-                  {idx > 0 && (
-                    <div
-                      className="absolute left-8 top-[-32px] h-8 w-0.5 bg-gradient-to-b from-[#5c5c5c] to-gray-300 z-0"
-                      style={{ height: "32px" }}
-                    />
-                  )}
-                  <div
-                    className="transition-transform duration-150 cursor-pointer flex flex-row items-center w-full min-w-[220px] max-w-full bg-white rounded-2xl border-4 shadow-md px-4 sm:px-8 py-6 sm:py-10 gap-4 sm:gap-8 focus:outline-none z-10"
-                    style={{
-                      background: step.color,
-                      borderColor: step.border,
-                      boxShadow:
-                        "8px 8px 0 #5c5c5c, 0 2px 12px rgba(0,0,0,0.08)",
-                    }}
-                    tabIndex={0}
-                    aria-label={`Step ${idx + 1}: ${step.title}`}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.03)")
-                    }
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "")}
-                    onFocus={(e) =>
-                      (e.currentTarget.style.transform = "scale(1.03)")
-                    }
-                    onBlur={(e) => (e.currentTarget.style.transform = "")}
-                  >
-                    <div className="font-extrabold text-lg sm:text-2xl text-gray-700 mr-2 sm:mr-4 flex flex-col items-center">
-                      {idx + 1}
-                    </div>
-                    <div className="mr-2 sm:mr-6">{step.icon}</div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-base sm:text-xl text-gray-700 mb-1 sm:mb-2">
-                        {step.title}
-                      </h3>
-                      <p className="text-gray-700 text-sm sm:text-base text-left m-0">
-                        {step.desc}
-                      </p>
-                    </div>
+          <h2 className="font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-[#111016] mb-6 tracking-tight">
+            How Wisker Works
+          </h2>
+          <p className="text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto">
+            Get started in minutes. Four simple steps to transform your studying.
+          </p>
+        </div>
+
+        {/* Steps Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {steps.map((step, idx) => (
+            <div
+              key={step.title}
+              className="relative group"
+            >
+              {/* Connector Line (desktop only) */}
+              {idx < steps.length - 1 && (
+                <div className="hidden lg:block absolute top-16 left-[calc(50%+2rem)] w-[calc(100%-4rem)] h-0.5 bg-linear-to-r from-gray-300 to-gray-200 z-0" />
+              )}
+              
+              {/* Card */}
+              <div className="relative bg-white rounded-2xl border-2 border-gray-200 p-6 hover:border-indigo-300 hover:shadow-xl transition-all duration-300 z-10 h-full min-h-[280px] flex flex-col">
+                {/* Step Number */}
+                <div className="absolute -top-4 -left-4 w-10 h-10 bg-[#7678ed] text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">
+                  {idx + 1}
+                </div>
+                
+                {/* Icon with Solid Color Background */}
+                <div className="mb-6 mt-2">
+                  <div className={`w-16 h-16 rounded-2xl ${step.color} flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform`}>
+                    {step.icon}
                   </div>
                 </div>
-              ))}
+                
+                {/* Content */}
+                <h3 className="font-bold text-xl text-gray-900 mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-gray-600 leading-relaxed grow">
+                  {step.desc}
+                </p>
+              </div>
             </div>
-          </div>
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-16 text-center">
+          <a
+            href="/signup"
+            className="inline-block bg-[#7678ed] text-white font-semibold px-8 py-4 rounded-xl hover:bg-[#6B5CE0] transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            Start Your Free Trial
+          </a>
+          <p className="mt-4 text-gray-500 text-sm">
+            No credit card required • Get started in minutes
+          </p>
         </div>
       </div>
     </section>

@@ -7,7 +7,7 @@ import NavBar from "@/components/NavBar";
 import Hero from "@/components/sections/Hero";
 import HowItWorks from "@/components/sections/HowItWorks";
 import Features from "@/components/sections/Features";
-import Blogs from "@/components/sections/Blogs";
+// import Blogs from "@/components/sections/Blogs";
 import Pricing from "@/components/sections/Pricing";
 import SignUpCTA from "@/components/sections/SignUpCTA";
 import CommunitySection from "@/components/CommunitySection";
@@ -50,7 +50,7 @@ function HomeContent() {
         <Hero />
         <HowItWorks />
         <Features />
-        <Blogs />
+        {/* <Blogs /> */}
         <Pricing />
         <SignUpCTA />
         <CommunitySection />
