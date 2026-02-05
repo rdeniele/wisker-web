@@ -70,19 +70,21 @@ function TodaysFocus() {
         Today&apos;s Focus
       </h2>
       <div
-        className="bg-white p-6 rounded-2xl border-2 border-gray-100"
+        className="bg-white p-8 rounded-2xl border-2 border-gray-100 min-h-[300px] flex flex-col"
         style={{
           fontFamily: "Fredoka, Arial, sans-serif",
           boxShadow: "0 4px 0 #ececec",
         }}
       >
         {isLoading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="text-sm text-gray-500 mt-3">Loading activities...</p>
+          <div className="flex items-center justify-center flex-1">
+            <div className="text-center">
+              <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
+              <p className="text-sm text-gray-500 mt-3">Loading activities...</p>
+            </div>
           </div>
         ) : recentTools.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 flex-1">
             {recentTools.map((tool) => {
               const subjectId = tool.subject?.id || "";
               const link = tool.subject
@@ -160,14 +162,16 @@ function TodaysFocus() {
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-6xl mb-3">🎉</p>
-            <p className="text-lg font-bold text-gray-700">
-              No activity today yet
-            </p>
-            <p className="text-sm text-gray-500 mt-1">
-              Create a quiz, flashcard, or summary to get started!
-            </p>
+          <div className="flex items-center justify-center flex-1">
+            <div className="text-center">
+              <p className="text-6xl mb-3">🎉</p>
+              <p className="text-lg font-bold text-gray-700">
+                No activity today yet
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Create a quiz, flashcard, or summary to get started!
+              </p>
+            </div>
           </div>
         )}
       </div>
