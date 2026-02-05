@@ -160,3 +160,23 @@ model LearningToolNote {
   @@index([noteId])
   @@map("learning_tool_notes")
 }
+
+// Promo codes for special offers (e.g., Product Hunt, early adopters)
+model PromoCode {
+  id                String    @id @default(uuid())
+  code              String    @unique // e.g., "EARLYCAT50", "PRODUCTHUNT"
+  description       String    // e.g., "3 months free for Product Hunt users"
+  discountType      String    // "MONTHS_FREE", "PERCENTAGE", "FIXED_AMOUNT"
+  discountValue     Float     // Months, percentage, or amount depending on type
+  maxUses           Int?      @map("max_uses") // null for unlimited
+  currentUses       Int       @default(0) @map("current_uses")
+  expiresAt         DateTime? @map("expires_at")
+  isActive          Boolean   @default(true) @map("is_active")
+  applicablePlans   String[]  @map("applicable_plans") // Array of plan types: ["PRO", "PREMIUM"] or empty for all
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  @@index([code])
+  @@index([isActive])
+  @@map("promo_codes")
+}
