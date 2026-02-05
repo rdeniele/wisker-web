@@ -263,7 +263,7 @@ function Sidebar() {
   return (
     <>
       {/* Desktop Sidebar - hidden on mobile/tablet */}
-      <aside className="hidden lg:flex group/sidebar sticky top-0 z-40 h-screen w-16 hover:w-56 bg-white flex-col py-6 px-2 hover:px-4 border-r border-gray-200 rounded-br-2xl transition-all duration-300 ease-in-out overflow-x-hidden">
+      <aside className="hidden lg:flex group/sidebar fixed top-0 left-0 z-50 h-screen w-16 hover:w-56 bg-white flex-col py-6 px-2 hover:px-4 border-r border-gray-200 rounded-br-2xl transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto">
         {/* Logo */}
         <button
           onClick={() => router.push("/dashboard")}
@@ -462,7 +462,7 @@ function Sidebar() {
       {/* Mobile/Tablet FAB */}
       <button
         onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed bottom-6 left-6 z-50 w-14 h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95"
+        className="lg:hidden fixed bottom-6 left-6 z-60 w-14 h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95"
         aria-label="Open menu"
       >
         <MenuIcon />
@@ -471,14 +471,14 @@ function Sidebar() {
       {/* Mobile/Tablet Overlay */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 bg-black/50 z-60 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Mobile/Tablet Sidebar Drawer */}
       <aside
-        className={`lg:hidden fixed top-0 left-0 z-50 h-screen w-64 bg-white flex flex-col py-6 px-4 border-r border-gray-200 rounded-br-2xl transform transition-transform duration-300 ease-in-out ${
+        className={`lg:hidden fixed top-0 left-0 z-60 h-screen w-64 bg-white flex flex-col py-6 px-4 border-r border-gray-200 rounded-br-2xl transform transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
