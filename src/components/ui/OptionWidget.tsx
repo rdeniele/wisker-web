@@ -18,7 +18,8 @@ function OptionWidget({
       <div className="py-1">
         <button
           className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             onView?.();
             onClose?.();
           }}
@@ -47,7 +48,8 @@ function OptionWidget({
         </button>
         <button
           className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             onEdit?.();
             onClose?.();
           }}
@@ -72,7 +74,8 @@ function OptionWidget({
         <hr className="my-1 border-gray-200" />
         <button
           className="flex items-center gap-3 w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors font-medium"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             onDelete?.();
             onClose?.();
           }}

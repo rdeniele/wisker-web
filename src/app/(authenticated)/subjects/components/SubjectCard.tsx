@@ -51,8 +51,12 @@ export default function SubjectCard({
 
   return (
     <div
-      className="group bg-white rounded-3xl p-5 border border-gray-100 hover:border-purple-200 transition-all duration-300 flex flex-col h-full"
+      className="group bg-white rounded-3xl p-5 border border-gray-100 hover:border-purple-200 transition-all duration-300 flex flex-col h-full cursor-pointer"
       style={{ boxShadow: "0 4px 0 #ececec" }}
+      onClick={() => {
+        onNavigationStart(subject.id);
+        router.push(`/subjects/${subject.id}`);
+      }}
     >
       {/* Header with image and menu */}
       <div className="flex items-start justify-between mb-3">

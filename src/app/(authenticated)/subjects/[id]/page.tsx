@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import PageLayout from "@/components/layouts/PageLayout";
 import PageHeader from "@/components/ui/pageheader";
 import NoteCard from "@/components/ui/NoteCard";
-import EmptyState from "@/components/ui/EmptyState";
 import { FiArrowLeft } from "react-icons/fi";
 import CreateNoteModal from "./notes/components/CreateNoteModal";
 import { useToast } from "@/contexts/ToastContext";
@@ -44,7 +43,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
   const [showUploadPDF, setShowUploadPDF] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoadingNotes, setIsLoadingNotes] = useState(true);
-  const [subject, setSubject] = useState<{ id: string; title: string } | null>(
+  const [subject, setSubject] = useState<{ id: string; title: string; description?: string } | null>(
     null,
   );
 
@@ -98,6 +97,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
     {
       id: "summary",
       label: "Summarize",
+      description: "Get concise summaries of key concepts and main ideas",
       route: `/subjects/${id}/summary`,
       disabledTooltip: "Add notes first to generate a summary",
       enabledTooltip: "Generate a summary from your notes",
@@ -105,6 +105,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
     {
       id: "quiz",
       label: "Quiz Me",
+      description: "Answer multiple-choice questions based on your notes",
       route: `/subjects/${id}/quiz`,
       disabledTooltip: "Add notes first to take a quiz",
       enabledTooltip: "Take a quiz on your notes",
@@ -112,6 +113,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
     {
       id: "flashcard",
       label: "Flashcards",
+      description: "Review Q&A cards for quick memorization and recall",
       route: `/subjects/${id}/flashcard`,
       disabledTooltip: "Add notes first to create flashcards",
       enabledTooltip: "Create flashcards from your notes",
@@ -167,30 +169,44 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
 
   return (
     <PageLayout>
+      {/* Back Button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition group"
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition group"
       >
         <FiArrowLeft
           size={20}
           className="group-hover:-translate-x-1 transition-transform"
         />
-        <span className="font-medium">Back</span>
+        <span className="font-medium">Back to Subjects</span>
       </button>
 
-      <div className="flex items-center justify-between mb-6">
+      {/* Header Section with better spacing */}
+      <div className="mb-6">
         <PageHeader title={subject.title} centered={false} />
-        <div className="flex items-center gap-3">
-          {actionButtons.map((action) => {
-            const isDisabled = notes.length === 0 || navigatingTo === action.id;
-            const isLoading = navigatingTo === action.id;
+        {subject.description && (
+          <p className="text-gray-700 mt-3 text-base">
+            {subject.description}
+          </p>
+        )}
+        <p className="text-gray-600 mt-2 text-sm">
+          {notes.length} {notes.length === 1 ? "note" : "notes"} • Manage your
+          learning materials
+        </p>
+      </div>
 
-            return (
+      {/* Action Buttons - Responsive Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+        {actionButtons.map((action) => {
+          const isDisabled = notes.length === 0 || navigatingTo === action.id;
+          const isLoading = navigatingTo === action.id;
+
+          return (
+            <div key={action.id} className="flex flex-col">
               <button
-                key={action.id}
                 onClick={() => handleActionClick(action.route, action.id)}
                 disabled={isDisabled}
-                className={`w-32 h-10 rounded-lg transition-all font-medium text-sm text-center flex items-center justify-center gap-2 ${
+                className={`w-full h-12 sm:h-10 rounded-lg transition-all font-medium text-sm text-center flex items-center justify-center gap-2 ${
                   isDisabled
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
                     : "bg-[#615FFF] text-white hover:bg-[#524CE5] active:translate-y-0.5 active:shadow-none"
@@ -226,15 +242,63 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
                 )}
                 {action.label}
               </button>
-            );
-          })}
+              <p className="text-xs text-gray-500 mt-2 text-center px-2">
+                {action.description}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Notes Section with Header */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Your Notes</h2>
+          {notes.length > 0 && (
+            <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {notes.length} {notes.length === 1 ? "note" : "notes"}
+            </span>
+          )}
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {notes.length === 0 ? (
-          <EmptyState message="No notes found." />
-        ) : (
-          notes.map((note) => (
+
+      {/* Notes Grid or Empty State */}
+      {notes.length === 0 ? (
+        <div className="flex items-center justify-center py-20 px-4">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg
+                className="w-10 h-10 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              No notes yet
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Start building your knowledge base by adding your first note.
+            </p>
+            <button
+              onClick={() => setShowCreateNoteModal(true)}
+              className="bg-orange-400 hover:bg-orange-500 text-white font-medium py-3 px-6 rounded-xl transition-all active:scale-95 inline-flex items-center gap-2"
+              style={{ boxShadow: "0 4px 0 0 rgba(251, 146, 60, 0.18)" }}
+            >
+              <span className="text-xl">+</span> Create Your First Note
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          {notes.map((note) => (
             <NoteCard
               key={note.id}
               id={parseInt(note.id, 10) || 0}
@@ -247,18 +311,22 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
               onEdit={() => router.push(`/subjects/${id}/notes/${note.id}`)}
               onDelete={() => handleDeleteNote(note.id)}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
-      {/* Add Note Floating Button */}
-      <button
-        className="fixed bottom-8 right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-2xl flex items-center gap-2 text-lg z-50 transition active:scale-95"
-        onClick={() => setShowCreateNoteModal(true)}
-        style={{ boxShadow: "0 8px 0 0 rgba(251, 146, 60, 0.18)" }}
-      >
-        <span className="text-2xl">+</span> Add Note
-      </button>
+      {/* Add Note Floating Button - Only show when notes exist */}
+      {notes.length > 0 && (
+        <button
+          className="fixed bottom-8 right-8 bg-orange-400 hover:bg-orange-500 text-white font-bold py-3 px-6 sm:px-8 rounded-2xl flex items-center gap-2 text-base sm:text-lg z-50 transition-all hover:scale-105 active:scale-95 shadow-lg"
+          onClick={() => setShowCreateNoteModal(true)}
+          style={{ boxShadow: "0 8px 0 0 rgba(251, 146, 60, 0.18)" }}
+        >
+          <span className="text-xl sm:text-2xl">+</span> 
+          <span className="hidden sm:inline">Add Note</span>
+          <span className="sm:hidden">Add</span>
+        </button>
+      )}
 
       {/* Create Note Modal Popup */}
       {showCreateNoteModal && !showUploadPDF && (
