@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const user = await getAuthenticatedUser();
 
     const body = await request.json();
-    const { planName, amount, billingPeriod } = body;
+    const { planName, amount, billingPeriod, promoCode } = body;
 
     if (!planName || !amount) {
       return NextResponse.json(
@@ -27,30 +27,39 @@ export async function POST(request: NextRequest) {
       request.headers.get("origin") ||
       "http://localhost:3000";
 
+    // Prepare metadata
+    const metadata: Record<string, string> = {
+      userId: user.id,
+      planName,
+      billingPeriod: billingPeriod || "monthly",
+    };
+
+    // Add promo code to metadata if provided
+    if (promoCode) {
+      metadata.promoCode = promoCode.toUpperCase();
+    }
+
     // Create checkout session
     const checkoutSession = await createCheckoutSession({
       lineItems: [
         {
-          name: `Wisker ${planName} Plan`,
+          name: `Wisker ${planName} Plan${promoCode ? ` (${promoCode})` : ""}`,
           amount: amount * 100, // Convert to cents
           currency: "PHP",
-          description: `${planName} subscription - ${billingPeriod || "monthly"}`,
+          description: `${planName} subscription - ${billingPeriod || "monthly"}${promoCode ? ` with promo ${promoCode}` : ""}`,
           quantity: 1,
         },
       ],
       successUrl: `${baseUrl}/upgrade/success`,
       cancelUrl: `${baseUrl}/upgrade`,
       description: `Wisker ${planName} Subscription`,
-      metadata: {
-        userId: user.id,
-        planName,
-        billingPeriod: billingPeriod || "monthly",
-      },
+      metadata,
     });
 
     console.log("Checkout session created:", {
       id: checkoutSession.id,
       checkout_url: checkoutSession.attributes.checkout_url,
+      promo_code: promoCode || "none",
     });
 
     return NextResponse.json({

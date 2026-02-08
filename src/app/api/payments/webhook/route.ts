@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/service/payment.service";
 import { updateSubscriptionPlan } from "@/service/subscription.service";
+import { applyPromoCode } from "@/service/promo.service";
 import { PlanType } from "@prisma/client";
 
 interface PayMongoEvent {
@@ -13,6 +14,7 @@ interface PayMongoEvent {
             userId?: string;
             planName?: string;
             billingPeriod?: string;
+            promoCode?: string;
           };
         };
       };
@@ -110,5 +112,19 @@ async function handleCheckoutSessionPaid(event: unknown) {
       billingPeriod,
       true,
     );
+
+    // Apply promo code usage if provided
+    if (metadata.promoCode) {
+      try {
+        await applyPromoCode(
+          metadata.promoCode.toString().toUpperCase(),
+          metadata.userId.toString(),
+        );
+        console.log("Promo code applied:", metadata.promoCode);
+      } catch (error) {
+        console.error("Failed to apply promo code usage:", error);
+        // Don't fail the webhook if promo code tracking fails
+      }
+    }
   }
 }

@@ -40,6 +40,18 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [plansFromDB, setPlansFromDB] = useState<PlanFromDB[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
+  
+  // Promo code state
+  const [promoCode, setPromoCode] = useState("");
+  const [promoValidation, setPromoValidation] = useState<{
+    isValid: boolean;
+    message: string;
+    discount?: {
+      type: string;
+      value: number;
+    };
+  } | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
 
   // Fetch plans from API on mount
   useEffect(() => {
@@ -63,22 +75,100 @@ export default function UpgradePage() {
     fetchPlans();
   }, []);
 
+  // Validate promo code
+  const validatePromoCode = async (code: string, planType: string) => {
+    if (!code.trim()) {
+      setPromoValidation(null);
+      return;
+    }
+
+    setValidatingPromo(true);
+    try {
+      const response = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: code.trim().toUpperCase(),
+          planType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.isValid) {
+        setPromoValidation({
+          isValid: true,
+          message: data.message || "Promo code applied!",
+          discount: {
+            type: data.discountType,
+            value: data.discountValue,
+          },
+        });
+      } else {
+        setPromoValidation({
+          isValid: false,
+          message: data.message || "Invalid promo code",
+        });
+      }
+    } catch (error) {
+      console.error("Error validating promo code:", error);
+      setPromoValidation({
+        isValid: false,
+        message: "Failed to validate promo code",
+      });
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  // Handle promo code change
+  const handlePromoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const code = e.target.value.toUpperCase();
+    setPromoCode(code);
+    
+    // Clear validation when user types
+    if (promoValidation) {
+      setPromoValidation(null);
+    }
+  };
+
+  // Handle apply promo code
+  const handleApplyPromoCode = () => {
+    // We'll validate against PRO plan as default for now
+    // In actual checkout, we'll validate against the selected plan
+    validatePromoCode(promoCode, "PRO");
+  };
+
   const handleSelectPlan = async (plan: PricingTier) => {
     if (plan.isCurrentPlan || plan.buttonDisabled) return;
 
     setLoading(plan.displayName);
 
     try {
+      const requestBody: {
+        planName: string;
+        amount: number;
+        billingPeriod: BillingPeriod;
+        promoCode?: string;
+      } = {
+        planName: plan.displayName,
+        amount: plan.actualAmount,
+        billingPeriod: billingPeriod,
+      };
+
+      // Include promo code if valid
+      if (promoValidation?.isValid && promoCode.trim()) {
+        requestBody.promoCode = promoCode.trim().toUpperCase();
+      }
+
       const response = await fetch("/api/payments/checkout", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          planName: plan.displayName,
-          amount: plan.actualAmount,
-          billingPeriod: billingPeriod,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -106,12 +196,30 @@ export default function UpgradePage() {
     period: BillingPeriod,
   ): PricingTier => {
     const isYearly = period === "yearly";
-    const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+    let price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
     const periodLabel = isYearly ? "/year" : "/mo";
 
     // Calculate original prices if discount exists
     let originalPrice: string | undefined;
-    if (plan.discountPercent && plan.discountPercent > 0) {
+    let discount: string | undefined = plan.discountLabel || undefined;
+
+    // Apply promo code discount if valid
+    if (promoValidation?.isValid && promoValidation.discount) {
+      const promoDiscount = promoValidation.discount;
+      
+      if (promoDiscount.type === "PERCENTAGE") {
+        originalPrice = `₱${price.toLocaleString()}`;
+        price = price * (1 - promoDiscount.value / 100);
+        discount = `${promoDiscount.value}% off with promo code`;
+      } else if (promoDiscount.type === "FIXED_AMOUNT") {
+        originalPrice = `₱${price.toLocaleString()}`;
+        price = Math.max(0, price - promoDiscount.value);
+        discount = `₱${promoDiscount.value.toLocaleString()} off with promo code`;
+      } else if (promoDiscount.type === "MONTHS_FREE") {
+        discount = `First ${promoDiscount.value} months free!`;
+      }
+    } else if (plan.discountPercent && plan.discountPercent > 0) {
+      // Existing plan discount
       const original = price / (1 - plan.discountPercent / 100);
       originalPrice = `₱${original.toLocaleString()}`;
     }
@@ -119,16 +227,16 @@ export default function UpgradePage() {
     return {
       name: plan.name,
       displayName: plan.displayName,
-      price: price === 0 ? "Free" : `₱${price.toLocaleString()}`,
+      price: price === 0 ? "Free" : `₱${Math.round(price).toLocaleString()}`,
       originalPrice,
       period: price === 0 ? "" : periodLabel,
-      discount: plan.discountLabel || undefined,
+      discount,
       features: plan.features,
       isCurrentPlan: plan.planType === "FREE", // TODO: Get from user's current plan
       isMostPopular: plan.isMostPopular,
       buttonText: plan.planType === "FREE" ? "Current Plan" : "Choose Plan",
       buttonDisabled: plan.planType === "FREE",
-      actualAmount: price,
+      actualAmount: Math.round(price),
     };
   };
 
@@ -136,6 +244,14 @@ export default function UpgradePage() {
   const currentPlans = plansFromDB.map((plan) =>
     transformPlanForDisplay(plan, billingPeriod),
   );
+
+  // Re-validate promo code when billing period changes
+  useEffect(() => {
+    if (promoCode.trim() && promoValidation?.isValid) {
+      validatePromoCode(promoCode, "PRO");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [billingPeriod]);
 
   // Show loading state
   if (loadingPlans) {
@@ -192,6 +308,50 @@ export default function UpgradePage() {
                 Save 20% with annual billing
               </span>
             )}
+          </div>
+
+          {/* Promo Code Input */}
+          <div className="mt-8 max-w-md mx-auto">
+            <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-dashed border-orange-300">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">🎟️</span>
+                <h3 className="text-lg font-semibold text-gray-900">Have a promo code?</h3>
+              </div>
+              
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={handlePromoCodeChange}
+                  placeholder="Enter code (e.g., EARLYCAT50)"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm sm:text-base uppercase"
+                  disabled={validatingPromo}
+                />
+                <button
+                  onClick={handleApplyPromoCode}
+                  disabled={!promoCode.trim() || validatingPromo}
+                  className="px-4 sm:px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base whitespace-nowrap"
+                >
+                  {validatingPromo ? "..." : "Apply"}
+                </button>
+              </div>
+
+              {/* Validation Message */}
+              {promoValidation && (
+                <div
+                  className={`mt-3 p-3 rounded-lg flex items-start gap-2 text-sm ${
+                    promoValidation.isValid
+                      ? "bg-green-50 text-green-800 border border-green-200"
+                      : "bg-red-50 text-red-800 border border-red-200"
+                  }`}
+                >
+                  <span className="text-lg">
+                    {promoValidation.isValid ? "✓" : "✕"}
+                  </span>
+                  <span>{promoValidation.message}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

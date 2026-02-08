@@ -5,6 +5,8 @@ import {
   DatabaseError,
   ForbiddenError,
   AIUsageLimitExceededError,
+  AIProcessingError,
+  AppError,
 } from "@/lib/errors";
 import { CreateNoteRequest, UpdateNoteRequest, NoteDto } from "@/types/api";
 import { subjectService } from "./subject.service";
@@ -74,6 +76,9 @@ export class NoteService {
         pageSize,
       };
     } catch (error) {
+      if (error instanceof DatabaseError) {
+        throw error;
+      }
       throw new DatabaseError("Failed to fetch notes", error);
     }
   }
@@ -109,7 +114,11 @@ export class NoteService {
         fileType: note.fileType ?? undefined,
       };
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
+      if (
+        error instanceof NotFoundError ||
+        error instanceof ForbiddenError ||
+        error instanceof DatabaseError
+      ) {
         throw error;
       }
       throw new DatabaseError("Failed to fetch note", error);
@@ -166,7 +175,6 @@ export class NoteService {
       if (data.pdfText || data.pdfBase64 || data.imageBase64) {
         // COST PROTECTION: Enforce hard limits on PDF size
         const MAX_PDF_CHARS = 500000; // Absolute maximum: 500k chars
-        const MAX_CHUNKS = 5; // Maximum 5 chunks = 5 AI credits per PDF
 
         if (data.pdfText && data.pdfText.length > MAX_PDF_CHARS) {
           throw new DatabaseError(
@@ -247,6 +255,12 @@ export class NoteService {
           }
         } catch (aiError) {
           console.error("AI processing error:", aiError);
+          
+          // Re-throw AppError instances directly to avoid error nesting
+          if (aiError instanceof AppError) {
+            throw aiError;
+          }
+          
           throw new DatabaseError(
             `Failed to process file with AI: ${aiError instanceof Error ? aiError.message : "Unknown error"}`,
             aiError instanceof Error ? aiError : undefined,
@@ -285,7 +299,9 @@ export class NoteService {
         error instanceof NotesLimitExceededError ||
         error instanceof NotFoundError ||
         error instanceof ForbiddenError ||
-        error instanceof AIUsageLimitExceededError
+        error instanceof AIUsageLimitExceededError ||
+        error instanceof AIProcessingError ||
+        error instanceof DatabaseError
       ) {
         throw error;
       }
@@ -327,7 +343,11 @@ export class NoteService {
         fileType: note.fileType ?? undefined,
       };
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
+      if (
+        error instanceof NotFoundError ||
+        error instanceof ForbiddenError ||
+        error instanceof DatabaseError
+      ) {
         throw error;
       }
       throw new DatabaseError("Failed to update note", error);
@@ -365,7 +385,11 @@ export class NoteService {
         where: { id: noteId },
       });
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
+      if (
+        error instanceof NotFoundError ||
+        error instanceof ForbiddenError ||
+        error instanceof DatabaseError
+      ) {
         throw error;
       }
       throw new DatabaseError("Failed to delete note", error);
@@ -396,7 +420,9 @@ export class NoteService {
       if (
         error instanceof NotFoundError ||
         error instanceof ForbiddenError ||
-        error instanceof AIUsageLimitExceededError
+        error instanceof AIUsageLimitExceededError ||
+        error instanceof AIProcessingError ||
+        error instanceof DatabaseError
       ) {
         throw error;
       }
@@ -422,7 +448,11 @@ export class NoteService {
 
       return this.getUserNotes(userId, { ...options, subjectId });
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof ForbiddenError) {
+      if (
+        error instanceof NotFoundError ||
+        error instanceof ForbiddenError ||
+        error instanceof DatabaseError
+      ) {
         throw error;
       }
       throw new DatabaseError("Failed to fetch subject notes", error);
