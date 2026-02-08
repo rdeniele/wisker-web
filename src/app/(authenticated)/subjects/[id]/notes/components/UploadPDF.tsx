@@ -240,12 +240,24 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
   return (
     <div
-      className={`w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-fredoka border-2 border-dashed border-orange-200 ${dragActive ? "bg-orange-50 border-orange-400" : ""}`}
+      className={`w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-fredoka border-2 border-dashed transition-all duration-200 ${dragActive ? "bg-orange-50 border-orange-400 border-4 scale-[1.02]" : "border-orange-200"}`}
       onDragEnter={handleDrag}
       onDragOver={handleDrag}
       onDragLeave={handleDrag}
       onDrop={handleDrop}
     >
+      {/* Drag Overlay */}
+      {dragActive && (
+        <div className="absolute inset-0 bg-orange-400/10 rounded-2xl flex items-center justify-center z-10 pointer-events-none">
+          <div className="bg-white px-6 py-4 rounded-xl shadow-lg border-2 border-orange-400">
+            <span className="text-2xl">📁</span>
+            <span className="text-lg font-bold text-orange-500 ml-2">
+              Drop your files here
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Close Button */}
       {onClose && (
         <button
@@ -303,7 +315,8 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         )}
         {!isUploading && (
           <>
-            <span className="text-gray-400 text-xs mt-1 mb-1">
+            <span className="text-gray-500 text-sm font-medium mt-2 mb-1 flex items-center gap-1">
+              <span className="text-base">📂</span>
               or drag & drop files here
             </span>
             <button
