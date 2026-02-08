@@ -92,6 +92,28 @@ export async function applyPromoCode(promoCodeId: string): Promise<void> {
 }
 
 /**
+ * Apply promo code by code string (increment usage count)
+ */
+export async function applyPromoCodeByCode(code: string): Promise<void> {
+  const promoCode = await prisma.promoCode.findUnique({
+    where: { code: code.toUpperCase() },
+  });
+
+  if (!promoCode) {
+    throw new Error("Promo code not found");
+  }
+
+  await prisma.promoCode.update({
+    where: { id: promoCode.id },
+    data: {
+      currentUses: {
+        increment: 1,
+      },
+    },
+  });
+}
+
+/**
  * Create a new promo code
  */
 export async function createPromoCode(

@@ -97,19 +97,19 @@ export default function UpgradePage() {
 
       const data = await response.json();
 
-      if (data.success && data.isValid) {
+      if (data.success && data.promoCode) {
         setPromoValidation({
           isValid: true,
-          message: data.message || "Promo code applied!",
+          message: data.promoCode.description || "Promo code applied!",
           discount: {
-            type: data.discountType,
-            value: data.discountValue,
+            type: data.promoCode.discountType,
+            value: data.promoCode.discountValue,
           },
         });
       } else {
         setPromoValidation({
           isValid: false,
-          message: data.message || "Invalid promo code",
+          message: data.error || "Invalid promo code",
         });
       }
     } catch (error) {
