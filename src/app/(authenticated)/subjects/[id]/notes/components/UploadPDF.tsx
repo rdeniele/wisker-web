@@ -105,6 +105,8 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         subjectId: string;
         title: string;
         content?: string;
+        pdfText?: string;
+        imageBase64?: string;
       } = {
         subjectId,
         title,
