@@ -316,9 +316,6 @@ function Sidebar() {
               <div key={link.name}>
                 <button
                   onClick={() => {
-                    if (isSubjectsLink) {
-                      setIsSubjectsExpanded(!isSubjectsExpanded);
-                    }
                     if (!isActive) {
                       setNavigatingTo(link.href);
                       startTransition(() => {
@@ -360,7 +357,11 @@ function Sidebar() {
                   </span>
                   {isSubjectsLink && (
                     <span
-                      className={`group-hover/sidebar:inline-block hidden transition-transform duration-200 ${
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSubjectsExpanded(!isSubjectsExpanded);
+                      }}
+                      className={`group-hover/sidebar:inline-block hidden transition-transform duration-200 hover:bg-orange-100 rounded p-1 cursor-pointer ${
                         isSubjectsExpanded ? "rotate-180" : ""
                       }`}
                     >
@@ -538,9 +539,6 @@ function Sidebar() {
               <div key={link.name}>
                 <button
                   onClick={() => {
-                    if (isSubjectsLink) {
-                      setIsSubjectsExpanded(!isSubjectsExpanded);
-                    }
                     if (!isActive) {
                       setNavigatingTo(link.href);
                       startTransition(() => {
@@ -583,7 +581,11 @@ function Sidebar() {
                   <span className="ml-2 flex-1">{link.name}</span>
                   {isSubjectsLink && (
                     <span
-                      className={`transition-transform duration-200 ${
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsSubjectsExpanded(!isSubjectsExpanded);
+                      }}
+                      className={`transition-transform duration-200 hover:bg-orange-100 rounded p-1 cursor-pointer ${
                         isSubjectsExpanded ? "rotate-180" : ""
                       }`}
                     >

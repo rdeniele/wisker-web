@@ -59,6 +59,15 @@ export class SubjectService {
                 learningTools: true,
               },
             },
+            notes: {
+              select: {
+                id: true,
+                title: true,
+              },
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
           },
         }),
         prisma.subject.count({ where }),
