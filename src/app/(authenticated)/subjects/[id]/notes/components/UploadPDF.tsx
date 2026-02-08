@@ -54,7 +54,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
         // Join all text items with spaces
         const pageText = textContent.items
-          .map((item: any) => item.str)
+          .map((item: { str: string }) => item.str)
           .join(" ");
 
         fullText += `\n\n--- Page ${i} ---\n\n${pageText}`;
@@ -101,7 +101,11 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       // Generate a title from the filename (remove extension)
       const title = file.name.replace(/\.[^/.]+$/, "");
 
-      const requestBody: any = {
+      const requestBody: {
+        subjectId: string;
+        title: string;
+        content?: string;
+      } = {
         subjectId,
         title,
       };
@@ -224,10 +228,6 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       handleFileUpload(e.dataTransfer.files);
     }
-  };
-
-  const handleClick = () => {
-    inputRef.current?.click();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

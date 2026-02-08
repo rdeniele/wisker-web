@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         // Check if user exists in database
         const existingUser = await userService.getUserById(data.user.id);
         console.log("User already exists:", existingUser.email);
-      } catch (err) {
+      } catch (_err) {
         // User doesn't exist, create them
         try {
           const newUser = await userService.createUser(

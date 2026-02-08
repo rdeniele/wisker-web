@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
  * GET /api/user/usage
  * Get authenticated user's usage statistics
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Get authenticated user
     const supabase = await createClient();

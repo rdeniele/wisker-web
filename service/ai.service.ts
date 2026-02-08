@@ -252,7 +252,7 @@ export class AIService {
   /**
    * Parse JSON response from AI, handling markdown code blocks
    */
-  private parseJSONResponse(content: string): any {
+  private parseJSONResponse(content: string): Record<string, unknown> {
     try {
       // Remove markdown code blocks if present
       let cleanContent = content.trim();
@@ -586,7 +586,7 @@ Guidelines:
     },
   ): Promise<string> {
     try {
-      let result: any;
+      let result: Record<string, unknown> | string;
 
       switch (type) {
         case "ORGANIZED_NOTE":

@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaRegClone, FaQuestionCircle, FaRegLightbulb } from "react-icons/fa";
 

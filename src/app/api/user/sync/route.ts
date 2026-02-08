@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
  * POST /api/user/sync
  * Sync the current authenticated Supabase user to Prisma database
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Get authenticated user from Supabase
     const supabase = await createClient();

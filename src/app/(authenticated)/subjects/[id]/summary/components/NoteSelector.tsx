@@ -22,7 +22,7 @@ interface NoteSelectorProps {
 }
 
 export default function NoteSelector({
-  subjectId,
+  subjectId: _subjectId,
   subjectName,
   notes,
   onNotesSelected,

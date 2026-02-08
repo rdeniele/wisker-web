@@ -191,7 +191,7 @@ export class SubjectService {
   ): Promise<SubjectDto> {
     try {
       // Verify ownership
-      const existingSubject = await this.getSubjectById(subjectId, userId);
+      await this.getSubjectById(subjectId, userId);
 
       // Update subject
       const subject = await prisma.subject.update({

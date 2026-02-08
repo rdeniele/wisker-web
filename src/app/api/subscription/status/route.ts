@@ -6,7 +6,7 @@ import { getUserSubscription } from "@/service/subscription.service";
  * GET /api/subscription/status
  * Get current user's subscription information
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await getAuthenticatedUser();
     const subscription = await getUserSubscription(user.id);

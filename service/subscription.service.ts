@@ -6,8 +6,15 @@
 import { PlanType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+interface PlanConfig {
+  dailyCredits: number;
+  notesLimit: number;
+  subjectsLimit: number;
+  features: string[];
+}
+
 // Cache for plan configs to avoid repeated database queries
-let planConfigsCache: Map<PlanType, any> | null = null;
+let planConfigsCache: Map<PlanType, PlanConfig> | null = null;
 let planConfigsCacheTime: number = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -30,7 +37,7 @@ async function getPlanConfigs() {
   });
 
   // Build map of plan configs
-  const configs = new Map<PlanType, any>();
+  const configs = new Map<PlanType, PlanConfig>();
   for (const plan of plans) {
     configs.set(plan.planType, {
       dailyCredits: plan.dailyCredits,

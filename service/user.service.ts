@@ -161,7 +161,7 @@ export class UserService {
       }
 
       const totalNotes = user.subjects.reduce(
-        (sum: number, subject: any) => sum + subject._count.notes,
+        (sum: number, subject: { _count: { notes: number } }) => sum + subject._count.notes,
         0,
       );
 

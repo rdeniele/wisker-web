@@ -1,13 +1,13 @@
 import { PlanType, LearningToolType, LearningToolSource } from "@prisma/client";
 
 // API Response Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: {
     code: string;
     message: string;
-    details?: any;
+    details?: unknown;
   };
 }
 

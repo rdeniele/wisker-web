@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { StorageService } from "@/service/storage.service";
 import { apiResponse, errorResponse } from "@/lib/api-response";
-import { UnauthorizedError, NotFoundError, AppError } from "@/lib/errors";
+import { NotFoundError, AppError } from "@/lib/errors";
 import { ErrorCode } from "@/types/api";
 import prisma from "@/lib/prisma";
 

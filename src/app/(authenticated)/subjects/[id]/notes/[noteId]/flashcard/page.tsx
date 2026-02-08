@@ -15,7 +15,7 @@ interface Note {
 }
 
 function FlashcardPage({ params }: FlashcardPageProps) {
-  const { id, noteId } = use(params);
+  const { id: _id, noteId } = use(params);
   const router = useRouter();
   const [config, setConfig] = useState<FlashcardConfig | null>(null);
   const [note, setNote] = useState<Note | null>(null);

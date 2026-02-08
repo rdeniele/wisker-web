@@ -20,7 +20,6 @@ interface PricingTier {
 export default function UpgradePage() {
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
   const [loading, setLoading] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleSelectPlan = async (plan: PricingTier) => {
     if (plan.isCurrentPlan || plan.buttonDisabled) return;
@@ -48,7 +47,7 @@ export default function UpgradePage() {
 
       if (data.success && data.checkoutUrl) {
         // Redirect to PayMongo checkout page
-        window.location.href = data.checkoutUrl;
+        window.location.assign(data.checkoutUrl);
       } else {
         console.error("Checkout error:", data.error);
         alert("Failed to create checkout session. Please try again.");

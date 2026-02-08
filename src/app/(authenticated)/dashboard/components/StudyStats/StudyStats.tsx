@@ -36,7 +36,7 @@ function StudyStats() {
 
           // Calculate total subjects and total notes across all subjects
           const totalSubjects = subjects.length;
-          const totalNotes = subjects.reduce((sum: number, subject: any) => {
+          const totalNotes = subjects.reduce((sum: number, subject: { _count?: { notes?: number } }) => {
             return sum + (subject._count?.notes || 0);
           }, 0);
 

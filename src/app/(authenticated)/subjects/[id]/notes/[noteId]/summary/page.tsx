@@ -15,7 +15,7 @@ interface Note {
 }
 
 function SummaryPage({ params }: SummaryPageProps) {
-  const { id, noteId } = use(params);
+  const { id: _id, noteId } = use(params);
   const router = useRouter();
   const [config, setConfig] = useState<SummaryConfig | null>(null);
   const [note, setNote] = useState<Note | null>(null);

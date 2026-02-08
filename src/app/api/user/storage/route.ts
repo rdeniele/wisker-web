@@ -9,7 +9,7 @@ import prisma from "@/lib/prisma";
  * GET /api/user/storage
  * Get storage statistics for the authenticated user
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     const supabase = await createClient();
 
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
  * DELETE /api/user/storage
  * Delete all files for the authenticated user
  */
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest) {
   try {
     const supabase = await createClient();
 

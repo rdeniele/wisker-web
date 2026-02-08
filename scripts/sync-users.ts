@@ -56,8 +56,9 @@ async function syncUsers() {
           },
         });
         console.log(`  ✓ Created in Prisma database\n`);
-      } catch (createError: any) {
-        console.error(`  ✗ Failed to create: ${createError.message}\n`);
+      } catch (createError: unknown) {
+        const errorMessage = createError instanceof Error ? createError.message : String(createError);
+        console.error(`  ✗ Failed to create: ${errorMessage}\n`);
       }
     }
 

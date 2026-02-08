@@ -1,6 +1,3 @@
-import NavBar from "@/components/Navbar/NavBar";
-import Sidebar from "@/components/Sidebar/Sidebar";
-
 interface PageLayoutProps {
   children: React.ReactNode;
   className?: string;

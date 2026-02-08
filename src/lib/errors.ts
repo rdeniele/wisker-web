@@ -5,7 +5,7 @@ export class AppError extends Error {
     public code: ErrorCode,
     message: string,
     public statusCode: number = 500,
-    public details?: any,
+    public details?: unknown,
   ) {
     super(message);
     this.name = "AppError";
@@ -28,13 +28,13 @@ export class ForbiddenError extends AppError {
 
 // Validation Errors
 export class ValidationError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(ErrorCode.VALIDATION_ERROR, message, 400, details);
   }
 }
 
 export class InvalidInputError extends AppError {
-  constructor(message: string, details?: any) {
+  constructor(message: string, details?: unknown) {
     super(ErrorCode.INVALID_INPUT, message, 400, details);
   }
 }
@@ -95,13 +95,13 @@ export class AIUsageLimitExceededError extends AppError {
 
 // Server Errors
 export class DatabaseError extends AppError {
-  constructor(message: string = "Database operation failed", details?: any) {
+  constructor(message: string = "Database operation failed", details?: unknown) {
     super(ErrorCode.DATABASE_ERROR, message, 500, details);
   }
 }
 
 export class AIProcessingError extends AppError {
-  constructor(message: string = "AI processing failed", details?: any) {
+  constructor(message: string = "AI processing failed", details?: unknown) {
     super(ErrorCode.AI_PROCESSING_ERROR, message, 500, details);
   }
 }

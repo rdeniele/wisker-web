@@ -32,7 +32,7 @@
   },
 ]; */
 
-export const subjects: any[] = [];
+export const subjects: never[] = [];
 
 // Mock notes data for each subject
 /* export const subjectNotes: Record<number, Array<{ id: number; title: string; createdAt: Date; lastOpened: Date; characterCount: number }>> = {
