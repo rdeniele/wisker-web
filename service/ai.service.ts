@@ -586,7 +586,7 @@ Guidelines:
     },
   ): Promise<string> {
     try {
-      let result: Record<string, unknown> | string;
+      let result: unknown;
 
       switch (type) {
         case "ORGANIZED_NOTE":
