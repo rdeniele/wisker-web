@@ -252,7 +252,7 @@ export class AIService {
   /**
    * Parse JSON response from AI, handling markdown code blocks
    */
-  private parseJSONResponse(content: string): Record<string, unknown> {
+  private parseJSONResponse(content: string): unknown {
     try {
       // Remove markdown code blocks if present
       let cleanContent = content.trim();
