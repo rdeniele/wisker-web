@@ -54,7 +54,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
         // Join all text items with spaces
         const pageText = textContent.items
-          .map((item: { str: string }) => item.str)
+          .map((item) => ('str' in item ? item.str : ''))
           .join(" ");
 
         fullText += `\n\n--- Page ${i} ---\n\n${pageText}`;
