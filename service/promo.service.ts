@@ -28,7 +28,7 @@ export interface ValidatePromoResult {
  */
 export async function validatePromoCode(
   code: string,
-  planType?: string
+  planType?: string,
 ): Promise<ValidatePromoResult> {
   const promoCode = await prisma.promoCode.findUnique({
     where: { code: code.toUpperCase() },
@@ -50,7 +50,10 @@ export async function validatePromoCode(
     promoCode.maxUses !== null &&
     promoCode.currentUses >= promoCode.maxUses
   ) {
-    return { valid: false, error: "This promo code has reached its usage limit" };
+    return {
+      valid: false,
+      error: "This promo code has reached its usage limit",
+    };
   }
 
   // Check if promo code applies to the selected plan
@@ -117,7 +120,7 @@ export async function applyPromoCodeByCode(code: string): Promise<void> {
  * Create a new promo code
  */
 export async function createPromoCode(
-  data: PromoCodeData
+  data: PromoCodeData,
 ): Promise<{ success: boolean; promoCode?: PromoCode; error?: string }> {
   try {
     const promoCode = await prisma.promoCode.create({
@@ -134,7 +137,12 @@ export async function createPromoCode(
 
     return { success: true, promoCode };
   } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'code' in error && error.code === "P2002") {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return { success: false, error: "Promo code already exists" };
     }
     return { success: false, error: "Failed to create promo code" };
@@ -155,7 +163,7 @@ export async function getAllPromoCodes() {
  */
 export async function updatePromoCode(
   id: string,
-  data: Partial<PromoCodeData> & { isActive?: boolean }
+  data: Partial<PromoCodeData> & { isActive?: boolean },
 ) {
   try {
     const updateData: Partial<PromoCode> = {};

@@ -43,9 +43,11 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
   const [showUploadPDF, setShowUploadPDF] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [isLoadingNotes, setIsLoadingNotes] = useState(true);
-  const [subject, setSubject] = useState<{ id: string; title: string; description?: string } | null>(
-    null,
-  );
+  const [subject, setSubject] = useState<{
+    id: string;
+    title: string;
+    description?: string;
+  } | null>(null);
 
   // Fetch subject and notes
   useEffect(() => {
@@ -185,9 +187,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
       <div className="mb-6">
         <PageHeader title={subject.title} centered={false} />
         {subject.description && (
-          <p className="text-gray-700 mt-3 text-base">
-            {subject.description}
-          </p>
+          <p className="text-gray-700 mt-3 text-base">{subject.description}</p>
         )}
         <p className="text-gray-600 mt-2 text-sm">
           {notes.length} {notes.length === 1 ? "note" : "notes"} • Manage your
@@ -322,7 +322,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
           onClick={() => setShowCreateNoteModal(true)}
           style={{ boxShadow: "0 8px 0 0 rgba(251, 146, 60, 0.18)" }}
         >
-          <span className="text-xl sm:text-2xl">+</span> 
+          <span className="text-xl sm:text-2xl">+</span>
           <span className="hidden sm:inline">Add Note</span>
           <span className="sm:hidden">Add</span>
         </button>

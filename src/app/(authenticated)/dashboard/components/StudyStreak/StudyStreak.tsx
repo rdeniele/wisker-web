@@ -203,43 +203,114 @@ function StudyStreak() {
       >
         {/* Decorative background elements */}
         <div className="absolute top-2 right-2 opacity-20 fire-animate">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C11.5 4 11 6 10 7.5C9 9 8 10.5 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 10.5 15 9 14 7.5C13 6 12.5 4 12 2Z" fill="#FF6B35"/>
-            <path d="M12 8C11.5 9.5 11 10.5 10.5 11.5C10 12.5 9.5 13.5 9.5 14.5C9.5 16.16 10.84 17.5 12.5 17.5C14.16 17.5 15.5 16.16 15.5 14.5C15.5 13.5 15 12.5 14.5 11.5C14 10.5 13.5 9.5 13 8H12Z" fill="#FF8C00"/>
-            <path d="M12 12C11.75 13 11.5 13.5 11.25 14C11 14.5 10.75 15 10.75 15.5C10.75 16.33 11.42 17 12.25 17C13.08 17 13.75 16.33 13.75 15.5C13.75 15 13.5 14.5 13.25 14C13 13.5 12.75 13 12.5 12H12Z" fill="#FFD700"/>
+          <svg
+            width="64"
+            height="64"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 2C11.5 4 11 6 10 7.5C9 9 8 10.5 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 10.5 15 9 14 7.5C13 6 12.5 4 12 2Z"
+              fill="#FF6B35"
+            />
+            <path
+              d="M12 8C11.5 9.5 11 10.5 10.5 11.5C10 12.5 9.5 13.5 9.5 14.5C9.5 16.16 10.84 17.5 12.5 17.5C14.16 17.5 15.5 16.16 15.5 14.5C15.5 13.5 15 12.5 14.5 11.5C14 10.5 13.5 9.5 13 8H12Z"
+              fill="#FF8C00"
+            />
+            <path
+              d="M12 12C11.75 13 11.5 13.5 11.25 14C11 14.5 10.75 15 10.75 15.5C10.75 16.33 11.42 17 12.25 17C13.08 17 13.75 16.33 13.75 15.5C13.75 15 13.5 14.5 13.25 14C13 13.5 12.75 13 12.5 12H12Z"
+              fill="#FFD700"
+            />
           </svg>
         </div>
         <div className="absolute bottom-2 left-2 opacity-20">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFD700" stroke="#FFA500" strokeWidth="1"/>
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+              fill="#FFD700"
+              stroke="#FFA500"
+              strokeWidth="1"
+            />
           </svg>
         </div>
-        
+
         {/* Floating embers */}
         <div className="absolute bottom-0 left-0 w-full h-full pointer-events-none">
           <span className="ember">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#FFD700"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                fill="#FFD700"
+              />
             </svg>
           </span>
           <span className="ember">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#FFD700"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                fill="#FFD700"
+              />
             </svg>
           </span>
           <span className="ember">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#FFD700"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                fill="#FFD700"
+              />
             </svg>
           </span>
           <span className="ember">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#FFD700"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                fill="#FFD700"
+              />
             </svg>
           </span>
           <span className="ember">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" fill="#FFD700"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"
+                fill="#FFD700"
+              />
             </svg>
           </span>
         </div>
@@ -255,10 +326,25 @@ function StudyStreak() {
             <>
               <div className="flex items-center gap-3 mb-2">
                 <div className="fire-animate">
-                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C11.5 4 11 6 10 7.5C9 9 8 10.5 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 10.5 15 9 14 7.5C13 6 12.5 4 12 2Z" fill="#FF6B35"/>
-                    <path d="M12 8C11.5 9.5 11 10.5 10.5 11.5C10 12.5 9.5 13.5 9.5 14.5C9.5 16.16 10.84 17.5 12.5 17.5C14.16 17.5 15.5 16.16 15.5 14.5C15.5 13.5 15 12.5 14.5 11.5C14 10.5 13.5 9.5 13 8H12Z" fill="#FF8C00"/>
-                    <path d="M12 12C11.75 13 11.5 13.5 11.25 14C11 14.5 10.75 15 10.75 15.5C10.75 16.33 11.42 17 12.25 17C13.08 17 13.75 16.33 13.75 15.5C13.75 15 13.5 14.5 13.25 14C13 13.5 12.75 13 12.5 12H12Z" fill="#FFD700"/>
+                  <svg
+                    width="64"
+                    height="64"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 2C11.5 4 11 6 10 7.5C9 9 8 10.5 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 10.5 15 9 14 7.5C13 6 12.5 4 12 2Z"
+                      fill="#FF6B35"
+                    />
+                    <path
+                      d="M12 8C11.5 9.5 11 10.5 10.5 11.5C10 12.5 9.5 13.5 9.5 14.5C9.5 16.16 10.84 17.5 12.5 17.5C14.16 17.5 15.5 16.16 15.5 14.5C15.5 13.5 15 12.5 14.5 11.5C14 10.5 13.5 9.5 13 8H12Z"
+                      fill="#FF8C00"
+                    />
+                    <path
+                      d="M12 12C11.75 13 11.5 13.5 11.25 14C11 14.5 10.75 15 10.75 15.5C10.75 16.33 11.42 17 12.25 17C13.08 17 13.75 16.33 13.75 15.5C13.75 15 13.5 14.5 13.25 14C13 13.5 12.75 13 12.5 12H12Z"
+                      fill="#FFD700"
+                    />
                   </svg>
                 </div>
                 <p className="text-6xl font-extrabold text-[#FF6B35]">

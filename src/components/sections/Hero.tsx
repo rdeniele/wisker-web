@@ -16,18 +16,19 @@ function Hero() {
             <FiZap size={16} />
             Smart Study Assistant
           </div>
-          
+
           <h1 className="text-[#111016] font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-tight mb-6">
             Study Smarter,
             <br />
             <span className="text-[#FD9E2F]">Not Harder</span>
           </h1>
-          
+
           <p className="text-gray-600 text-lg sm:text-xl leading-relaxed mb-8">
-            Transform your notes into interactive quizzes, flashcards, and summaries with AI. 
-            Track your progress, maintain study streaks, and ace your exams with confidence.
+            Transform your notes into interactive quizzes, flashcards, and
+            summaries with AI. Track your progress, maintain study streaks, and
+            ace your exams with confidence.
           </p>
-          
+
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 mb-12 w-full sm:w-auto">
             <a
@@ -43,7 +44,7 @@ function Hero() {
               See How It Works
             </a>
           </div>
-          
+
           {/* Stats */}
           <div className="grid grid-cols-3 gap-8 w-full max-w-lg">
             <div className="flex flex-col items-start">
@@ -69,7 +70,7 @@ function Hero() {
             </div>
           </div>
         </div>
-        
+
         {/* Right Column - Hero Image */}
         <div className="flex-1 w-full lg:w-auto flex items-center justify-center">
           <div className="relative w-full max-w-2xl">

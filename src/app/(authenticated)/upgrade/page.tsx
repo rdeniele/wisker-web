@@ -40,7 +40,7 @@ export default function UpgradePage() {
   const [loading, setLoading] = useState<string | null>(null);
   const [plansFromDB, setPlansFromDB] = useState<PlanFromDB[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(true);
-  
+
   // Promo code state
   const [promoCode, setPromoCode] = useState("");
   const [promoValidation, setPromoValidation] = useState<{
@@ -127,7 +127,7 @@ export default function UpgradePage() {
   const handlePromoCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const code = e.target.value.toUpperCase();
     setPromoCode(code);
-    
+
     // Clear validation when user types
     if (promoValidation) {
       setPromoValidation(null);
@@ -206,7 +206,7 @@ export default function UpgradePage() {
     // Apply promo code discount if valid
     if (promoValidation?.isValid && promoValidation.discount) {
       const promoDiscount = promoValidation.discount;
-      
+
       if (promoDiscount.type === "PERCENTAGE") {
         originalPrice = `₱${price.toLocaleString()}`;
         price = price * (1 - promoDiscount.value / 100);
@@ -315,9 +315,11 @@ export default function UpgradePage() {
             <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-dashed border-orange-300">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-2xl">🎟️</span>
-                <h3 className="text-lg font-semibold text-gray-900">Have a promo code?</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Have a promo code?
+                </h3>
               </div>
-              
+
               <div className="flex gap-2">
                 <input
                   type="text"

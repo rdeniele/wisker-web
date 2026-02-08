@@ -80,7 +80,9 @@ function TodaysFocus() {
           <div className="flex items-center justify-center flex-1">
             <div className="text-center">
               <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto"></div>
-              <p className="text-sm text-gray-500 mt-3">Loading activities...</p>
+              <p className="text-sm text-gray-500 mt-3">
+                Loading activities...
+              </p>
             </div>
           </div>
         ) : recentTools.length > 0 ? (

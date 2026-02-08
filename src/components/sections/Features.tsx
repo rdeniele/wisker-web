@@ -62,7 +62,10 @@ const features = [
 
 export default function Features() {
   return (
-    <section className="font-fredoka w-full bg-gray-50 py-16 sm:py-20 lg:py-24" id="features">
+    <section
+      className="font-fredoka w-full bg-gray-50 py-16 sm:py-20 lg:py-24"
+      id="features"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
@@ -75,7 +78,8 @@ export default function Features() {
             <span className="text-[#7678ed]">Smarter Studying</span>
           </h2>
           <p className="text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto">
-            Everything you need to transform your study routine and achieve better results
+            Everything you need to transform your study routine and achieve
+            better results
           </p>
         </div>
 
@@ -86,15 +90,15 @@ export default function Features() {
               key={feature.title}
               className={`${feature.color} ${feature.borderColor} border-2 rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-all duration-200 group hover:-translate-y-1`}
             >
-              <div className={`${feature.iconColor} mb-4 transform group-hover:scale-110 transition-transform`}>
+              <div
+                className={`${feature.iconColor} mb-4 transform group-hover:scale-110 transition-transform`}
+              >
                 {feature.icon}
               </div>
               <h3 className="font-bold text-xl text-gray-900 mb-3">
                 {feature.title}
               </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {feature.desc}
-              </p>
+              <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
             </div>
           ))}
         </div>

@@ -78,7 +78,10 @@ const Pricing = () => {
   };
 
   return (
-    <section className="font-fredoka w-full flex flex-col items-center py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50" id="pricing">
+    <section
+      className="font-fredoka w-full flex flex-col items-center py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50"
+      id="pricing"
+    >
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-12">
@@ -89,7 +92,8 @@ const Pricing = () => {
             Choose Your Plan
           </h2>
           <p className="text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto mb-8">
-            Start free and upgrade as you grow. All plans include our core features.
+            Start free and upgrade as you grow. All plans include our core
+            features.
           </p>
         </div>
 
@@ -117,7 +121,9 @@ const Pricing = () => {
         {/* Launch Offer Banner */}
         <div className="mb-8 text-center">
           <div className="inline-block bg-green-50 border-2 border-green-500 text-green-700 px-6 py-3 rounded-xl font-semibold">
-            🎉 Launch Offer: <span className="text-green-600 font-bold">50% OFF</span> for first 50 users!
+            🎉 Launch Offer:{" "}
+            <span className="text-green-600 font-bold">50% OFF</span> for first
+            50 users!
           </div>
         </div>
 
@@ -126,7 +132,7 @@ const Pricing = () => {
           {plans.map((plan) => {
             const price = getDiscountedPrice(plan.price, isYearly);
             const per = isYearly ? "year" : "month";
-            
+
             return (
               <div
                 key={plan.name}
@@ -154,9 +160,15 @@ const Pricing = () => {
                 {plan.originalPrice && (
                   <div className="mb-2">
                     <span className="text-lg text-red-500 line-through font-semibold">
-                      ₱{isYearly
-                        ? (plan.originalPrice * 12 * 0.8).toLocaleString("en-PH", { maximumFractionDigits: 0 })
-                        : plan.originalPrice.toLocaleString("en-PH", { maximumFractionDigits: 0 })}
+                      ₱
+                      {isYearly
+                        ? (plan.originalPrice * 12 * 0.8).toLocaleString(
+                            "en-PH",
+                            { maximumFractionDigits: 0 },
+                          )
+                        : plan.originalPrice.toLocaleString("en-PH", {
+                            maximumFractionDigits: 0,
+                          })}
                     </span>
                   </div>
                 )}
@@ -175,7 +187,11 @@ const Pricing = () => {
                   </div>
                   {isYearly && plan.price !== 0 && (
                     <p className="text-green-600 text-sm font-semibold mt-1">
-                      Save ₱{(plan.price * 12 * 0.2).toLocaleString("en-PH", { maximumFractionDigits: 0 })} per year
+                      Save ₱
+                      {(plan.price * 12 * 0.2).toLocaleString("en-PH", {
+                        maximumFractionDigits: 0,
+                      })}{" "}
+                      per year
                     </p>
                   )}
                 </div>
@@ -184,7 +200,10 @@ const Pricing = () => {
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-3">
-                      <FiCheck className="text-[#7678ed] shrink-0 mt-0.5" size={20} />
+                      <FiCheck
+                        className="text-[#7678ed] shrink-0 mt-0.5"
+                        size={20}
+                      />
                       <span className="text-gray-700">{feature}</span>
                     </li>
                   ))}
@@ -212,8 +231,8 @@ const Pricing = () => {
         {/* Bottom Note */}
         <div className="mt-12 text-center text-gray-600 max-w-2xl mx-auto">
           <p className="text-sm">
-            All plans include a 14-day free trial. No credit card required to start. 
-            Cancel anytime with no questions asked.
+            All plans include a 14-day free trial. No credit card required to
+            start. Cancel anytime with no questions asked.
           </p>
         </div>
       </div>

@@ -37,11 +37,13 @@ function LineGraph() {
               day: "numeric",
             });
 
-            const count = result.data.learningTools.filter((tool: LearningTool) => {
-              const toolDate = new Date(tool.createdAt);
-              toolDate.setHours(0, 0, 0, 0);
-              return toolDate.getTime() === date.getTime();
-            }).length;
+            const count = result.data.learningTools.filter(
+              (tool: LearningTool) => {
+                const toolDate = new Date(tool.createdAt);
+                toolDate.setHours(0, 0, 0, 0);
+                return toolDate.getTime() === date.getTime();
+              },
+            ).length;
 
             last7Days.push({ date: dayStr, count });
           }
@@ -193,12 +195,7 @@ function LineGraph() {
                             stroke="#FF6B35"
                             strokeWidth="3"
                           />
-                          <circle
-                            cx={`${x}%`}
-                            cy={y}
-                            r="3"
-                            fill="#FF6B35"
-                          />
+                          <circle cx={`${x}%`} cy={y} r="3" fill="#FF6B35" />
                         </g>
                       );
                     })}

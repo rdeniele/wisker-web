@@ -116,9 +116,7 @@ async function handleCheckoutSessionPaid(event: unknown) {
     // Apply promo code usage if provided
     if (metadata.promoCode) {
       try {
-        await applyPromoCodeByCode(
-          metadata.promoCode.toString().toUpperCase(),
-        );
+        await applyPromoCodeByCode(metadata.promoCode.toString().toUpperCase());
         console.log("Promo code applied:", metadata.promoCode);
       } catch (error) {
         console.error("Failed to apply promo code usage:", error);

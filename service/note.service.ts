@@ -255,12 +255,12 @@ export class NoteService {
           }
         } catch (aiError) {
           console.error("AI processing error:", aiError);
-          
+
           // Re-throw AppError instances directly to avoid error nesting
           if (aiError instanceof AppError) {
             throw aiError;
           }
-          
+
           throw new DatabaseError(
             `Failed to process file with AI: ${aiError instanceof Error ? aiError.message : "Unknown error"}`,
             aiError instanceof Error ? aiError : undefined,

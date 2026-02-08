@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     if (!code) {
       return NextResponse.json(
         { error: "Promo code is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     console.error("Error validating promo code:", error);
     return NextResponse.json(
       { error: "Failed to validate promo code" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -256,8 +256,8 @@ export default function PromoCodesPage() {
                       formData.discountType === "MONTHS_FREE"
                         ? "3"
                         : formData.discountType === "PERCENTAGE"
-                        ? "50"
-                        : "100"
+                          ? "50"
+                          : "100"
                     }
                     required
                   />
@@ -356,8 +356,8 @@ export default function PromoCodesPage() {
                   {promo.discountType === "MONTHS_FREE"
                     ? `${promo.discountValue} months`
                     : promo.discountType === "PERCENTAGE"
-                    ? `${promo.discountValue}%`
-                    : `$${promo.discountValue}`}
+                      ? `${promo.discountValue}%`
+                      : `$${promo.discountValue}`}
                 </td>
                 <td className="p-4">
                   {promo.currentUses}

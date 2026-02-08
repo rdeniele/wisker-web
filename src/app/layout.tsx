@@ -20,7 +20,8 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Wisker",
-  description: "Your intelligent study companion - create notes, flashcards, and learning tools powered by AI",
+  description:
+    "Your intelligent study companion - create notes, flashcards, and learning tools powered by AI",
 };
 
 export default function RootLayout({

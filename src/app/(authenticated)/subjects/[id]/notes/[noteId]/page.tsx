@@ -22,7 +22,7 @@ function NotePage({ params }: NotePageProps) {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef(true);
-  
+
   interface Note {
     title: string;
     rawContent: string;
@@ -57,42 +57,45 @@ function NotePage({ params }: NotePageProps) {
     fetchNote();
   }, [noteId, showToast]);
 
-  const saveNote = useCallback(async (titleToSave: string, contentToSave: string) => {
-    if (!titleToSave.trim()) {
-      return;
-    }
-
-    setSaveStatus("saving");
-    try {
-      const response = await fetch(`/api/notes/${noteId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: titleToSave.trim(),
-          rawContent: contentToSave,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error?.message || "Failed to update note");
+  const saveNote = useCallback(
+    async (titleToSave: string, contentToSave: string) => {
+      if (!titleToSave.trim()) {
+        return;
       }
 
-      setSaveStatus("saved");
-      // Reset to idle after 2 seconds
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch (error) {
-      console.error("Error saving note:", error);
-      setSaveStatus("error");
-      showToast(
-        error instanceof Error ? error.message : "Failed to save note",
-        "error",
-      );
-    }
-  }, [noteId, showToast]);
+      setSaveStatus("saving");
+      try {
+        const response = await fetch(`/api/notes/${noteId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: titleToSave.trim(),
+            rawContent: contentToSave,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error?.message || "Failed to update note");
+        }
+
+        setSaveStatus("saved");
+        // Reset to idle after 2 seconds
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (error) {
+        console.error("Error saving note:", error);
+        setSaveStatus("error");
+        showToast(
+          error instanceof Error ? error.message : "Failed to save note",
+          "error",
+        );
+      }
+    },
+    [noteId, showToast],
+  );
 
   // Auto-save effect with debouncing
   useEffect(() => {
@@ -161,8 +164,18 @@ function NotePage({ params }: NotePageProps) {
       case "saved":
         return (
           <span className="flex items-center gap-2 text-sm text-green-600">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             Saved
           </span>
@@ -170,8 +183,18 @@ function NotePage({ params }: NotePageProps) {
       case "error":
         return (
           <span className="flex items-center gap-2 text-sm text-red-600">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Save failed
           </span>
@@ -242,9 +265,10 @@ function NotePage({ params }: NotePageProps) {
               disabled={saveStatus === "saving"}
               className="bg-orange-400 hover:bg-orange-500 text-white font-medium py-2.5 px-6 rounded-lg transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               style={{
-                boxShadow: saveStatus === "saving"
-                  ? "none"
-                  : "0 4px 0 0 rgba(251, 146, 60, 0.3)",
+                boxShadow:
+                  saveStatus === "saving"
+                    ? "none"
+                    : "0 4px 0 0 rgba(251, 146, 60, 0.3)",
               }}
             >
               {saveStatus === "saving" && (

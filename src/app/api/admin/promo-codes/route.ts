@@ -22,7 +22,7 @@ export async function GET() {
     console.error("Error fetching promo codes:", error);
     return NextResponse.json(
       { error: "Failed to fetch promo codes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating promo code:", error);
     return NextResponse.json(
       { error: "Failed to create promo code" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -89,7 +89,7 @@ export async function PATCH(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { error: "Promo code ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest) {
     console.error("Error updating promo code:", error);
     return NextResponse.json(
       { error: "Failed to update promo code" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -128,7 +128,7 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json(
         { error: "Promo code ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -143,7 +143,7 @@ export async function DELETE(request: NextRequest) {
     console.error("Error deleting promo code:", error);
     return NextResponse.json(
       { error: "Failed to delete promo code" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
