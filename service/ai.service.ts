@@ -254,21 +254,47 @@ export class AIService {
    */
   private parseJSONResponse(content: string): unknown {
     try {
-      // Remove markdown code blocks if present
       let cleanContent = content.trim();
-      if (cleanContent.startsWith("```json")) {
-        cleanContent = cleanContent
-          .replace(/^```json\s*/, "")
-          .replace(/```\s*$/, "");
-      } else if (cleanContent.startsWith("```")) {
-        cleanContent = cleanContent
-          .replace(/^```\s*/, "")
-          .replace(/```\s*$/, "");
+      
+      // Strategy 1: Try to extract JSON from markdown code blocks (even with intro text)
+      // Match ```json or ``` followed by JSON, even if there's text before it
+      const codeBlockMatch = cleanContent.match(/```(?:json)?\s*(\{[\s\S]*?\}|\[[\s\S]*?\])\s*```/);
+      if (codeBlockMatch) {
+        cleanContent = codeBlockMatch[1].trim();
+      } else {
+        // Strategy 2: Remove markdown code blocks if at the start
+        if (cleanContent.startsWith("```json")) {
+          cleanContent = cleanContent
+            .replace(/^```json\s*/, "")
+            .replace(/```\s*$/, "");
+        } else if (cleanContent.startsWith("```")) {
+          cleanContent = cleanContent
+            .replace(/^```\s*/, "")
+            .replace(/```\s*$/, "");
+        }
+        
+        // Strategy 3: If still no JSON start, try to find JSON boundaries
+        if (!cleanContent.startsWith("{") && !cleanContent.startsWith("[")) {
+          // Look for the first { or [ and last } or ]
+          const jsonStart = Math.min(
+            cleanContent.indexOf("{") >= 0 ? cleanContent.indexOf("{") : Infinity,
+            cleanContent.indexOf("[") >= 0 ? cleanContent.indexOf("[") : Infinity
+          );
+          const jsonEnd = Math.max(
+            cleanContent.lastIndexOf("}"),
+            cleanContent.lastIndexOf("]")
+          );
+          
+          if (jsonStart < Infinity && jsonEnd > jsonStart) {
+            cleanContent = cleanContent.substring(jsonStart, jsonEnd + 1);
+          }
+        }
       }
 
+      cleanContent = cleanContent.trim();
+
       // Remove trailing commas from JSON (common AI mistake)
-      // This regex finds commas followed by whitespace and a closing brace/bracket
-      cleanContent = cleanContent.replace(/,(\s*[}\]])/g, "$1").trim();
+      cleanContent = cleanContent.replace(/,(\s*[}\]])/g, "$1");
 
       // Check if response looks like an error message rather than JSON
       if (!cleanContent.startsWith("{") && !cleanContent.startsWith("[")) {
@@ -279,7 +305,6 @@ export class AIService {
       }
 
       // Sanitize control characters within JSON string values
-      // This fixes unescaped newlines, tabs, etc. that the AI might include
       cleanContent = this.sanitizeJSONString(cleanContent);
 
       return JSON.parse(cleanContent);
