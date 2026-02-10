@@ -60,11 +60,26 @@ export default function QuizSetup({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.error?.message ||
-          errorData.message ||
-          "Failed to generate quiz";
+        let errorMessage = "Failed to generate quiz";
+        
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.error?.message ||
+            errorData.message ||
+            errorMessage;
+        } catch (parseError) {
+          // If response isn't JSON, try to get text
+          console.error("Failed to parse error response:", parseError);
+          try {
+            const errorText = await response.text();
+            console.error("Error response text:", errorText);
+            errorMessage = `Server error (${response.status}): ${errorText.substring(0, 100)}`;
+          } catch {
+            errorMessage = `Server error (${response.status})`;
+          }
+        }
+        
         throw new Error(errorMessage);
       }
 

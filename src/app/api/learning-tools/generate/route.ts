@@ -30,6 +30,13 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
+    console.log("Learning tool generation request:", {
+      type: body.type,
+      summaryType: body.summaryType,
+      summaryLength: body.summaryLength,
+      noteIdsCount: body.noteIds?.length,
+    });
+    
     const validatedData = validateRequest(generateLearningToolSchema, body);
 
     // Determine operation type and cost
@@ -50,10 +57,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate learning tool
+    console.log("Calling learningToolService.generateLearningTool...");
     const learningTool = await learningToolService.generateLearningTool(
       user.id,
       validatedData,
     );
+    console.log("Learning tool generated successfully:", learningTool.id);
 
     // Consume credits after successful generation
     await consumeCredits(user.id, creditCost);
@@ -69,6 +78,11 @@ export async function POST(request: NextRequest) {
     return successResponse(learningTool, 201);
   } catch (error) {
     console.error("Error generating learning tool:", error);
+    console.error("Error details:", {
+      name: error instanceof Error ? error.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return errorResponse(error as Error);
   }
 }

@@ -61,11 +61,25 @@ export default function SummarySetup({
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error("API Error:", errorData);
-          throw new Error(
-            errorData.error?.message || "Failed to generate summary",
-          );
+          let errorMessage = "Failed to generate summary";
+          
+          try {
+            const errorData = await response.json();
+            console.error("API Error:", errorData);
+            errorMessage = errorData.error?.message || errorMessage;
+          } catch (parseError) {
+            // If response isn't JSON, try to get text
+            console.error("Failed to parse error response:", parseError);
+            try {
+              const errorText = await response.text();
+              console.error("Error response text:", errorText);
+              errorMessage = `Server error (${response.status}): ${errorText.substring(0, 100)}`;
+            } catch {
+              errorMessage = `Server error (${response.status})`;
+            }
+          }
+          
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
