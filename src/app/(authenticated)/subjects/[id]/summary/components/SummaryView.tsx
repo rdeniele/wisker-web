@@ -37,10 +37,19 @@ export default function SummaryView({
         const data = await response.json();
         const summaryContent = JSON.parse(data.data.generatedContent);
 
+        console.log("Summary content received:", {
+          hasSummary: !!summaryContent.summary,
+          summaryLength: summaryContent.summary?.length,
+          summaryPreview: summaryContent.summary?.substring(0, 200),
+          fullSummary: summaryContent.summary,
+          hasPartMarkers: summaryContent.summary?.includes("**Part"),
+        });
+
         // Extract the summary text based on the type
         if (summaryContent.summary) {
           setSummary(summaryContent.summary);
         } else {
+          console.error("No summary field in summaryContent:", summaryContent);
           throw new Error("Invalid summary format");
         }
       } catch (err) {
@@ -193,33 +202,165 @@ export default function SummaryView({
 
       {/* Summary Content */}
       <div className="bg-white rounded-lg shadow-md p-8">
-        <div className="prose max-w-none">
-          {config.summaryType === "bullet" ? (
-            <ul className="list-disc ml-6 text-gray-900">
-              {summary
-                .split(/\n|•/)
-                .map((line) => line.trim())
-                .filter((line) => line.length > 0)
-                .map((point, idx) => (
-                  <li key={idx}>{point}</li>
-                ))}
-            </ul>
-          ) : config.summaryType === "keypoints" ? (
-            <ol className="list-decimal ml-6 text-gray-900">
-              {summary
-                .split(/\n/)
-                .map((line) => line.trim())
-                .filter((line) => /^\d+\.\s+/.test(line))
-                .map((point, idx) => (
-                  <li key={idx}>{point.replace(/^\d+\.\s+/, "")}</li>
-                ))}
-            </ol>
-          ) : (
-            <div className="text-gray-900 leading-relaxed whitespace-pre-line">
-              {summary}
+        {!summary || summary.trim().length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No summary content available.</p>
+            <p className="text-sm text-gray-400 mt-2">Debug: Summary length = {summary?.length || 0}</p>
+          </div>
+        ) : (
+          <div className="prose max-w-none">
+            {/* Debug info */}
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
+              <strong>Debug Info:</strong><br />
+              Summary Length: {summary.length}<br />
+              Has "**Part": {summary.includes("**Part") ? "Yes" : "No"}<br />
+              Summary Type: {config.summaryType}<br />
+              First 100 chars: {summary.substring(0, 100)}...
             </div>
-          )}
-        </div>
+            
+            {config.summaryType === "bullet" ? (
+              <div className="text-gray-900 space-y-6">
+                {summary.includes("**Part") ? (
+                  /* Multi-part summary - split and display with headers */
+                  (() => {
+                    const parts = summary.split(/\*\*Part \d+:\*\*/);
+                    console.log("Split parts:", parts.length, parts);
+                    return parts.map((section, idx) => {
+                      // Skip empty first element (before first "Part")
+                      if (idx === 0) {
+                        console.log(`Skipping idx ${idx}: "${section.substring(0, 50)}..."`);
+                        return null;
+                      }
+                      
+                      console.log(`Rendering Part ${idx}: "${section.substring(0, 50)}..."`);
+                      
+                      return (
+                        <div key={idx}>
+                          <h3 className="text-lg font-bold text-blue-600 mb-3">
+                            Part {idx}
+                          </h3>
+                          <ul className="list-disc ml-6">
+                            {section
+                              .split(/\n|•/)
+                              .map((line) => line.trim())
+                              .filter((line) => line.length > 0)
+                              .map((point, pointIdx) => (
+                                <li key={pointIdx} className="mb-2">{point}</li>
+                              ))}
+                          </ul>
+                        </div>
+                      );
+                    });
+                  })()
+                ) : (
+                  /* Single summary */
+                  <ul className="list-disc ml-6">
+                    {summary
+                      .split(/\n|•/)
+                      .map((line) => line.trim())
+                      .filter((line) => line.length > 0)
+                      .map((point, idx) => (
+                        <li key={idx} className="mb-2">{point}</li>
+                      ))}
+                  </ul>
+                )}
+              </div>
+            ) : config.summaryType === "keypoints" ? (
+              <div className="text-gray-900 space-y-6">
+                {summary.includes("**Part") ? (
+                  /* Multi-part summary */
+                  (() => {
+                    const parts = summary.split(/\*\*Part \d+:\*\*/);
+                    console.log("Keypoints - Split parts:", parts.length, parts);
+                    return parts.map((section, idx) => {
+                      // Skip empty first element
+                      if (idx === 0 && section.trim().length === 0) return null;
+                      
+                      const trimmedSection = section.trim();
+                      console.log(`Processing keypoints Part ${idx}:`, trimmedSection.substring(0, 100));
+                      
+                      // Split on numbered patterns (handles both newline-separated and inline keypoints)
+                      const points = trimmedSection
+                        .split(/(?=\d+\.\s+)/)  // Split before each "1. ", "2. ", etc.
+                        .map((line) => line.trim())
+                        .filter((line) => line.length > 0 && /^\d+\.\s+/.test(line));
+                      
+                      console.log(`Found ${points.length} keypoints in Part ${idx}:`, points);
+                      
+                      if (points.length === 0) {
+                        // Fallback: just display the text as-is if no numbered points found
+                        return (
+                          <div key={idx}>
+                            <h3 className="text-lg font-bold text-blue-600 mb-3">
+                              Part {idx}
+                            </h3>
+                            <div className="whitespace-pre-line">{trimmedSection}</div>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div key={idx}>
+                          <h3 className="text-lg font-bold text-blue-600 mb-3">
+                            Part {idx}
+                          </h3>
+                          <ol className="list-decimal ml-6 space-y-2">
+                            {points.map((point, pointIdx) => (
+                              <li key={pointIdx} className="mb-2">
+                                {point.replace(/^\d+\.\s+/, "")}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      );
+                    });
+                  })()
+                ) : (
+                  /* Single summary */
+                  <ol className="list-decimal ml-6 space-y-2">
+                    {(() => {
+                      const points = summary
+                        .split(/(?=\d+\.\s+)/)  // Split before each numbered point
+                        .map((line) => line.trim())
+                        .filter((line) => line.length > 0 && /^\d+\.\s+/.test(line));
+                      
+                      return points.map((point, idx) => (
+                        <li key={idx} className="mb-2">
+                          {point.replace(/^\d+\.\s+/, "")}
+                        </li>
+                      ));
+                    })()}
+                  </ol>
+                )}
+              </div>
+            ) : (
+              <div className="text-gray-900 leading-relaxed space-y-4">
+                {summary.includes("**Part") ? (
+                  /* Multi-part summary */
+                  (() => {
+                    const parts = summary.split(/\*\*Part \d+:\*\*/);
+                    return parts.map((section, idx) => {
+                      // Skip empty first element
+                      if (idx === 0) return null;
+                      
+                      return (
+                        <div key={idx}>
+                          <h3 className="text-lg font-bold text-blue-600 mb-2">
+                            Part {idx}
+                          </h3>
+                          <p className="whitespace-pre-line">{section.trim()}</p>
+                        </div>
+                      );
+                    });
+                  })()
+                ) : (
+                  /* Single summary */
+                  <div className="whitespace-pre-line">{summary}</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

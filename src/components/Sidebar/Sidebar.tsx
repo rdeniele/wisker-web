@@ -80,7 +80,7 @@ const LogoutIcon = () => (
 
 const navLinks = [
   { name: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" },
-  { name: "Subjects", icon: <SubjectsIcon />, href: "/subjects" },
+  { name: "Notes", icon: <SubjectsIcon />, href: "/subjects" },
   { name: "Upgrade", icon: <UpgradeIcon />, href: "/upgrade" },
 ];
 
@@ -310,7 +310,7 @@ function Sidebar() {
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             const isLoading = navigatingTo === link.href;
-            const isSubjectsLink = link.name === "Subjects";
+            const isSubjectsLink = link.name === "Notes";
 
             return (
               <div key={link.name}>
@@ -533,7 +533,7 @@ function Sidebar() {
           {navLinks.map((link) => {
             const isActive = pathname === link.href;
             const isLoading = navigatingTo === link.href;
-            const isSubjectsLink = link.name === "Subjects";
+            const isSubjectsLink = link.name === "Notes";
 
             return (
               <div key={link.name}>

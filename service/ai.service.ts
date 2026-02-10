@@ -173,7 +173,7 @@ export class AIService {
                 errorMessage = aiError;
               }
             }
-          } catch (e) {
+          } catch {
             // If parsing fails, use the raw error text
             errorMessage = errorText.substring(0, 200);
           }
@@ -266,6 +266,10 @@ export class AIService {
           .replace(/```\s*$/, "");
       }
 
+      // Remove trailing commas from JSON (common AI mistake)
+      // This regex finds commas followed by whitespace and a closing brace/bracket
+      cleanContent = cleanContent.replace(/,(\s*[}\]])/g, "$1").trim();
+
       // Check if response looks like an error message rather than JSON
       if (!cleanContent.startsWith("{") && !cleanContent.startsWith("[")) {
         console.error("AI returned non-JSON response:", content);
@@ -274,14 +278,48 @@ export class AIService {
         );
       }
 
+      // Sanitize control characters within JSON string values
+      // This fixes unescaped newlines, tabs, etc. that the AI might include
+      cleanContent = this.sanitizeJSONString(cleanContent);
+
       return JSON.parse(cleanContent);
     } catch (error) {
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      console.error("Failed to parse JSON response:", content);
-      throw new AIProcessingError("Failed to parse AI response as JSON");
+      // Log more details about the parsing failure
+      console.error("Failed to parse JSON response:");
+      console.error("Original content length:", content.length);
+      console.error("Content preview:", content.substring(0, 500));
+      console.error("Parse error:", error);
+      
+      throw new AIProcessingError(
+        "Failed to parse AI response as JSON. The AI may have returned malformed data."
+      );
     }
+  }
+
+  /**
+   * Sanitize JSON string by escaping control characters within string values
+   * AI models sometimes return unescaped newlines/tabs in JSON strings
+   */
+  private sanitizeJSONString(jsonStr: string): string {
+    // Find all string values in the JSON and escape control characters
+    // This regex matches: "key": "value" pairs
+    return jsonStr.replace(
+      /"([^"]+)"(\s*:\s*)"((?:[^"\\]|\\.)*)"/g,
+      (match, key, colon, value) => {
+        // Escape control characters in the value
+        const sanitizedValue = value
+          .replace(/\n/g, "\\n")   // Escape newlines
+          .replace(/\r/g, "\\r")   // Escape carriage returns
+          .replace(/\t/g, "\\t")   // Escape tabs
+          .replace(/\f/g, "\\f")   // Escape form feeds
+          .replace(/[\b]/g, "\\b"); // Escape backspaces (use [\b] not \b which matches word boundaries)
+        
+        return `"${key}"${colon}"${sanitizedValue}"`;
+      }
+    );
   }
 
   /**
@@ -326,6 +364,111 @@ Return your response as a JSON object with this exact structure:
   }
 
   /**
+   * Generate quiz from large content by processing in chunks
+   * This ensures all selected notes are included, even if content exceeds token limits
+   */
+  private async generateQuizInChunks(
+    content: string,
+    totalQuestions: number,
+    difficulty: "easy" | "medium" | "hard"
+  ): Promise<QuizContent> {
+    const maxCharsPerChunk = 100000;
+    
+    // Split content into chunks at note boundaries (marked by \n\n---\n\n)
+    const noteSeparator = "\n\n---\n\n";
+    const notes = content.split(noteSeparator);
+    
+    const chunks: string[] = [];
+    let currentChunk = "";
+    
+    for (const note of notes) {
+      if ((currentChunk + note + noteSeparator).length > maxCharsPerChunk) {
+        if (currentChunk) {
+          chunks.push(currentChunk);
+          currentChunk = note;
+        } else {
+          // Single note is too long, include it anyway but truncate
+          chunks.push(this.truncateContent(note, 25000));
+        }
+      } else {
+        currentChunk += (currentChunk ? noteSeparator : "") + note;
+      }
+    }
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+    
+    console.log(`Processing ${chunks.length} chunks to generate questions from all ${notes.length} notes`);
+    
+    // Distribute questions across chunks proportionally
+    const questionsPerChunk = Math.ceil(totalQuestions / chunks.length);
+    
+    // Generate questions for each chunk
+    const allQuestions: QuizContent["questions"] = [];
+    for (let i = 0; i < chunks.length; i++) {
+      const questionsForThisChunk = Math.min(
+        questionsPerChunk,
+        totalQuestions - allQuestions.length
+      );
+      
+      if (questionsForThisChunk <= 0) break;
+      
+      console.log(`Generating ${questionsForThisChunk} questions from chunk ${i + 1}/${chunks.length}...`);
+      
+      const systemPrompt = `You are an expert educator creating quiz questions from study material.
+Generate ${questionsForThisChunk} multiple-choice questions at ${difficulty} difficulty level.
+
+Return your response as a JSON object with this exact structure:
+{
+  "questions": [
+    {
+      "id": "q1",
+      "question": "Question text?",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "correctAnswer": 0,
+      "explanation": "Explanation of why this is correct"
+    }
+  ]
+}
+
+Guidelines:
+- Make questions clear and unambiguous
+- Ensure all options are plausible
+- Provide detailed explanations
+- Cover different aspects of the content
+- correctAnswer is the index (0-3) of the correct option`;
+
+      const userPrompt = `Create ${questionsForThisChunk} ${difficulty} quiz questions from this content:\n\n${chunks[i]}`;
+
+      const messages: TogetherAIMessage[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ];
+
+      const response = await this.makeRequest(messages, {
+        maxTokens: 3000,
+        temperature: 0.7,
+      });
+
+      const parsed = this.parseJSONResponse(response) as QuizContent;
+      
+      // Renumber question IDs to be unique across all chunks
+      const renumberedQuestions = parsed.questions.map((q, idx) => ({
+        ...q,
+        id: `q${allQuestions.length + idx + 1}`
+      }));
+      
+      allQuestions.push(...renumberedQuestions);
+    }
+    
+    console.log(`Generated ${allQuestions.length} total questions from ${chunks.length} chunks`);
+    
+    return {
+      questions: allQuestions
+    };
+  }
+
+  /**
    * Generate a quiz from content
    */
   async generateQuiz(
@@ -344,6 +487,14 @@ Return your response as a JSON object with this exact structure:
       }
 
       const { questionCount = 10, difficulty = "medium" } = options;
+
+      // Check if content needs to be processed in chunks
+      const maxCharsPerChunk = 100000; // ~25,000 tokens
+      
+      if (content.length > maxCharsPerChunk) {
+        console.log(`Content is large (${content.length} chars), processing in chunks to include all notes...`);
+        return await this.generateQuizInChunks(content, questionCount, difficulty);
+      }
 
       // Truncate content if too large
       const truncatedContent = this.truncateContent(content, 26000);
@@ -398,6 +549,108 @@ Guidelines:
   }
 
   /**
+   * Generate flashcards from large content by processing in chunks
+   * This ensures all selected notes are included, even if content exceeds token limits
+   */
+  private async generateFlashcardsInChunks(
+    content: string,
+    totalCards: number
+  ): Promise<FlashcardContent> {
+    const maxCharsPerChunk = 100000;
+    
+    // Split content into chunks at note boundaries (marked by \n\n---\n\n)
+    const noteSeparator = "\n\n---\n\n";
+    const notes = content.split(noteSeparator);
+    
+    const chunks: string[] = [];
+    let currentChunk = "";
+    
+    for (const note of notes) {
+      if ((currentChunk + note + noteSeparator).length > maxCharsPerChunk) {
+        if (currentChunk) {
+          chunks.push(currentChunk);
+          currentChunk = note;
+        } else {
+          // Single note is too long, include it anyway but truncate
+          chunks.push(this.truncateContent(note, 25000));
+        }
+      } else {
+        currentChunk += (currentChunk ? noteSeparator : "") + note;
+      }
+    }
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+    
+    console.log(`Processing ${chunks.length} chunks to generate flashcards from all ${notes.length} notes`);
+    
+    // Distribute cards across chunks proportionally
+    const cardsPerChunk = Math.ceil(totalCards / chunks.length);
+    
+    // Generate flashcards for each chunk
+    const allCards: FlashcardContent["cards"] = [];
+    for (let i = 0; i < chunks.length; i++) {
+      const cardsForThisChunk = Math.min(
+        cardsPerChunk,
+        totalCards - allCards.length
+      );
+      
+      if (cardsForThisChunk <= 0) break;
+      
+      console.log(`Generating ${cardsForThisChunk} flashcards from chunk ${i + 1}/${chunks.length}...`);
+      
+      const systemPrompt = `You are an expert educator creating flashcards for effective studying.
+Generate ${cardsForThisChunk} flashcards that help students memorize key concepts.
+
+Return your response as a JSON object with this exact structure:
+{
+  "cards": [
+    {
+      "id": "card1",
+      "front": "Question or concept on front of card",
+      "back": "Answer or explanation on back of card"
+    }
+  ]
+}
+
+Guidelines:
+- Front should be a clear question or prompt
+- Back should be a concise but complete answer
+- Cover the most important concepts
+- Make cards atomic (one concept per card)
+- Use varied question types`;
+
+      const userPrompt = `Create ${cardsForThisChunk} flashcards from this content:\n\n${chunks[i]}`;
+
+      const messages: TogetherAIMessage[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ];
+
+      const response = await this.makeRequest(messages, {
+        maxTokens: 2500,
+        temperature: 0.6,
+      });
+
+      const parsed = this.parseJSONResponse(response) as FlashcardContent;
+      
+      // Renumber card IDs to be unique across all chunks
+      const renumberedCards = parsed.cards.map((card, idx) => ({
+        ...card,
+        id: `card${allCards.length + idx + 1}`
+      }));
+      
+      allCards.push(...renumberedCards);
+    }
+    
+    console.log(`Generated ${allCards.length} total flashcards from ${chunks.length} chunks`);
+    
+    return {
+      cards: allCards
+    };
+  }
+
+  /**
    * Generate flashcards from content
    */
   async generateFlashcards(
@@ -415,6 +668,14 @@ Guidelines:
       }
 
       const { cardCount = 15 } = options;
+
+      // Check if content needs to be processed in chunks
+      const maxCharsPerChunk = 100000; // ~25,000 tokens
+      
+      if (content.length > maxCharsPerChunk) {
+        console.log(`Content is large (${content.length} chars), processing in chunks to include all notes...`);
+        return await this.generateFlashcardsInChunks(content, cardCount);
+      }
 
       // Truncate content if too large
       const truncatedContent = this.truncateContent(content, 26000);
@@ -468,6 +729,131 @@ Guidelines:
   }
 
   /**
+   * Generate summary from large content by processing in chunks
+   * This ensures all selected notes are included, even if content exceeds token limits
+   */
+  private async generateSummaryInChunks(
+    content: string,
+    summaryLength: "short" | "medium" | "detailed",
+    summaryType: "paragraph" | "bullet" | "keypoints",
+    config: { chars: number; bullets: number; keypoints: number }
+  ): Promise<SummaryContent> {
+    const maxCharsPerChunk = 100000;
+    
+    // Split content into chunks at note boundaries (marked by \n\n---\n\n)
+    const noteSeparator = "\n\n---\n\n";
+    const notes = content.split(noteSeparator);
+    
+    const chunks: string[] = [];
+    let currentChunk = "";
+    
+    for (const note of notes) {
+      if ((currentChunk + note + noteSeparator).length > maxCharsPerChunk) {
+        if (currentChunk) {
+          chunks.push(currentChunk);
+          currentChunk = note;
+        } else {
+          // Single note is too long, include it anyway but truncate
+          chunks.push(this.truncateContent(note, 25000));
+        }
+      } else {
+        currentChunk += (currentChunk ? noteSeparator : "") + note;
+      }
+    }
+    if (currentChunk) {
+      chunks.push(currentChunk);
+    }
+    
+    console.log(`Processing ${chunks.length} chunks to include all ${notes.length} notes`);
+    
+    // Generate summary for each chunk
+    const chunkSummaries: SummaryContent[] = [];
+    for (let i = 0; i < chunks.length; i++) {
+      console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
+      
+      // Build format instructions based on summaryType
+      let formatInstructions = "";
+      let summaryFormat = "";
+
+      if (summaryType === "paragraph") {
+        formatInstructions =
+          "Present the summary as a cohesive, flowing paragraph that reads naturally.";
+        summaryFormat = "Write the summary as flowing prose in paragraph form.";
+      } else if (summaryType === "bullet") {
+        formatInstructions = `Present the summary as ${config.bullets} organized bullet points. Each bullet point should be a clear, concise statement covering a distinct aspect of the content.`;
+        summaryFormat = `Format the summary as ${config.bullets} bullet points. Start each point with a bullet character (•) followed by the text. Example:
+• First key point about the topic
+• Second important concept
+• Third major idea`;
+      } else {
+        formatInstructions = `Present the summary as ${config.keypoints} numbered key points focusing only on the most critical concepts. Each key point MUST start with a number and a period, and be separated by a newline.`;
+        summaryFormat = `Format the summary as ${config.keypoints} numbered key points. Start each point with a number followed by a period and space, and put each key point on its own line. Example:
+1. First critical concept
+2. Second essential idea
+3. Third main point`;
+      }
+
+      const systemPrompt = `You are an expert at creating concise, informative summaries of study material.
+Create a ${summaryLength} summary in ${summaryType} format for this section of notes (part ${i + 1} of ${chunks.length}).
+
+${formatInstructions}
+
+Return your response as a JSON object with this exact structure:
+{
+  "summary": "Your formatted summary here",
+  "keyPoints": ["Key point 1", "Key point 2", "Key point 3"],
+  "mainTopics": ["Topic 1", "Topic 2", "Topic 3"]
+}
+
+CRITICAL FORMATTING REQUIREMENTS for the "summary" field:
+${summaryFormat}
+
+Guidelines:
+- Summary field must follow the exact format specified above
+- Include 3-5 items in keyPoints array
+- Identify 2-4 items in mainTopics array
+- Focus on the most important information from this section`;
+
+      const userPrompt = `Create a summary of this content:\n\n${chunks[i]}`;
+
+      const messages: TogetherAIMessage[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ];
+
+      const response = await this.makeRequest(messages, {
+        maxTokens: 1500,
+        temperature: 0.5,
+      });
+
+      const parsed = this.parseJSONResponse(response);
+      chunkSummaries.push(parsed as SummaryContent);
+    }
+    
+    // Combine all chunk summaries into a final summary
+    console.log(`Combining ${chunkSummaries.length} chunk summaries...`);
+    
+    const combinedSummaryText = chunkSummaries
+      .map((s, i) => {
+        if (summaryType === "paragraph") {
+          return `**Part ${i + 1}:** ${s.summary}`;
+        } else {
+          return `**Part ${i + 1}:**\n${s.summary}`;
+        }
+      })
+      .join("\n\n");
+    
+    const allKeyPoints = chunkSummaries.flatMap(s => s.keyPoints);
+    const allMainTopics = [...new Set(chunkSummaries.flatMap(s => s.mainTopics))];
+    
+    return {
+      summary: combinedSummaryText,
+      keyPoints: allKeyPoints,
+      mainTopics: allMainTopics
+    };
+  }
+
+  /**
    * Generate a summary from content
    */
   async generateSummary(
@@ -487,9 +873,6 @@ Guidelines:
 
       const { summaryLength = "medium", summaryType = "paragraph" } = options;
 
-      // Truncate content if too large
-      const truncatedContent = this.truncateContent(content, 27000);
-
       // Map summaryLength to character count and bullet count
       const lengthConfig = {
         short: { chars: 300, bullets: 3, keypoints: 3 },
@@ -497,6 +880,17 @@ Guidelines:
         detailed: { chars: 1200, bullets: 10, keypoints: 8 },
       };
       const config = lengthConfig[summaryLength];
+
+      // Check if content needs to be processed in chunks
+      const maxCharsPerChunk = 100000; // ~25,000 tokens, leaving room for prompt and response
+      
+      if (content.length > maxCharsPerChunk) {
+        console.log(`Content is large (${content.length} chars), processing in chunks to include all notes...`);
+        return await this.generateSummaryInChunks(content, summaryLength, summaryType, config);
+      }
+
+      // Process normally for smaller content
+      const truncatedContent = this.truncateContent(content, 27000);
 
       // Build format instructions based on summaryType
       let formatInstructions = "";
