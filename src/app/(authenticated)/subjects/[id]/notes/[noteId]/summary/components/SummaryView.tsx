@@ -37,10 +37,19 @@ export default function SummaryView({
         const data = await response.json();
         const summaryContent = JSON.parse(data.data.generatedContent);
 
-        // Extract the summary text
+        console.log("Summary content received:", {
+          hasSummary: !!summaryContent.summary,
+          summaryLength: summaryContent.summary?.length,
+          summaryPreview: summaryContent.summary?.substring(0, 200),
+          fullSummary: summaryContent.summary,
+          hasPartMarkers: summaryContent.summary?.includes("**Part"),
+        });
+
+        // Extract the summary text based on the type
         if (summaryContent.summary) {
           setSummary(summaryContent.summary);
         } else {
+          console.error("No summary field in summaryContent:", summaryContent);
           throw new Error("Invalid summary format");
         }
       } catch (err) {
@@ -92,7 +101,7 @@ export default function SummaryView({
           <span className="font-medium">Back to Setup</span>
         </button>
         <div className="flex items-center justify-center h-96">
-          <div className="text-gray-500">Loading summary...</div>
+          <div className="text-gray-500">Generating summary...</div>
         </div>
       </div>
     );
@@ -111,8 +120,17 @@ export default function SummaryView({
           />
           <span className="font-medium">Back to Setup</span>
         </button>
-        <div className="flex items-center justify-center h-96">
-          <div className="text-red-500">{error}</div>
+        <div className="bg-white rounded-lg shadow-md p-8 text-center">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Error Loading Summary
+          </h3>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={onBack}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Go Back
+          </button>
         </div>
       </div>
     );
@@ -164,7 +182,7 @@ export default function SummaryView({
             </button>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm flex-wrap">
           <p className="text-blue-600 font-semibold">
             {config.summaryLength.charAt(0).toUpperCase() +
               config.summaryLength.slice(1)}{" "}
@@ -184,35 +202,155 @@ export default function SummaryView({
 
       {/* Summary Content */}
       <div className="bg-white rounded-lg shadow-md p-8">
-        <div className="prose max-w-none">
-          {config.summaryType === "paragraph" ? (
-            <div className="text-gray-900 leading-relaxed whitespace-pre-line">
-              {summary}
-            </div>
-          ) : config.summaryType === "bullet" ? (
-            <ul className="list-disc pl-5 space-y-2 text-gray-900">
-              {summary
-                .split("\n")
-                .filter((line) => line.trim())
-                .map((point, idx) => (
-                  <li key={idx} className="leading-relaxed">
-                    {point.replace(/^[•\-*]\s*/, "")}
-                  </li>
-                ))}
-            </ul>
-          ) : (
-            <ol className="list-decimal pl-5 space-y-3 text-gray-900">
-              {summary
-                .split(/\n+/)
-                .filter((line) => line.trim())
-                .map((point, idx) => (
-                  <li key={idx} className="leading-relaxed font-medium">
-                    {point.replace(/^\d+\.\s*/, "")}
-                  </li>
-                ))}
-            </ol>
-          )}
-        </div>
+        {!summary || summary.trim().length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No summary content available.</p>
+          </div>
+        ) : (
+          <div className="prose max-w-none">
+            {config.summaryType === "bullet" ? (
+              <div className="text-gray-900 space-y-6">
+                {summary.includes("**Part") ? (
+                  /* Multi-part summary - split and display with headers */
+                  (() => {
+                    const parts = summary.split(/\*\*Part \d+:\*\*/);
+                    console.log("Split parts:", parts.length, parts);
+                    return parts.map((section, idx) => {
+                      // Skip empty first element (before first "Part")
+                      if (idx === 0) {
+                        console.log(`Skipping idx ${idx}: "${section.substring(0, 50)}..."`);
+                        return null;
+                      }
+                      
+                      console.log(`Rendering Part ${idx}: "${section.substring(0, 50)}..."`);
+                      
+                      return (
+                        <div key={idx}>
+                          <h3 className="text-lg font-bold text-blue-600 mb-3">
+                            Part {idx}
+                          </h3>
+                          <ul className="list-disc ml-6">
+                            {section
+                              .split(/\n|•/)
+                              .map((line) => line.trim())
+                              .filter((line) => line.length > 0)
+                              .map((point, pointIdx) => (
+                                <li key={pointIdx} className="mb-2">{point}</li>
+                              ))}
+                          </ul>
+                        </div>
+                      );
+                    });
+                  })()
+                ) : (
+                  /* Single summary */
+                  <ul className="list-disc ml-6">
+                    {summary
+                      .split(/\n|•/)
+                      .map((line) => line.trim())
+                      .filter((line) => line.length > 0)
+                      .map((point, idx) => (
+                        <li key={idx} className="mb-2">{point}</li>
+                      ))}
+                  </ul>
+                )}
+              </div>
+            ) : config.summaryType === "keypoints" ? (
+              <div className="text-gray-900 space-y-6">
+                {summary.includes("**Part") ? (
+                  /* Multi-part summary */
+                  (() => {
+                    const parts = summary.split(/\*\*Part \d+:\*\*/);
+                    console.log("Keypoints - Split parts:", parts.length, parts);
+                    return parts.map((section, idx) => {
+                      // Skip empty first element
+                      if (idx === 0 && section.trim().length === 0) return null;
+                      
+                      const trimmedSection = section.trim();
+                      console.log(`Processing keypoints Part ${idx}:`, trimmedSection.substring(0, 100));
+                      
+                      // Split on numbered patterns (handles both newline-separated and inline keypoints)
+                      const points = trimmedSection
+                        .split(/(?=\d+\.\s+)/)  // Split before each "1. ", "2. ", etc.
+                        .map((line) => line.trim())
+                        .filter((line) => line.length > 0 && /^\d+\.\s+/.test(line));
+                      
+                      console.log(`Found ${points.length} keypoints in Part ${idx}:`, points);
+                      
+                      if (points.length === 0) {
+                        // Fallback: just display the text as-is if no numbered points found
+                        return (
+                          <div key={idx}>
+                            <h3 className="text-lg font-bold text-blue-600 mb-3">
+                              Part {idx}
+                            </h3>
+                            <div className="whitespace-pre-line">{trimmedSection}</div>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div key={idx}>
+                          <h3 className="text-lg font-bold text-blue-600 mb-3">
+                            Part {idx}
+                          </h3>
+                          <ol className="list-decimal ml-6 space-y-2">
+                            {points.map((point, pointIdx) => (
+                              <li key={pointIdx} className="mb-2">
+                                {point.replace(/^\d+\.\s+/, "")}
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      );
+                    });
+                  })()
+                ) : (
+                  /* Single summary */
+                  <ol className="list-decimal ml-6 space-y-2">
+                    {(() => {
+                      const points = summary
+                        .split(/(?=\d+\.\s+)/)  // Split before each numbered point
+                        .map((line) => line.trim())
+                        .filter((line) => line.length > 0 && /^\d+\.\s+/.test(line));
+                      
+                      return points.map((point, idx) => (
+                        <li key={idx} className="mb-2">
+                          {point.replace(/^\d+\.\s+/, "")}
+                        </li>
+                      ));
+                    })()}
+                  </ol>
+                )}
+              </div>
+            ) : (
+              <div className="text-gray-900 leading-relaxed space-y-4">
+                {summary.includes("**Part") ? (
+                  /* Multi-part summary */
+                  (() => {
+                    const parts = summary.split(/\*\*Part \d+:\*\*/);
+                    return parts.map((section, idx) => {
+                      // Skip empty first element
+                      if (idx === 0) return null;
+                      
+                      return (
+                        <div key={idx}>
+                          <h3 className="text-lg font-bold text-blue-600 mb-2">
+                            Part {idx}
+                          </h3>
+                          <p className="whitespace-pre-line">{section.trim()}</p>
+                        </div>
+                      );
+                    });
+                  })()
+                ) : (
+                  /* Single summary */
+                  <p className="whitespace-pre-line">{summary}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
