@@ -30,7 +30,7 @@ export const updateSubjectSchema = z.object({
 // Note Validation
 export const createNoteSchema = z
   .object({
-    subjectId: z.string().uuid("Invalid subject ID"),
+    subjectId: z.string().uuid("Invalid subject ID").optional().nullable(),
     title: z
       .string()
       .min(1, "Title is required")
@@ -66,6 +66,7 @@ export const updateNoteSchema = z.object({
     .min(1, "Content is required")
     .max(100000, "Content is too large")
     .optional(),
+  subjectId: z.string().uuid("Invalid subject ID").optional().nullable(),
 });
 
 export const processNoteSchema = z.object({
@@ -135,6 +136,10 @@ export const noteQuerySchema = paginationSchema.extend({
   search: z.string().optional(),
   sortBy: z.enum(["createdAt", "updatedAt", "title"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  untaggedOnly: z
+    .string()
+    .transform((val) => val === "true")
+    .optional(),
 });
 
 export const learningToolQuerySchema = paginationSchema.extend({

@@ -4,6 +4,8 @@ import { IoBookSharp } from "react-icons/io5";
 import CreateSubject from "./components/CreateSubject";
 import UpdateSubject from "./components/UpdateSubject";
 import SubjectCard from "./components/SubjectCard";
+import QuickActionModal from "@/components/ui/QuickActionModal";
+import QuickNoteCreator from "@/components/ui/QuickNoteCreator";
 
 interface Subject {
   id: string;
@@ -20,6 +22,8 @@ interface Subject {
 function SubjectsPage() {
   const [, startTransition] = useTransition();
   const [showModal, setShowModal] = useState(false);
+  const [showQuickActionModal, setShowQuickActionModal] = useState(false);
+  const [showQuickNoteModal, setShowQuickNoteModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(
     null,
@@ -148,7 +152,7 @@ function SubjectsPage() {
             My Subjects
           </h1>
           <p className="text-gray-600 text-sm sm:text-base">
-            {transformedSubjects.length}{" "}
+            {transformedSubjects.length} {" "}
             {transformedSubjects.length === 1 ? "subject" : "subjects"} to
             explore
           </p>
@@ -214,14 +218,54 @@ function SubjectsPage() {
 
         {/* Minimalistic Floating Add Button */}
         <button
-          className="fixed bottom-8 right-8 w-14 h-14 sm:w-16 sm:h-16 bg-linear-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl z-50 transition-all hover:scale-110 active:scale-95"
-          onClick={() => setShowModal(true)}
-          aria-label="Add Subject"
+          onClick={() => setShowQuickActionModal(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-purple-500 hover:bg-purple-600 text-white rounded-full text-2xl font-bold shadow-lg transition-colors z-50"
+          aria-label="Quick Create"
           style={{ boxShadow: "0 8px 0 0 rgba(139, 92, 246, 0.18)" }}
         >
           +
         </button>
       </div>
+
+      {/* Quick Action Modal */}
+      {showQuickActionModal && (
+        <div
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          onClick={() => setShowQuickActionModal(false)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <QuickActionModal
+              onClose={() => setShowQuickActionModal(false)}
+              onCreateNote={() => {
+                setShowQuickActionModal(false);
+                setShowQuickNoteModal(true);
+              }}
+              onCreateSubject={() => {
+                setShowQuickActionModal(false);
+                setShowModal(true);
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Quick Note Creator Modal */}
+      {showQuickNoteModal && (
+        <div
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          onClick={() => setShowQuickNoteModal(false)}
+        >
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
+            <QuickNoteCreator
+              onClose={() => setShowQuickNoteModal(false)}
+              onSuccess={() => {
+                setShowQuickNoteModal(false);
+                // Optionally navigate to the note or show success message
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Modal Overlay - Cleaner backdrop */}
       {showModal && (

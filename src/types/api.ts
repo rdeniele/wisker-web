@@ -77,7 +77,7 @@ export interface NoteDto {
 }
 
 export interface CreateNoteRequest {
-  subjectId: string;
+  subjectId?: string | null; // Made optional - can be null for untagged notes
   title: string;
   rawContent?: string;
   pdfText?: string; // Optional: Extracted PDF text (text-only PDFs)
@@ -88,6 +88,7 @@ export interface CreateNoteRequest {
 export interface UpdateNoteRequest {
   title?: string;
   rawContent?: string;
+  subjectId?: string | null; // Allow subject assignment/removal
 }
 
 export interface ProcessNoteRequest {

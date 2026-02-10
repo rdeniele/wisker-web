@@ -88,6 +88,7 @@ model User {
   @@index([isEarlyUser])
   @@index([createdAt])
   @@map("users")
+  notes Note[]
 }
 
 model Subject {
@@ -108,7 +109,8 @@ model Subject {
 
 model Note {
   id                    String    @id @default(uuid())
-  subjectId             String    @map("subject_id")
+  subjectId             String?   @map("subject_id")
+  userId                String    @map("user_id")
   title                 String
   rawContent            String    @map("raw_content") @db.Text
   knowledgeBase         String?   @map("knowledge_base") @db.Text
@@ -120,10 +122,12 @@ model Note {
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
   
-  subject               Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject               Subject?  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   learningTools         LearningTool[]
   learningToolNotes     LearningToolNote[]
   
+  @@index([userId])
   @@index([subjectId])
   @@map("notes")
 }

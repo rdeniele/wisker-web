@@ -20,12 +20,13 @@ export class NoteService {
   async getUserNotes(
     userId: string,
     options: {
-      subjectId?: string;
+      subjectId?: string | null;
       page?: number;
       pageSize?: number;
       search?: string;
       sortBy?: "createdAt" | "updatedAt" | "title";
       sortOrder?: "asc" | "desc";
+      untaggedOnly?: boolean; // NEW: Filter for inbox/untagged notes
     } = {},
   ) {
     try {
@@ -36,13 +37,18 @@ export class NoteService {
         search,
         sortBy = "createdAt",
         sortOrder = "desc",
+        untaggedOnly = false,
       } = options;
 
       const skip = (page - 1) * pageSize;
 
       const where = {
-        subject: { userId },
-        ...(subjectId && { subjectId }),
+        userId,
+        ...(untaggedOnly
+          ? { subjectId: null }
+          : subjectId
+            ? { subjectId }
+            : {}),
         ...(search && {
           OR: [
             { title: { contains: search, mode: "insensitive" as const } },
@@ -130,20 +136,18 @@ export class NoteService {
    */
   async createNote(userId: string, data: CreateNoteRequest): Promise<NoteDto> {
     try {
-      // Verify subject ownership
-      await subjectService.getSubjectById(data.subjectId, userId);
+      // Verify subject ownership IF subject is provided
+      if (data.subjectId) {
+        await subjectService.getSubjectById(data.subjectId, userId);
+      }
 
       // Check user's notes limit
       const user = await prisma.user.findUnique({
         where: { id: userId },
         select: {
           notesLimit: true,
-          subjects: {
-            select: {
-              _count: {
-                select: { notes: true },
-              },
-            },
+          _count: {
+            select: { notes: true },
           },
         },
       });
@@ -152,12 +156,8 @@ export class NoteService {
         throw new NotFoundError("User");
       }
 
-      // Calculate total notes across all subjects
-      const totalNotes = user.subjects.reduce(
-        (sum: number, subject: { _count: { notes: number } }) =>
-          sum + subject._count.notes,
-        0,
-      );
+      // Calculate total notes for user
+      const totalNotes = user._count.notes;
 
       if (totalNotes >= user.notesLimit) {
         throw new NotesLimitExceededError(user.notesLimit);
@@ -271,7 +271,8 @@ export class NoteService {
       // Create note
       const note = await prisma.note.create({
         data: {
-          subjectId: data.subjectId,
+          userId,
+          subjectId: data.subjectId || null,
           title: data.title,
           rawContent,
           knowledgeBase,
@@ -321,12 +322,18 @@ export class NoteService {
       // Verify ownership
       await this.getNoteById(noteId, userId);
 
+      // If subjectId is being updated, verify subject ownership
+      if (data.subjectId !== undefined && data.subjectId !== null) {
+        await subjectService.getSubjectById(data.subjectId, userId);
+      }
+
       // Update note
       const note = await prisma.note.update({
         where: { id: noteId },
         data: {
           ...(data.title && { title: data.title }),
           ...(data.rawContent && { rawContent: data.rawContent }),
+          ...(data.subjectId !== undefined && { subjectId: data.subjectId }),
         },
         include: {
           subject: true,
