@@ -17,15 +17,22 @@ type RouteParams = {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
+    console.log(`[API /api/subjects/${id}] Fetching subject`);
 
     // Get authenticated user (auto-syncs to Prisma if needed)
     const user = await getAuthenticatedUser();
+    console.log(`[API /api/subjects/${id}] User authenticated:`, user.id);
 
     // Get subject
     const subject = await subjectService.getSubjectById(id, user.id);
+    console.log(`[API /api/subjects/${id}] Subject found`);
 
     return successResponse(subject);
   } catch (error) {
+    console.error(`[API /api/subjects/${id}] Error:`, {
+      type: error?.constructor?.name,
+      message: error instanceof Error ? error.message : String(error),
+    });
     return errorResponse(error as Error);
   }
 }

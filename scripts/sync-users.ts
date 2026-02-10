@@ -1,13 +1,30 @@
 import { config } from "dotenv";
 import { createClient } from "@supabase/supabase-js";
-import { prisma } from "../src/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import pg from "pg";
 
 // Load environment variables
-config();
+config({ path: ".env" });
+
+// Create Prisma client
+let prisma: PrismaClient | null = null;
 
 async function syncUsers() {
   try {
     console.log("Syncing users from Supabase to Prisma...\n");
+
+    // Check for DATABASE_URL
+    if (!process.env.DATABASE_URL) {
+      throw new Error(
+        "DATABASE_URL is not configured. Please set it in your .env file.",
+      );
+    }
+
+    // Initialize Prisma client
+    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+    const adapter = new PrismaPg(pool);
+    prisma = new PrismaClient({ adapter });
 
     // Get Supabase client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -51,8 +68,9 @@ async function syncUsers() {
             planType: "FREE",
             notesLimit: 50,
             subjectsLimit: 10,
-            aiUsageLimit: 100,
-            aiUsageCount: 0,
+            dailyCredits: 10,
+            creditsUsedToday: 0,
+            lastCreditReset: new Date(),
           },
         });
         console.log(`  ✓ Created in Prisma database\n`);
@@ -68,7 +86,9 @@ async function syncUsers() {
     console.error("✗ Error:", error);
     process.exit(1);
   } finally {
-    await prisma.$disconnect();
+    if (prisma) {
+      await prisma.$disconnect();
+    }
   }
 }
 

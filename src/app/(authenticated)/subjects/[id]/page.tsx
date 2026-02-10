@@ -57,7 +57,21 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         // Fetch subject details
         const subjectResponse = await fetch(`/api/subjects/${id}`);
         if (!subjectResponse.ok) {
-          throw new Error("Failed to fetch subject");
+          const errorData = await subjectResponse.json();
+          console.error("Subject fetch error:", {
+            status: subjectResponse.status,
+            statusText: subjectResponse.statusText,
+            errorData
+          });
+          
+          if (subjectResponse.status === 404) {
+            showToast("Subject not found. It may have been deleted.", "error");
+            router.push("/subjects");
+            return;
+          }
+          
+          const errorMessage = errorData.error?.message || errorData.message || "Failed to fetch subject";
+          throw new Error(errorMessage);
         }
         const subjectData = await subjectResponse.json();
         setSubject(subjectData.data);
@@ -65,20 +79,22 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         // Fetch notes for this subject
         const notesResponse = await fetch(`/api/notes?subjectId=${id}`);
         if (!notesResponse.ok) {
-          throw new Error("Failed to fetch notes");
+          const errorData = await notesResponse.json();
+          const errorMessage = errorData.error?.message || errorData.message || "Failed to fetch notes";
+          throw new Error(errorMessage);
         }
         const notesData = await notesResponse.json();
         setNotes(notesData.data.notes || []);
       } catch (error) {
         console.error("Error fetching data:", error);
-        showToast("Failed to load data", "error");
+        showToast(error instanceof Error ? error.message : "Failed to load data", "error");
       } finally {
         setIsLoadingNotes(false);
       }
     };
 
     fetchData();
-  }, [id, showToast]);
+  }, [id, router, showToast]);
 
   // Function to refresh notes without full page reload
   const refreshNotes = async () => {
