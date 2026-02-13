@@ -79,14 +79,22 @@ export async function POST(request: NextRequest) {
 async function handlePaymentPaid(event: unknown) {
   const paymongoEvent = event as PayMongoEvent;
   const data = paymongoEvent.data.attributes.data;
-  console.log("Payment paid:", data);
+  console.log("Payment paid:", {
+    id: data.id,
+    type: data.type,
+    status: data.attributes?.status,
+  });
   // Implement your business logic here
 }
 
 async function handlePaymentFailed(event: unknown) {
   const paymongoEvent = event as PayMongoEvent;
   const data = paymongoEvent.data.attributes.data;
-  console.log("Payment failed:", data);
+  console.log("Payment failed:", {
+    id: data.id,
+    type: data.type,
+    status: data.attributes?.status,
+  });
   // Implement your business logic here
 }
 
@@ -95,7 +103,12 @@ async function handleCheckoutSessionPaid(event: unknown) {
   const data = paymongoEvent.data.attributes.data;
   const metadata = data.attributes.metadata;
 
-  console.log("Checkout session paid:", data);
+  console.log("Checkout session paid:", {
+    id: data.id,
+    type: data.type,
+    status: data.attributes?.status,
+    planName: metadata?.planName,
+  });
 
   if (metadata && metadata.userId) {
     // Map plan name to PlanType enum

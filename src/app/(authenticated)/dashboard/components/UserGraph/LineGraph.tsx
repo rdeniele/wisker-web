@@ -22,11 +22,7 @@ function LineGraph() {
         const response = await fetch("/api/learning-tools?pageSize=100");
         const result = await response.json();
 
-        console.log("Activity data fetch result:", result);
-
         if (response.ok && result.data?.learningTools) {
-          console.log("Learning tools count:", result.data.learningTools.length);
-          
           // Process data into daily counts for last 7 days
           const last7Days: DailyActivity[] = [];
           const today = new Date();
@@ -52,10 +48,7 @@ function LineGraph() {
             last7Days.push({ date: dayStr, count });
           }
 
-          console.log("Processed activity data:", last7Days);
           setActivityData(last7Days);
-        } else {
-          console.error("Invalid response format:", result);
         }
       } catch (error) {
         console.error("Failed to fetch activity data:", error);
