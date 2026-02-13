@@ -35,8 +35,8 @@ async function main() {
       monthlyPrice: 0,
       yearlyPrice: 0,
       dailyCredits: 10,
-      notesLimit: 50,
-      subjectsLimit: 10,
+      notesLimit: 25,
+      subjectsLimit: 5,
       features: [
         "10 daily credits (fur real)",
         "AI Cat Quizzes (purr-fect your smarts)",
@@ -59,11 +59,11 @@ async function main() {
       planType: PlanType.PRO,
       displayName: "Pro",
       description: "For serious students who want more",
-      monthlyPrice: 50, // ₱50/month (₱99 original with 50% off)
-      yearlyPrice: 480, // ₱480/year (₱950 original with 50% off + annual discount)
+      monthlyPrice: 80, // ₱80/month (₱960/year ÷ 12)
+      yearlyPrice: 480, // ₱480/year (₱960 with 50% off + annual discount)
       dailyCredits: 300,
-      notesLimit: 500,
-      subjectsLimit: 100,
+      notesLimit: 300,
+      subjectsLimit: 30,
       features: [
         "300 daily credits (no cap)",
         "AI Cat Quizzes (flex your whiskers)",
@@ -91,8 +91,8 @@ async function main() {
       planType: PlanType.PREMIUM,
       displayName: "Premium",
       description: "The ultimate learning experience",
-      monthlyPrice: 100, // ₱100/month (₱199 original with 50% off)
-      yearlyPrice: 960, // ₱960/year (₱1,910 original with 50% off + annual discount)
+      monthlyPrice: 120, // ₱120/month (₱1,920/year ÷ 12)
+      yearlyPrice: 960, // ₱960/year (₱1,920 with 50% off + annual discount)
       dailyCredits: 1500,
       notesLimit: -1, // Unlimited
       subjectsLimit: -1, // Unlimited

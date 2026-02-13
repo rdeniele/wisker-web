@@ -34,6 +34,7 @@ function CreateSubject({ onClose, onSuccess }: CreateSubjectProps) {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           title: subjectName.trim(),
           description: description.trim() || undefined,
@@ -49,7 +50,7 @@ function CreateSubject({ onClose, onSuccess }: CreateSubjectProps) {
 
       if (!response.ok) {
         const errorMessage =
-          result.error?.message || "Failed to create subject";
+          result.error?.message || result.message || "Failed to create subject";
         throw new Error(errorMessage);
       }
 

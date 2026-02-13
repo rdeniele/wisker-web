@@ -103,13 +103,11 @@ export class SubjectService {
       });
 
       if (!subject) {
-        console.log(`[SubjectService] Subject not found: ${subjectId}`);
         throw new NotFoundError("Subject");
       }
 
       // Verify ownership
       if (subject.userId !== userId) {
-        console.log(`[SubjectService] Access forbidden: user ${userId} tried to access subject owned by ${subject.userId}`);
         throw new ForbiddenError("You do not have access to this subject");
       }
 
@@ -118,14 +116,6 @@ export class SubjectService {
         description: subject.description ?? undefined,
       };
     } catch (error) {
-      console.error(`[SubjectService] getSubjectById error:`, {
-        type: error?.constructor?.name,
-        message: error instanceof Error ? error.message : String(error),
-        isAppError: error instanceof AppError,
-        isNotFoundError: error instanceof NotFoundError,
-        isForbiddenError: error instanceof ForbiddenError,
-      });
-      
       if (error instanceof NotFoundError || error instanceof ForbiddenError) {
         throw error;
       }
@@ -156,7 +146,8 @@ export class SubjectService {
         throw new NotFoundError("User");
       }
 
-      if (user._count.subjects >= user.subjectsLimit) {
+      // Check if user has reached their subject limit (-1 means unlimited)
+      if (user.subjectsLimit !== -1 && user._count.subjects >= user.subjectsLimit) {
         throw new SubjectsLimitExceededError(user.subjectsLimit);
       }
 

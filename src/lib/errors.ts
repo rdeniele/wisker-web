@@ -96,7 +96,19 @@ export class AIUsageLimitExceededError extends AppError {
 // Server Errors
 export class DatabaseError extends AppError {
   constructor(message: string = "Database operation failed", details?: unknown) {
-    super(ErrorCode.DATABASE_ERROR, message, 500, details);
+    // Extract more details from Prisma errors
+    let enhancedDetails = details;
+    if (details && typeof details === 'object') {
+      const prismaError = details as any;
+      enhancedDetails = {
+        originalError: prismaError.message || String(details),
+        code: prismaError.code,
+        meta: prismaError.meta,
+        clientVersion: prismaError.clientVersion,
+      };
+    }
+    
+    super(ErrorCode.DATABASE_ERROR, message, 500, enhancedDetails);
   }
 }
 

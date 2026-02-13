@@ -159,7 +159,8 @@ export class NoteService {
         0,
       );
 
-      if (totalNotes >= user.notesLimit) {
+      // Check if user has reached their notes limit (-1 means unlimited)
+      if (user.notesLimit !== -1 && totalNotes >= user.notesLimit) {
         throw new NotesLimitExceededError(user.notesLimit);
       }
 

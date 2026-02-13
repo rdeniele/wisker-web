@@ -5,19 +5,19 @@ import { PlanType } from "@prisma/client";
 
 const PLAN_LIMITS = {
   FREE: {
-    notesLimit: 50,
-    subjectsLimit: 10,
-    dailyCredits: 100,
+    notesLimit: 25,
+    subjectsLimit: 5,
+    dailyCredits: 10, // 10 daily credits (fur real)
   },
   PRO: {
-    notesLimit: 500,
-    subjectsLimit: 50,
-    dailyCredits: 1000,
+    notesLimit: 300,
+    subjectsLimit: 30,
+    dailyCredits: 300, // 300 daily credits (no cap)
   },
   PREMIUM: {
     notesLimit: -1, // Unlimited
     subjectsLimit: -1, // Unlimited
-    dailyCredits: 5000,
+    dailyCredits: 1500, // 1500 daily credits (max catitude)
   },
 };
 

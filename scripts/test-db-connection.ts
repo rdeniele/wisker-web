@@ -1,8 +1,9 @@
 import { config } from "dotenv";
+import { resolve } from "path";
 import { prisma } from "../src/lib/prisma";
 
-// Load environment variables
-config();
+// Load environment variables from .env file
+config({ path: resolve(__dirname, "../.env") });
 
 async function testConnection() {
   try {

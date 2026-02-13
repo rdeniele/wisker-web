@@ -299,13 +299,28 @@ async function resetPricing() {
     return;
   }
 
+  // Update Free
+  await prisma.plan.updateMany({
+    where: { planType: PlanType.FREE },
+    data: {
+      monthlyPrice: 0,
+      yearlyPrice: 0,
+      dailyCredits: 10,
+      notesLimit: 25,
+      subjectsLimit: 5,
+      isActive: true,
+    },
+  });
+
   // Update Pro
   await prisma.plan.updateMany({
     where: { planType: PlanType.PRO },
     data: {
-      monthlyPrice: 50,
+      monthlyPrice: 80,
       yearlyPrice: 480,
       dailyCredits: 300,
+      notesLimit: 300,
+      subjectsLimit: 30,
       discountPercent: 50,
       discountLabel: "50% OFF for First 50 Users",
       isActive: true,
@@ -316,9 +331,11 @@ async function resetPricing() {
   await prisma.plan.updateMany({
     where: { planType: PlanType.PREMIUM },
     data: {
-      monthlyPrice: 100,
+      monthlyPrice: 120,
       yearlyPrice: 960,
       dailyCredits: 1500,
+      notesLimit: -1,
+      subjectsLimit: -1,
       discountPercent: 50,
       discountLabel: "50% OFF for First 50 Users",
       isActive: true,
