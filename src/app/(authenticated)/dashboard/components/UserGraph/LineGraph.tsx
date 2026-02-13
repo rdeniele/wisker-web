@@ -122,6 +122,7 @@ function LineGraph() {
                 {activityData.length > 0 && (
                   <>
                     <defs>
+                      {/* Orange gradient for area under line */}
                       <linearGradient
                         id="lineGradient"
                         x1="0%"
@@ -132,19 +133,28 @@ function LineGraph() {
                         <stop
                           offset="0%"
                           stopColor="#FF6B35"
-                          stopOpacity="0.4"
+                          stopOpacity="0.6"
                         />
                         <stop
-                          offset="50%"
-                          stopColor="#FFB088"
-                          stopOpacity="0.2"
+                          offset="40%"
+                          stopColor="#FF8C61"
+                          stopOpacity="0.3"
                         />
                         <stop
                           offset="100%"
-                          stopColor="#FFE8CC"
+                          stopColor="#FFB088"
                           stopOpacity="0.05"
                         />
                       </linearGradient>
+                      
+                      {/* Glow effect for data points */}
+                      <filter id="pointGlow">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
                     </defs>
 
                     {/* Area under the line */}
@@ -175,27 +185,41 @@ function LineGraph() {
                         .join(" ")}
                       fill="none"
                       stroke="#FF6B35"
-                      strokeWidth="3"
+                      strokeWidth="4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
 
-                    {/* Data points */}
+                    {/* Data points with modern design */}
                     {activityData.map((d, i) => {
                       const x = (i / (activityData.length - 1)) * 100;
                       const y =
                         chartHeight - (d.count / maxCount) * chartHeight;
                       return (
-                        <g key={`point-${i}`}>
+                        <g key={`point-${i}`} filter="url(#pointGlow)">
+                          {/* Outer glow circle */}
                           <circle
                             cx={`${x}%`}
                             cy={y}
-                            r="6"
-                            fill="white"
-                            stroke="#FF6B35"
-                            strokeWidth="3"
+                            r="8"
+                            fill="#FF6B35"
+                            fillOpacity="0.2"
                           />
-                          <circle cx={`${x}%`} cy={y} r="3" fill="#FF6B35" />
+                          {/* Middle circle */}
+                          <circle
+                            cx={`${x}%`}
+                            cy={y}
+                            r="5"
+                            fill="#FF6B35"
+                          />
+                          {/* Inner highlight */}
+                          <circle
+                            cx={`${x}%`}
+                            cy={y - 1}
+                            r="2"
+                            fill="white"
+                            fillOpacity="0.6"
+                          />
                         </g>
                       );
                     })}
