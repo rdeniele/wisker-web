@@ -22,7 +22,11 @@ function LineGraph() {
         const response = await fetch("/api/learning-tools?pageSize=100");
         const result = await response.json();
 
-        if (response.ok && result.data.learningTools) {
+        console.log("Activity data fetch result:", result);
+
+        if (response.ok && result.data?.learningTools) {
+          console.log("Learning tools count:", result.data.learningTools.length);
+          
           // Process data into daily counts for last 7 days
           const last7Days: DailyActivity[] = [];
           const today = new Date();
@@ -48,7 +52,10 @@ function LineGraph() {
             last7Days.push({ date: dayStr, count });
           }
 
+          console.log("Processed activity data:", last7Days);
           setActivityData(last7Days);
+        } else {
+          console.error("Invalid response format:", result);
         }
       } catch (error) {
         console.error("Failed to fetch activity data:", error);
@@ -241,13 +248,13 @@ function LineGraph() {
             <div className="flex items-center justify-center gap-6 pt-4 border-t border-gray-100">
               <div className="text-center">
                 <p className="text-2xl font-bold text-[#FF6B35]">
-                  {activityData.reduce((sum, d) => sum + d.count, 0)}
+                  {activityData.length > 0 ? activityData.reduce((sum, d) => sum + d.count, 0) : 0}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">This Week</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-[#FF6B35]">
-                  {Math.max(...activityData.map((d) => d.count))}
+                  {activityData.length > 0 ? Math.max(...activityData.map((d) => d.count)) : 0}
                 </p>
                 <p className="text-xs text-gray-500 mt-1">Best Day</p>
               </div>
