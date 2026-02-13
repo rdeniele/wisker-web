@@ -122,7 +122,7 @@ function LineGraph() {
                 {activityData.length > 0 && (
                   <>
                     <defs>
-                      {/* Orange gradient for area under line */}
+                      {/* Orange gradient for area under line - more vibrant */}
                       <linearGradient
                         id="lineGradient"
                         x1="0%"
@@ -133,17 +133,17 @@ function LineGraph() {
                         <stop
                           offset="0%"
                           stopColor="#FF6B35"
-                          stopOpacity="0.6"
+                          stopOpacity="0.8"
                         />
                         <stop
-                          offset="40%"
+                          offset="50%"
                           stopColor="#FF8C61"
-                          stopOpacity="0.3"
+                          stopOpacity="0.4"
                         />
                         <stop
                           offset="100%"
                           stopColor="#FFB088"
-                          stopOpacity="0.05"
+                          stopOpacity="0.1"
                         />
                       </linearGradient>
                       
@@ -157,7 +157,7 @@ function LineGraph() {
                       </filter>
                     </defs>
 
-                    {/* Area under the line */}
+                    {/* Gradient fill area under the line */}
                     <path
                       d={
                         activityData
@@ -173,7 +173,7 @@ function LineGraph() {
                       fill="url(#lineGradient)"
                     />
 
-                    {/* Line */}
+                    {/* Connecting line between dots */}
                     <path
                       d={activityData
                         .map((d, i) => {
@@ -190,7 +190,7 @@ function LineGraph() {
                       strokeLinejoin="round"
                     />
 
-                    {/* Data points with modern design */}
+                    {/* Data points (dots) */}
                     {activityData.map((d, i) => {
                       const x = (i / (activityData.length - 1)) * 100;
                       const y =
