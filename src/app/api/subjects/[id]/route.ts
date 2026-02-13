@@ -15,8 +15,8 @@ type RouteParams = {
  * Get a specific subject by ID
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
+  const { id } = await params;
   try {
-    const { id } = await params;
     console.log(`[API /api/subjects/${id}] Fetching subject`);
 
     // Get authenticated user (auto-syncs to Prisma if needed)
