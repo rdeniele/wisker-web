@@ -9,7 +9,10 @@ interface PayMongoEvent {
     attributes: {
       type: string;
       data: {
+        id: string;
+        type: string;
         attributes: {
+          status?: string;
           metadata?: {
             userId?: string;
             planName?: string;
