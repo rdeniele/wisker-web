@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       try {
         // Check if user exists in database
         const existingUser = await userService.getUserById(data.user.id);
-        console.log("User already exists:", existingUser.id);
+        // User already exists
       } catch (_err) {
         // User doesn't exist, create them
         try {
@@ -35,9 +35,9 @@ export async function GET(request: NextRequest) {
             "FREE",
             data.user.id, // Pass Supabase user ID
           );
-          console.log("Created new user in database:", newUser.id);
+          // New user created successfully
         } catch (createError) {
-          console.error("Failed to create user in database:", createError);
+          console.error("Failed to create user in database");
           // Continue anyway - the user is authenticated in Supabase
         }
       }

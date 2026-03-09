@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(_request: NextRequest) {
   try {
-    console.log("[API] Fetching plans...");
+    // Fetching plans
 
     const plans = await prisma.plan.findMany({
       where: { isActive: true },
@@ -31,7 +31,7 @@ export async function GET(_request: NextRequest) {
       },
     });
 
-    console.log(`[API] Found ${plans.length} plans`);
+    // Plans fetched successfully
 
     return NextResponse.json({
       success: true,

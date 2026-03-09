@@ -33,7 +33,7 @@ export interface PaymentIntentData {
 }
 
 export interface PaymentMethodData {
-  type: "card" | "gcash" | "grab_pay" | "paymaya";
+  type: "card" | "gcash" | "grab_pay" | "paymaya" | "qrph";
   billing?: {
     name: string;
     email: string;
@@ -110,7 +110,7 @@ export async function createPaymentIntent(
           description: data.description,
           statement_descriptor: data.statement_descriptor,
           metadata: data.metadata,
-          payment_method_allowed: ["card", "gcash", "grab_pay", "paymaya"],
+          payment_method_allowed: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
         },
       },
     }),
@@ -331,7 +331,7 @@ export async function createCheckoutSession(data: {
             description: item.description,
             quantity: item.quantity || 1,
           })),
-          payment_method_types: ["card", "gcash", "grab_pay", "paymaya"],
+          payment_method_types: ["card", "gcash", "grab_pay", "paymaya", "qrph"],
           success_url: data.successUrl,
           cancel_url: data.cancelUrl,
           description: data.description,

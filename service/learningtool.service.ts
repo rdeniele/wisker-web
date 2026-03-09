@@ -312,12 +312,7 @@ export class LearningToolService {
       // Fetch the complete learning tool with relations
       return this.getLearningToolById(result.id, userId);
     } catch (error) {
-      console.error("Learning Tool Service Error:", error);
-      console.error("Error type:", error?.constructor?.name);
-      console.error(
-        "Error message:",
-        error instanceof Error ? error.message : error,
-      );
+      console.error("Learning tool service error:", error instanceof Error ? error.message : String(error));
 
       // Re-throw known error types to preserve error messages
       if (

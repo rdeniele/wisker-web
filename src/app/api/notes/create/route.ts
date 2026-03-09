@@ -22,14 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    console.log("Create note request body:", {
-      ...body,
-      pdfText: body.pdfText
-        ? `[PDF TEXT: ${body.pdfText.length} chars]`
-        : undefined,
-      pdfBase64: body.pdfBase64 ? "[PDF DATA]" : undefined,
-      imageBase64: body.imageBase64 ? "[IMAGE DATA]" : undefined,
-    });
+    // Processing note creation request
 
     const validatedData = validateRequest(createNoteSchema, body);
 

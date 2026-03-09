@@ -38,13 +38,12 @@ function LoginForm() {
       });
 
       const result = await res.json();
-      console.log("Login API response:", result);
+      // Login processed
 
       if (result.success) {
         showToast(result.message, "success");
         router.push("/dashboard");
       } else {
-        console.error("Login failed - Full error:", result);
         showToast(result.error || result.message, "error");
       }
     } catch (error) {

@@ -56,11 +56,7 @@ export async function POST(request: NextRequest) {
       metadata,
     });
 
-    console.log("Checkout session created:", {
-      id: checkoutSession.id,
-      checkout_url: checkoutSession.attributes.checkout_url,
-      promo_code: promoCode || "none",
-    });
+    // Checkout session created successfully
 
     return NextResponse.json({
       success: true,

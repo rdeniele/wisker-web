@@ -117,16 +117,12 @@ export async function signIn(
     password,
   });
 
-  console.log("Supabase signIn response:", {
-    data: !!data.user,
-    session: !!data.session,
-    error: error?.message,
-  });
+  // Sign in attempt processed
 
   if (error) {
     // Provide more specific error messages
     let errorMessage = error.message;
-    console.error("Supabase signIn error details:", error);
+    console.error("Sign in failed:", error.message);
 
     if (error.message.includes("Email not confirmed")) {
       errorMessage =

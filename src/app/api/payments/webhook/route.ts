@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const event = JSON.parse(body);
     const eventType = event.data.attributes.type;
 
-    console.log("Received webhook event:", eventType);
+    // Process webhook event
 
     // Handle different event types
     switch (eventType) {
@@ -62,8 +62,11 @@ export async function POST(request: NextRequest) {
       case "checkout_session.payment.paid":
         await handleCheckoutSessionPaid(event);
         break;
+      case "qrph.expired":
+        await handleQrphExpired(event);
+        break;
       default:
-        console.log("Unhandled event type:", eventType);
+        // Unhandled webhook event type
     }
 
     return NextResponse.json({ received: true });
@@ -82,22 +85,14 @@ export async function POST(request: NextRequest) {
 async function handlePaymentPaid(event: unknown) {
   const paymongoEvent = event as PayMongoEvent;
   const data = paymongoEvent.data.attributes.data;
-  console.log("Payment paid:", {
-    id: data.id,
-    type: data.type,
-    status: data.attributes?.status,
-  });
+  // Payment processed successfully
   // Implement your business logic here
 }
 
 async function handlePaymentFailed(event: unknown) {
   const paymongoEvent = event as PayMongoEvent;
   const data = paymongoEvent.data.attributes.data;
-  console.log("Payment failed:", {
-    id: data.id,
-    type: data.type,
-    status: data.attributes?.status,
-  });
+  // Payment failed
   // Implement your business logic here
 }
 
@@ -106,12 +101,7 @@ async function handleCheckoutSessionPaid(event: unknown) {
   const data = paymongoEvent.data.attributes.data;
   const metadata = data.attributes.metadata;
 
-  console.log("Checkout session paid:", {
-    id: data.id,
-    type: data.type,
-    status: data.attributes?.status,
-    planName: metadata?.planName,
-  });
+  // Process checkout session payment
 
   if (metadata && metadata.userId) {
     // Map plan name to PlanType enum
@@ -133,11 +123,18 @@ async function handleCheckoutSessionPaid(event: unknown) {
     if (metadata.promoCode) {
       try {
         await applyPromoCodeByCode(metadata.promoCode.toString().toUpperCase());
-        console.log("Promo code applied:", metadata.promoCode);
+        // Promo code applied successfully
       } catch (error) {
-        console.error("Failed to apply promo code usage:", error);
+        console.error("Failed to apply promo code usage");
         // Don't fail the webhook if promo code tracking fails
       }
     }
   }
+}
+
+async function handleQrphExpired(event: unknown) {
+  const paymongoEvent = event as PayMongoEvent;
+  const data = paymongoEvent.data.attributes.data;
+  // QR Ph code expired - payment intent will revert to awaiting_payment_method
+  // User can retry the payment if needed
 }

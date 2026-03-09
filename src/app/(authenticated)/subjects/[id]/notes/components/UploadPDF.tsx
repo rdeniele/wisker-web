@@ -169,25 +169,20 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         body: JSON.stringify(requestBody),
       });
 
-      console.log("Upload response status:", response.status);
-      console.log(
-        "Upload response headers:",
-        Object.fromEntries(response.headers.entries()),
-      );
+      // Processing upload response
 
       let data;
       const responseText = await response.text();
-      console.log("Upload response text:", responseText);
 
       try {
         data = JSON.parse(responseText);
       } catch (e) {
-        console.error("Failed to parse response as JSON:", e);
+        console.error("Failed to parse server response");
         throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
 
       if (!response.ok) {
-        console.error("Upload error response:", data);
+        console.error("Upload failed");
         const errorMessage =
           data.error?.message || data.message || "Failed to upload file";
         throw new Error(errorMessage);

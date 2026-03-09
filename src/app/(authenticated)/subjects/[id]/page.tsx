@@ -58,11 +58,7 @@ const SubjectPage = ({ params }: SubjectPageProps) => {
         const subjectResponse = await fetch(`/api/subjects/${id}`);
         if (!subjectResponse.ok) {
           const errorData = await subjectResponse.json();
-          console.error("Subject fetch error:", {
-            status: subjectResponse.status,
-            statusText: subjectResponse.statusText,
-            errorData
-          });
+          console.error("Failed to fetch subject");
           
           if (subjectResponse.status === 404) {
             showToast("Subject not found. It may have been deleted.", "error");

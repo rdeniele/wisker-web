@@ -37,19 +37,13 @@ export default function SummaryView({
         const data = await response.json();
         const summaryContent = JSON.parse(data.data.generatedContent);
 
-        console.log("Summary content received:", {
-          hasSummary: !!summaryContent.summary,
-          summaryLength: summaryContent.summary?.length,
-          summaryPreview: summaryContent.summary?.substring(0, 200),
-          fullSummary: summaryContent.summary,
-          hasPartMarkers: summaryContent.summary?.includes("**Part"),
-        });
+        // Summary content received
 
         // Extract the summary text based on the type
         if (summaryContent.summary) {
           setSummary(summaryContent.summary);
         } else {
-          console.error("No summary field in summaryContent:", summaryContent);
+          console.error("Invalid summary format");
           throw new Error("Invalid summary format");
         }
       } catch (err) {
@@ -214,15 +208,11 @@ export default function SummaryView({
                   /* Multi-part summary - split and display with headers */
                   (() => {
                     const parts = summary.split(/\*\*Part \d+:\*\*/);
-                    console.log("Split parts:", parts.length, parts);
                     return parts.map((section, idx) => {
                       // Skip empty first element (before first "Part")
                       if (idx === 0) {
-                        console.log(`Skipping idx ${idx}: "${section.substring(0, 50)}..."`);
                         return null;
                       }
-                      
-                      console.log(`Rendering Part ${idx}: "${section.substring(0, 50)}..."`);
                       
                       return (
                         <div key={idx}>
@@ -261,13 +251,11 @@ export default function SummaryView({
                   /* Multi-part summary */
                   (() => {
                     const parts = summary.split(/\*\*Part \d+:\*\*/);
-                    console.log("Keypoints - Split parts:", parts.length, parts);
                     return parts.map((section, idx) => {
                       // Skip empty first element
                       if (idx === 0 && section.trim().length === 0) return null;
                       
                       const trimmedSection = section.trim();
-                      console.log(`Processing keypoints Part ${idx}:`, trimmedSection.substring(0, 100));
                       
                       // Split on numbered patterns (handles both newline-separated and inline keypoints)
                       const points = trimmedSection
@@ -275,7 +263,7 @@ export default function SummaryView({
                         .map((line) => line.trim())
                         .filter((line) => line.length > 0 && /^\d+\.\s+/.test(line));
                       
-                      console.log(`Found ${points.length} keypoints in Part ${idx}:`, points);
+                      // Render keypoints
                       
                       if (points.length === 0) {
                         // Fallback: just display the text as-is if no numbered points found

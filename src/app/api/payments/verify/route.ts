@@ -25,11 +25,7 @@ export async function GET(request: NextRequest) {
     // Retrieve the checkout session from PayMongo
     const checkoutSession = await retrieveCheckoutSession(sessionId);
 
-    console.log("Checkout session retrieved:", {
-      id: checkoutSession.id,
-      status: checkoutSession.attributes.status,
-      paid_at: checkoutSession.attributes.paid_at,
-    });
+    // Verify payment status
 
     const isPaid =
       checkoutSession.attributes.paid_at !== null &&

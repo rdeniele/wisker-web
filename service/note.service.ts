@@ -202,7 +202,7 @@ export class NoteService {
               Math.ceil(data.pdfText.length / 100000),
             );
 
-            console.log(`Actual credits used: ${actualCredits}`);
+            // Credits calculated
           } else if (data.pdfBase64) {
             // Legacy support: Handle base64 PDF (not used anymore but kept for compatibility)
             console.log("Processing PDF base64 with AI (legacy)...");
@@ -252,10 +252,10 @@ export class NoteService {
             fileSize = uploadResult.size;
             fileType = imageType;
 
-            console.log("Image extraction completed");
+            // Image extraction completed
           }
         } catch (aiError) {
-          console.error("AI processing error:", aiError);
+          console.error("AI processing error");
 
           // Re-throw AppError instances directly to avoid error nesting
           if (aiError instanceof AppError) {
