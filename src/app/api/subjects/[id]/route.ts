@@ -29,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return successResponse(subject);
   } catch (error) {
-    console.error(`Error fetching subject:", error instanceof Error ? error.message : String(error));
+    console.error(`Error fetching subject:`, error instanceof Error ? error.message : String(error));
     return errorResponse(error as Error);
   }
 }
