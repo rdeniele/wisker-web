@@ -49,12 +49,10 @@ export default function UpgradePage() {
         // Redirect to PayMongo checkout page
         window.location.assign(data.checkoutUrl);
       } else {
-        console.error("Checkout error:", data.error);
         alert("Failed to create checkout session. Please try again.");
         setLoading(null);
       }
     } catch (error) {
-      console.error("Error:", error);
       alert("An error occurred. Please try again.");
       setLoading(null);
     }

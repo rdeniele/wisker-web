@@ -38,7 +38,7 @@ export default function AdminPlansPage() {
         setPlans(data.plans);
       }
     } catch (error) {
-      console.error("Error fetching plans:", error);
+      // Error fetching plans
     } finally {
       setLoading(false);
     }

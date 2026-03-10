@@ -52,7 +52,6 @@ export default function PaymentSuccessPage() {
         setMessage(data.message || "Payment verification failed");
       }
     } catch (error) {
-      console.error("Verification error:", error);
       setStatus("error");
       setMessage("Failed to verify payment");
     }

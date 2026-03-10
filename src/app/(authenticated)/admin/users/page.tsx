@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
         setUsers(data.users);
       }
     } catch (error) {
-      console.error("Error fetching users:", error);
+      // Error fetching users
     } finally {
       setLoading(false);
     }

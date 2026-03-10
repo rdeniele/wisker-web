@@ -45,7 +45,7 @@ export default function PromoCodesPage() {
         setPromoCodes(data.promoCodes);
       }
     } catch (error) {
-      console.error("Error fetching promo codes:", error);
+      // Error fetching promo codes
     } finally {
       setIsLoading(false);
     }
@@ -80,7 +80,6 @@ export default function PromoCodesPage() {
         alert(error.error || "Failed to save promo code");
       }
     } catch (error) {
-      console.error("Error saving promo code:", error);
       alert("Failed to save promo code");
     }
   };
@@ -113,7 +112,7 @@ export default function PromoCodesPage() {
         fetchPromoCodes();
       }
     } catch (error) {
-      console.error("Error deleting promo code:", error);
+      // Error deleting promo code
     }
   };
 
@@ -132,7 +131,7 @@ export default function PromoCodesPage() {
         fetchPromoCodes();
       }
     } catch (error) {
-      console.error("Error toggling promo code:", error);
+      // Error toggling promo code
     }
   };
 

@@ -63,11 +63,9 @@ export default function UpgradePage() {
 
         if (data.success) {
           setPlansFromDB(data.plans);
-        } else {
-          console.error("Failed to fetch plans:", data.error);
         }
       } catch (error) {
-        console.error("Error fetching plans:", error);
+        // Error fetching plans
       } finally {
         setLoadingPlans(false);
       }
@@ -115,7 +113,6 @@ export default function UpgradePage() {
         });
       }
     } catch (error) {
-      console.error("Error validating promo code:", error);
       setPromoValidation({
         isValid: false,
         message: "Failed to validate promo code",
@@ -163,7 +160,7 @@ export default function UpgradePage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            planName: plan.displayName,
+            planName: plan.name, // Use plan.name (planType) not displayName
             billingPeriod: billingPeriod,
             promoCode: promoCode.trim().toUpperCase(),
             monthsFree: promoValidation.discount?.value || 0,
@@ -176,7 +173,6 @@ export default function UpgradePage() {
           // Redirect to success page
           window.location.href = "/upgrade/success?promo=true";
         } else {
-          console.error("Activation error:", data.error);
           alert(data.error || "Failed to activate promo. Please try again.");
           setLoading(null);
         }
@@ -188,7 +184,7 @@ export default function UpgradePage() {
           billingPeriod: BillingPeriod;
           promoCode?: string;
         } = {
-          planName: plan.displayName,
+          planName: plan.name, // Use plan.name (planType) not displayName
           amount: plan.actualAmount,
           billingPeriod: billingPeriod,
         };
@@ -214,13 +210,11 @@ export default function UpgradePage() {
           // Redirect to PayMongo checkout page
           window.location.href = data.checkoutUrl;
         } else {
-          console.error("Checkout error:", data.error);
           alert("Failed to create checkout session. Please try again.");
           setLoading(null);
         }
       }
     } catch (error) {
-      console.error("Error:", error);
       alert("An error occurred. Please try again.");
       setLoading(null);
     }
@@ -268,7 +262,7 @@ export default function UpgradePage() {
     }
 
     return {
-      name: plan.name,
+      name: plan.planType, // Use planType (PRO, PREMIUM) for API calls
       displayName: plan.displayName,
       price: price === 0 ? "Free" : `₱${Math.round(price).toLocaleString()}`,
       originalPrice,

@@ -50,11 +50,9 @@ export default function UpgradePage() {
 
         if (data.success) {
           setPlansFromDB(data.plans);
-        } else {
-          console.error("Failed to fetch plans:", data.error);
         }
       } catch (error) {
-        console.error("Error fetching plans:", error);
+        // Error fetching plans
       } finally {
         setLoadingPlans(false);
       }
@@ -87,12 +85,10 @@ export default function UpgradePage() {
         // Redirect to PayMongo checkout page
         window.location.href = data.checkoutUrl;
       } else {
-        console.error("Checkout error:", data.error);
         alert("Failed to create checkout session. Please try again.");
         setLoading(null);
       }
     } catch (error) {
-      console.error("Error:", error);
       alert("An error occurred. Please try again.");
       setLoading(null);
     }
