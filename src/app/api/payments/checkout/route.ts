@@ -14,9 +14,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { planName, amount, billingPeriod, promoCode } = body;
 
-    if (!planName || !amount) {
+    if (!planName || amount === undefined || amount === null) {
       return NextResponse.json(
         { error: "Missing required fields: planName, amount" },
+        { status: 400 },
+      );
+    }
+
+    // If amount is 0, this should go through activate-promo endpoint instead
+    if (amount === 0) {
+      return NextResponse.json(
+        { error: "Free plans should use activate-promo endpoint" },
         { status: 400 },
       );
     }
@@ -65,6 +73,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error("Checkout session creation error:", error);
+    
+    // Handle authentication errors specifically
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You must be logged in to checkout. Please log in and try again.",
+        },
+        { status: 401 },
+      );
+    }
+    
     return NextResponse.json(
       {
         success: false,

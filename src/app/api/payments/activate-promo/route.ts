@@ -71,6 +71,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: unknown) {
     console.error("Promo activation error:", error);
+    
+    // Handle authentication errors specifically
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "You must be logged in to activate promo. Please log in and try again.",
+        },
+        { status: 401 },
+      );
+    }
+    
     return NextResponse.json(
       {
         success: false,

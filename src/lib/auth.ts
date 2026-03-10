@@ -41,11 +41,11 @@ export async function getAuthenticatedUser(): Promise<User> {
         );
       } catch (createError) {
         console.error(`Failed to create user ${user.id}:`, createError);
-        throw createError;
+        throw new Error(`Failed to sync user account: ${createError instanceof Error ? createError.message : "Unknown error"}`);
       }
     } else {
       console.error(`Database error while fetching user ${user.id}:`, error);
-      throw error;
+      throw new Error(`Database error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }
 

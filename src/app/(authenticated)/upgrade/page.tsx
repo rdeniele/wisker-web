@@ -173,7 +173,8 @@ export default function UpgradePage() {
           // Redirect to success page
           window.location.href = "/upgrade/success?promo=true";
         } else {
-          alert(data.error || "Failed to activate promo. Please try again.");
+          const errorMsg = data.error || "Failed to activate promo. Please try again.";
+          alert(errorMsg);
           setLoading(null);
         }
       } else {
@@ -210,12 +211,14 @@ export default function UpgradePage() {
           // Redirect to PayMongo checkout page
           window.location.href = data.checkoutUrl;
         } else {
-          alert("Failed to create checkout session. Please try again.");
+          const errorMsg = data.error || "Failed to create checkout session. Please try again.";
+          alert(errorMsg);
           setLoading(null);
         }
       }
     } catch (error) {
-      alert("An error occurred. Please try again.");
+      const errorMsg = error instanceof Error ? error.message : "An error occurred. Please try again.";
+      alert(errorMsg);
       setLoading(null);
     }
   };
