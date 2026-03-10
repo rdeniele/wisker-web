@@ -11,6 +11,7 @@ interface PlanDetails {
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const isPromo = searchParams.get("promo") === "true";
 
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
@@ -20,6 +21,13 @@ export default function PaymentSuccessPage() {
 
   const verifyPayment = useCallback(async () => {
     try {
+      // If it's a promo activation, skip payment verification
+      if (isPromo) {
+        setStatus("success");
+        setMessage("Your promo has been activated successfully!");
+        return;
+      }
+
       // Get session ID from sessionStorage if not in URL
       const finalSessionId =
         sessionId || sessionStorage.getItem("paymongoSessionId");
@@ -48,7 +56,7 @@ export default function PaymentSuccessPage() {
       setStatus("error");
       setMessage("Failed to verify payment");
     }
-  }, [sessionId]);
+  }, [sessionId, isPromo]);
 
   useEffect(() => {
     // Verify payment with backend (avoid setState sync in effect)
@@ -124,11 +132,12 @@ export default function PaymentSuccessPage() {
 
         {/* Success Message */}
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          Payment Successful! 🎉
+          {isPromo ? "Promo Activated! 🎉" : "Payment Successful! 🎉"}
         </h1>
         <p className="text-gray-600 mb-6">
-          Welcome to Wisker {planDetails?.planName}! Your subscription is now
-          active.
+          {isPromo
+            ? "Your promotional subscription has been activated. Enjoy your free access!"
+            : `Welcome to Wisker ${planDetails?.planName}! Your subscription is now active.`}
         </p>
 
         {/* Plan Details */}

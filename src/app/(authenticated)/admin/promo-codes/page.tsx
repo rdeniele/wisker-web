@@ -240,7 +240,11 @@ export default function PromoCodesPage() {
 
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Discount Value *
+                    {formData.discountType === "MONTHS_FREE"
+                      ? "Number of Months Free *"
+                      : formData.discountType === "PERCENTAGE"
+                        ? "Percentage Off (%) *"
+                        : "Fixed Amount Off (₱) *"}
                   </label>
                   <input
                     type="number"
@@ -254,13 +258,21 @@ export default function PromoCodesPage() {
                     className="w-full px-3 py-2 border rounded-lg"
                     placeholder={
                       formData.discountType === "MONTHS_FREE"
-                        ? "3"
+                        ? "e.g., 3"
                         : formData.discountType === "PERCENTAGE"
-                          ? "50"
-                          : "100"
+                          ? "e.g., 50"
+                          : "e.g., 100"
                     }
+                    min="0"
+                    step={formData.discountType === "PERCENTAGE" ? "1" : "1"}
                     required
                   />
+                  {formData.discountType === "MONTHS_FREE" && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      User gets instant access for free. Payment required after
+                      the free period ends.
+                    </p>
+                  )}
                 </div>
               </div>
 

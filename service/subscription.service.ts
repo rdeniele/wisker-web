@@ -291,6 +291,52 @@ export async function cancelSubscription(userId: string): Promise<void> {
 }
 
 /**
+ * Activate subscription with MONTHS_FREE promo code
+ */
+export async function activatePromoSubscription(
+  userId: string,
+  planType: PlanType,
+  period: "monthly" | "yearly",
+  promoCode: string,
+  monthsFree: number,
+): Promise<void> {
+  const config = await getPlanConfig(planType);
+  const now = new Date();
+  const promoEndDate = new Date(now);
+
+  // Calculate promo end date (when user needs to start paying)
+  promoEndDate.setMonth(promoEndDate.getMonth() + monthsFree);
+
+  // Calculate subscription end date (promo period + one billing period)
+  const subscriptionEndDate = new Date(promoEndDate);
+  if (period === "yearly") {
+    subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
+  } else {
+    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      planType,
+      dailyCredits: config.dailyCredits,
+      notesLimit: config.notesLimit,
+      subjectsLimit: config.subjectsLimit,
+      subscriptionStatus: "active",
+      subscriptionPeriod: period,
+      subscriptionStartDate: now,
+      subscriptionEndDate,
+      appliedPromoCode: promoCode,
+      promoStartDate: now,
+      promoEndDate,
+      promoMonthsFree: monthsFree,
+      creditsUsedToday: 0,
+      lastCreditReset: now,
+    },
+  });
+}
+
+/**
  * Check if user can perform an action based on their plan limits
  */
 export async function checkPlanLimit(

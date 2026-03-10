@@ -50,6 +50,7 @@ export default function UpgradePage() {
       type: string;
       value: number;
     };
+    applicablePlans?: string[];
   } | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
 
@@ -105,6 +106,7 @@ export default function UpgradePage() {
             type: data.promoCode.discountType,
             value: data.promoCode.discountValue,
           },
+          applicablePlans: data.promoCode.applicablePlans || [],
         });
       } else {
         setPromoValidation({
@@ -147,41 +149,75 @@ export default function UpgradePage() {
     setLoading(plan.displayName);
 
     try {
-      const requestBody: {
-        planName: string;
-        amount: number;
-        billingPeriod: BillingPeriod;
-        promoCode?: string;
-      } = {
-        planName: plan.displayName,
-        amount: plan.actualAmount,
-        billingPeriod: billingPeriod,
-      };
+      // Check if this is a free promo (price is 0 due to MONTHS_FREE promo)
+      const isFreePromo = 
+        plan.actualAmount === 0 && 
+        promoValidation?.isValid && 
+        promoValidation.discount?.type === "MONTHS_FREE";
 
-      // Include promo code if valid
-      if (promoValidation?.isValid && promoCode.trim()) {
-        requestBody.promoCode = promoCode.trim().toUpperCase();
-      }
+      if (isFreePromo) {
+        // Direct activation for free promo - no payment needed
+        const response = await fetch("/api/payments/activate-promo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            planName: plan.displayName,
+            billingPeriod: billingPeriod,
+            promoCode: promoCode.trim().toUpperCase(),
+            monthsFree: promoValidation.discount?.value || 0,
+          }),
+        });
 
-      const response = await fetch("/api/payments/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+        const data = await response.json();
 
-      const data = await response.json();
-
-      if (data.success && data.checkoutUrl) {
-        // Store session ID in sessionStorage before redirecting
-        sessionStorage.setItem("paymongoSessionId", data.sessionId);
-        // Redirect to PayMongo checkout page
-        window.location.href = data.checkoutUrl;
+        if (data.success) {
+          // Redirect to success page
+          window.location.href = "/upgrade/success?promo=true";
+        } else {
+          console.error("Activation error:", data.error);
+          alert(data.error || "Failed to activate promo. Please try again.");
+          setLoading(null);
+        }
       } else {
-        console.error("Checkout error:", data.error);
-        alert("Failed to create checkout session. Please try again.");
-        setLoading(null);
+        // Normal payment flow
+        const requestBody: {
+          planName: string;
+          amount: number;
+          billingPeriod: BillingPeriod;
+          promoCode?: string;
+        } = {
+          planName: plan.displayName,
+          amount: plan.actualAmount,
+          billingPeriod: billingPeriod,
+        };
+
+        // Include promo code if valid
+        if (promoValidation?.isValid && promoCode.trim()) {
+          requestBody.promoCode = promoCode.trim().toUpperCase();
+        }
+
+        const response = await fetch("/api/payments/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.checkoutUrl) {
+          // Store session ID in sessionStorage before redirecting
+          sessionStorage.setItem("paymongoSessionId", data.sessionId);
+          // Redirect to PayMongo checkout page
+          window.location.href = data.checkoutUrl;
+        } else {
+          console.error("Checkout error:", data.error);
+          alert("Failed to create checkout session. Please try again.");
+          setLoading(null);
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -203,9 +239,14 @@ export default function UpgradePage() {
     let originalPrice: string | undefined;
     let discount: string | undefined = plan.discountLabel || undefined;
 
-    // Apply promo code discount if valid
-    if (promoValidation?.isValid && promoValidation.discount) {
-      const promoDiscount = promoValidation.discount;
+    // Apply promo code discount if valid AND applicable to this plan
+    const isPromoApplicable = promoValidation?.isValid && 
+      promoValidation.discount &&
+      (promoValidation.applicablePlans?.length === 0 || 
+       promoValidation.applicablePlans?.includes(plan.planType));
+
+    if (isPromoApplicable) {
+      const promoDiscount = promoValidation.discount!;
 
       if (promoDiscount.type === "PERCENTAGE") {
         originalPrice = `₱${price.toLocaleString()}`;
@@ -216,6 +257,8 @@ export default function UpgradePage() {
         price = Math.max(0, price - promoDiscount.value);
         discount = `₱${promoDiscount.value.toLocaleString()} off with promo code`;
       } else if (promoDiscount.type === "MONTHS_FREE") {
+        originalPrice = `₱${price.toLocaleString()}`;
+        price = 0;
         discount = `First ${promoDiscount.value} months free!`;
       }
     } else if (plan.discountPercent && plan.discountPercent > 0) {

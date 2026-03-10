@@ -3,6 +3,7 @@ import { verifyWebhookSignature } from "@/service/payment.service";
 import { updateSubscriptionPlan } from "@/service/subscription.service";
 import { applyPromoCodeByCode } from "@/service/promo.service";
 import { PlanType } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 interface PayMongoEvent {
   data: {
@@ -119,10 +120,20 @@ async function handleCheckoutSessionPaid(event: unknown) {
       true,
     );
 
-    // Apply promo code usage if provided
+    // Apply promo code usage and store promo info if provided
     if (metadata.promoCode) {
       try {
-        await applyPromoCodeByCode(metadata.promoCode.toString().toUpperCase());
+        const promoCodeStr = metadata.promoCode.toString().toUpperCase();
+        await applyPromoCodeByCode(promoCodeStr);
+        
+        // Store promo code in user record for tracking
+        await prisma.user.update({
+          where: { id: metadata.userId.toString() },
+          data: {
+            appliedPromoCode: promoCodeStr,
+          },
+        });
+        
         // Promo code applied successfully
       } catch (error) {
         console.error("Failed to apply promo code usage");

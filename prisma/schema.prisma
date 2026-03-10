@@ -67,6 +67,10 @@ model User {
   subscriptionPeriod    String?   @map("subscription_period")
   subscriptionStartDate DateTime? @map("subscription_start_date")
   subscriptionEndDate   DateTime? @map("subscription_end_date")
+  appliedPromoCode      String?   @map("applied_promo_code") // Promo code applied to subscription
+  promoStartDate        DateTime? @map("promo_start_date") // When promo period started
+  promoEndDate          DateTime? @map("promo_end_date") // When promo period ends
+  promoMonthsFree       Int?      @map("promo_months_free") // Number of free months from promo
   isEarlyUser           Boolean   @default(false) @map("is_early_user") // First 50 users flag
   earlyUserNumber       Int?      @map("early_user_number") // Sequential number for early users (1-50)
   adminDiscountPercent  Float?    @map("admin_discount_percent") // Admin-granted discount

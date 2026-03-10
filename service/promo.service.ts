@@ -19,6 +19,7 @@ export interface ValidatePromoResult {
     description: string;
     discountType: string;
     discountValue: number;
+    applicablePlans: string[];
   };
   error?: string;
 }
@@ -76,6 +77,7 @@ export async function validatePromoCode(
       description: promoCode.description,
       discountType: promoCode.discountType,
       discountValue: promoCode.discountValue,
+      applicablePlans: promoCode.applicablePlans,
     },
   };
 }
