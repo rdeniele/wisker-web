@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/AuthContext";
 import { CreditsDisplay } from "../ui/CreditsDisplay";
 
 // Icons
@@ -127,6 +128,7 @@ function NavBar() {
   const searchRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { user, loading } = useAuth();
 
   // Close search when clicking outside
   useEffect(() => {
@@ -154,33 +156,36 @@ function NavBar() {
   // Fetch notifications when dropdown opens
   useEffect(() => {
     const fetchNotifications = async () => {
-      if (showNotifications && notifications.length === 0) {
-        setIsLoadingNotifications(true);
-        try {
-          const response = await fetch("/api/learning-tools?pageSize=5");
-          const result = await response.json();
-          if (response.ok && result.data?.learningTools) {
-            const recentTools = result.data.learningTools.map(
-              (tool: LearningToolResponse) => ({
-                id: tool.id,
-                type: tool.type,
-                subjectName:
-                  tool.subject?.title || tool.note?.title || "Unknown",
-                createdAt: tool.createdAt,
-              }),
-            );
-            setNotifications(recentTools);
-          }
-        } catch (error) {
-          console.error("Failed to fetch notifications:", error);
-        } finally {
-          setIsLoadingNotifications(false);
+      // Only fetch if user is authenticated and notifications dropdown is open
+      if (!user || loading || !showNotifications || notifications.length > 0) {
+        return;
+      }
+      
+      setIsLoadingNotifications(true);
+      try {
+        const response = await fetch("/api/learning-tools?pageSize=5");
+        const result = await response.json();
+        if (response.ok && result.data?.learningTools) {
+          const recentTools = result.data.learningTools.map(
+            (tool: LearningToolResponse) => ({
+              id: tool.id,
+              type: tool.type,
+              subjectName:
+                tool.subject?.title || tool.note?.title || "Unknown",
+              createdAt: tool.createdAt,
+            }),
+          );
+          setNotifications(recentTools);
         }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+      } finally {
+        setIsLoadingNotifications(false);
       }
     };
 
     fetchNotifications();
-  }, [showNotifications, notifications.length]);
+  }, [showNotifications, notifications.length, user, loading]);
 
   // Search functionality
   useEffect(() => {

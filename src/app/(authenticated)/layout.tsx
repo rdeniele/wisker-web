@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import NavBar from "@/components/Navbar/NavBar";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { AuthProvider } from "@/lib/AuthContext";
 
 export default async function AuthenticatedLayout({
   children,
@@ -20,13 +21,15 @@ export default async function AuthenticatedLayout({
 
   return (
     <ToastProvider>
-      <div className="flex min-h-screen bg-background font-fredoka overflow-x-hidden">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0 lg:ml-16">
-          <NavBar />
-          <main className="flex-1 overflow-x-hidden pt-[57px]">{children}</main>
+      <AuthProvider>
+        <div className="flex min-h-screen bg-background font-fredoka overflow-x-hidden">
+          <Sidebar />
+          <div className="flex-1 flex flex-col min-w-0 lg:ml-16">
+            <NavBar />
+            <main className="flex-1 overflow-x-hidden pt-[57px]">{children}</main>
+          </div>
         </div>
-      </div>
+      </AuthProvider>
     </ToastProvider>
   );
 }
