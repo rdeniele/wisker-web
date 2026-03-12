@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import OptionWidget from "@/components/ui/OptionWidget";
-import SubjectActionButtons from "./SubjectActionButtons";
+// import SubjectActionButtons from "./SubjectActionButtons";
 
 interface Subject {
   id: string;
@@ -120,11 +120,11 @@ export default function SubjectCard({
       </div>
 
       {/* Action buttons */}
-      <SubjectActionButtons
+      {/* <SubjectActionButtons
         subjectId={subject.id}
         navigatingTo={navigatingTo}
         onNavigationStart={onNavigationStart}
-      />
+      /> */}
     </div>
   );
 }

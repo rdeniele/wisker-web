@@ -3,7 +3,10 @@ import { notFound, useRouter } from "next/navigation";
 import { use, useState, useEffect, useRef, useCallback } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 import RichTextEditor from "@/components/ui/RichTextEditor";
+import EditorToolbar from "@/components/ui/EditorToolbar";
+import BubbleToolbar from "@/components/ui/BubbleToolbar";
 import { useToast } from "@/contexts/ToastContext";
+import type { Editor } from "@tiptap/react";
 
 interface NotePageProps {
   params: Promise<{ id: string; noteId: string }>;
@@ -20,6 +23,8 @@ function NotePage({ params }: NotePageProps) {
   const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [editor, setEditor] = useState<Editor | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialLoadRef = useRef(true);
 
@@ -56,6 +61,16 @@ function NotePage({ params }: NotePageProps) {
 
     fetchNote();
   }, [noteId, showToast]);
+
+  // Scroll detection for sticky header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const saveNote = useCallback(
     async (titleToSave: string, contentToSave: string) => {
@@ -316,24 +331,49 @@ function NotePage({ params }: NotePageProps) {
         </div>
 
         {/* Google Docs style container */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden transition-colors">
-          {/* Editable Title */}
-          <div className="border-b border-gray-200 px-8 pt-8 pb-4">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full text-4xl font-extrabold font-fredoka text-gray-900 focus:outline-none bg-transparent border-none"
-              placeholder="Untitled document"
-            />
+        <div className="bg-white shadow-md border border-gray-200 transition-colors rounded-lg overflow-visible">
+          {/* Sticky Title */}
+          <div 
+            className={`sticky top-[57px] z-50 bg-white border-b border-gray-200 transition-all duration-300 ${
+              isScrolled ? 'shadow-md' : 'shadow-none'
+            }`}
+          >
+            {/* Editable Title - Minimizes on scroll */}
+            <div className={`px-8 transition-all duration-300 ${
+              isScrolled ? 'pt-2 pb-1.5' : 'pt-8 pb-4'
+            }`}>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={`w-full font-extrabold font-fredoka text-gray-900 focus:outline-none bg-transparent border-none transition-all duration-300 ${
+                  isScrolled ? 'text-lg' : 'text-4xl'
+                }`}
+                placeholder="Untitled document"
+              />
+            </div>
           </div>
 
-          {/* Rich Text Editor */}
+          {/* Hidden main toolbar - keeping for reference but not displayed */}
+          <div className="hidden">
+            <EditorToolbar editor={editor} />
+          </div>
+
+          {/* Helpful hint */}
+          <div className="px-8 py-3 bg-orange-50 border-b border-orange-100 text-sm text-gray-600">
+            💡 <span className="font-medium">Tip:</span> Select any text to see formatting options
+          </div>
+
+          {/* Editor Content Area */}
           <RichTextEditor
             content={content}
             onChange={setContent}
             editable={true}
+            onEditorReady={setEditor}
           />
+
+          {/* Bubble Toolbar - Appears on text selection with all features */}
+          <BubbleToolbar editor={editor} />
         </div>
       </div>
     </div>
