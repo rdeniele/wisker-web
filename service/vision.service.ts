@@ -42,9 +42,7 @@ export class VisionExtractionService {
     this.model =
       process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3-VL-8B-Instruct";
 
-    if (!this.apiKey) {
-      console.warn("TOGETHER_API_KEY not found for vision extraction");
-    }
+    // API key will be validated when methods are called
   }
 
   /**

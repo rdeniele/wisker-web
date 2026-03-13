@@ -44,7 +44,7 @@ docs/
 
 ```env
 # Together AI - Single API key for all models
-TOGETHER_API_KEY=tgp_v1_l9y9vgC-PCGlv9Ft4dufWvl_g2iP6dJFLRzTvhQDcbc
+TOGETHER_API_KEY=your_together_api_key_here
 
 # Model configurations
 TOGETHER_AI_MODEL=meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo

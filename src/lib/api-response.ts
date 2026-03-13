@@ -32,13 +32,6 @@ export function errorResponse(
     errorObj = new Error('An unexpected error occurred');
   }
 
-  console.error("API Error Response:", {
-    type: errorObj.constructor.name,
-    message: errorObj.message,
-    isAppError: errorObj instanceof AppError,
-    originalError: error,
-  });
-
   if (errorObj instanceof AppError) {
     return NextResponse.json(
       {
@@ -54,7 +47,6 @@ export function errorResponse(
   }
 
   // For non-AppError errors, still return the error message instead of generic message
-  console.error("Unhandled error:", errorObj.message, errorObj.stack);
   return NextResponse.json(
     {
       success: false,

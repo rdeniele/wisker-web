@@ -58,7 +58,6 @@ interface TogetherAIResponse {
 // Helper function to convert Markdown to HTML for TipTap editor
 function markdownToHtml(markdown: string): string {
   try {
-    console.error("[AI_SERVICE] Converting markdown to HTML - length:", markdown.length);
     // Configure marked options
     marked.setOptions({
       breaks: true, // Convert \n to <br>
@@ -66,7 +65,6 @@ function markdownToHtml(markdown: string): string {
     });
 
     const html = marked.parse(markdown) as string;
-    console.error("[AI_SERVICE] Markdown conversion successful - HTML length:", html.length);
     return html;
   } catch (error) {
     console.error("Failed to convert markdown to HTML:", error);
@@ -90,9 +88,7 @@ export class AIService {
     this.visionModel =
       process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3-VL-8B-Instruct";
 
-    if (!this.apiKey) {
-      console.warn("TOGETHER_API_KEY not found in environment variables");
-    }
+    // API key will be validated when methods are called
   }
 
   /**
@@ -197,12 +193,6 @@ export class AIService {
           (!(error instanceof Error && error.message.includes("503")) &&
             !(error instanceof Error && error.message.includes("429")))
         ) {
-          console.error("Together AI API error:", {
-            error,
-            message: error instanceof Error ? error.message : String(error),
-            attempt,
-            maxRetries,
-          });
           
           // Preserve AIProcessingError if it's already thrown
           if (error instanceof AIProcessingError) {
@@ -220,9 +210,6 @@ export class AIService {
 
         // Otherwise, retry with backoff
         const delay = baseDelay * Math.pow(2, attempt);
-        console.warn(
-          `Request failed. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`,
-        );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
@@ -313,7 +300,6 @@ export class AIService {
 
       // Check if response looks like an error message rather than JSON
       if (!cleanContent.startsWith("{") && !cleanContent.startsWith("[")) {
-        console.error("AI returned non-JSON response:", content);
         throw new AIProcessingError(
           "Insufficient content to generate the requested tool. Please ensure your note has enough detailed content.",
         );
@@ -327,11 +313,6 @@ export class AIService {
       if (error instanceof AIProcessingError) {
         throw error;
       }
-      // Log more details about the parsing failure
-      console.error("Failed to parse JSON response:");
-      console.error("Original content length:", content.length);
-      console.error("Content preview:", content.substring(0, 500));
-      console.error("Parse error:", error);
       
       throw new AIProcessingError(
         "Failed to parse AI response as JSON. The AI may have returned malformed data."
@@ -1151,7 +1132,6 @@ Return only the extracted text and descriptions, without any additional commenta
     knowledgeBase: string,
   ): Promise<string> {
     try {
-      console.error("[AI_SERVICE] generateStructuredNoteFromKnowledge called - KB length:", knowledgeBase.length);
       const systemPrompt = `You are an expert educational content writer and learning specialist.
 Your task is to transform raw extracted content (from PDFs or images) into well-structured, 
 engaging study notes optimized for learning and retention.
@@ -1181,10 +1161,8 @@ Return a well-formatted markdown text that students can easily learn from.`;
         temperature: 0.6,
       });
 
-      console.error("[AI_SERVICE] AI response received - length:", response.length);
       return response;
     } catch (error) {
-      console.error("[AI_SERVICE] ERROR in generateStructuredNoteFromKnowledge:", error);
       throw new AIProcessingError(
         "Failed to generate structured note from knowledge",
         error,
@@ -1201,10 +1179,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
     knowledgeBase: string;
     structuredNote: string;
   }> {
-    console.error("[AI_SERVICE] processPDFWithKnowledge called - text length:", extractedText.length);
-    console.error("[AI_SERVICE] API key configured:", !!this.apiKey);
     if (!this.apiKey) {
-      console.error("[AI_SERVICE] ERROR: Together AI API key not configured!");
       throw new AIProcessingError(
         "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
       );
@@ -1212,9 +1187,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
     try {
       // Step 1: Validate the pre-extracted text (this becomes the knowledge base)
-      console.error("[AI_SERVICE] Calling extractTextFromPDF");
       const knowledgeBase = await this.extractTextFromPDF(extractedText);
-      console.error("[AI_SERVICE] KB extracted - length:", knowledgeBase.length);
 
       if (!knowledgeBase || knowledgeBase.trim().length === 0) {
         throw new AIProcessingError(
@@ -1234,9 +1207,6 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
       // COST PROTECTION: Truncate if too large
       if (knowledgeBase.length > maxTotalChars) {
-        console.error(
-          `[AI_SERVICE] ⚠️ PDF is very large (${knowledgeBase.length} chars). Truncating to ${maxTotalChars} chars to prevent excessive costs.`,
-        );
         processedText = knowledgeBase.substring(0, maxTotalChars);
         wasTruncated = true;
       }
@@ -1244,7 +1214,6 @@ Return a well-formatted markdown text that students can easily learn from.`;
       let structuredNote: string;
 
       if (processedText.length > maxCharsPerChunk) {
-        console.error("[AI_SERVICE] Text is large, processing in chunks:", Math.ceil(processedText.length / maxCharsPerChunk));
         // Split into chunks and process separately
         const chunks: string[] = [];
         let currentChunk = "";
@@ -1253,9 +1222,6 @@ Return a well-formatted markdown text that students can easily learn from.`;
         for (const line of lines) {
           // COST PROTECTION: Stop if we hit chunk limit
           if (chunks.length >= absoluteMaxChunks) {
-            console.warn(
-              `⚠️ Reached maximum chunk limit (${absoluteMaxChunks}). Stopping to prevent excessive costs.`,
-            );
             break;
           }
 
@@ -1309,13 +1275,11 @@ Return a well-formatted markdown text that students can easily learn from.`;
         structuredNote = markdownToHtml(finalMarkdown);
       }
 
-      console.error("[AI_SERVICE] PDF processing complete - returning result");
       return {
         knowledgeBase,
         structuredNote,
       };
     } catch (error) {
-      console.error("[AI_SERVICE] ERROR in processPDFWithKnowledge:", error);
       if (error instanceof AIProcessingError) {
         throw error;
       }

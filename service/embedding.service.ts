@@ -33,7 +33,7 @@ export class EmbeddingService {
     this.model = process.env.TOGETHER_AI_EMBEDDING_MODEL || "BAAI/bge-large-en-v1.5";
 
     if (!this.apiKey) {
-      console.warn("TOGETHER_API_KEY not found in environment variables");
+      // API key will be checked when methods are called
     }
   }
 
@@ -93,7 +93,6 @@ export class EmbeddingService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Embedding API error:", errorText);
 
         if (response.status === 503) {
           throw new AIProcessingError(
@@ -115,7 +114,6 @@ export class EmbeddingService {
       const embedding = data.data[0].embedding;
 
       if (!Array.isArray(embedding)) {
-        console.error("Unexpected embedding response format:", data);
         throw new AIProcessingError("Invalid embedding response format");
       }
 
@@ -130,7 +128,6 @@ export class EmbeddingService {
         throw error;
       }
 
-      console.error("Failed to generate embedding:", error);
       throw new AIProcessingError(
         "Failed to generate text embedding",
         error instanceof Error ? error : undefined

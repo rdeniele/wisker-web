@@ -23,7 +23,6 @@ export async function POST(request: NextRequest) {
   try {
     // Get authenticated user (auto-syncs to Prisma if needed)
     const user = await getAuthenticatedUser();
-    console.error("[CREATE_NOTE] User authenticated:", user.id);
 
     // Check if request is FormData (PowerPoint) or JSON (PDF/Image)
     const contentType = request.headers.get("content-type") || "";
@@ -31,7 +30,6 @@ export async function POST(request: NextRequest) {
 
     if (contentType.includes("multipart/form-data")) {
       // Handle FormData for PowerPoint uploads
-      console.error("[CREATE_NOTE] Processing FormData upload");
       const formData = await request.formData();
       const file = formData.get("file") as File;
       const subjectId = formData.get("subjectId") as string;
@@ -53,7 +51,6 @@ export async function POST(request: NextRequest) {
     } else {
       // Handle JSON for PDF/Image uploads  
       const body = await request.json();
-      console.error("[CREATE_NOTE] Request body parsed, has pdfText:", !!body.pdfText, "length:", body.pdfText?.length);
       validatedData = validateRequest(createNoteSchema, body);
     }
 
@@ -71,19 +68,16 @@ export async function POST(request: NextRequest) {
       validatedData.pptBase64;
 
     if (requiresAI) {
-      console.error("[CREATE_NOTE] Checking credits for AI processing");
       const creditCost = getOperationCost("analyze_document");
       const hasCredits = await checkCredits(user.id, creditCost);
       if (!hasCredits) {
         return insufficientCreditsResponse(creditCost);
       }
-      console.error("[CREATE_NOTE] Credits verified, proceeding with AI processing");
     }
 
     // Create note
-    console.error("[CREATE_NOTE] Calling noteService.createNote");
+    // Create note
     const note = await noteService.createNote(user.id, noteData);
-    console.error("[CREATE_NOTE] Note created successfully:", note.id);
 
     // Consume credits after successful document processing
     if (requiresAI) {
