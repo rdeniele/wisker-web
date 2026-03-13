@@ -155,12 +155,12 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): T {
     if (error instanceof z.ZodError) {
       // Convert Zod errors to ValidationError for better error responses
       const { ValidationError } = require("./errors");
-      const formattedErrors = error.errors.map(err => ({
+      const formattedErrors = error.issues.map(err => ({
         path: err.path.join('.'),
         message: err.message,
       }));
       throw new ValidationError(
-        error.errors[0]?.message || "Validation failed",
+        error.issues[0]?.message || "Validation failed",
         formattedErrors
       );
     }
