@@ -46,6 +46,7 @@ export default function RootLayout({
       </head>
       <body
         className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-background text-foreground`}
+        suppressHydrationWarning
       >
         {/* Google Analytics */}
         <Script

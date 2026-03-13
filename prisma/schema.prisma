@@ -28,6 +28,13 @@ enum LearningToolSource {
   SINGLE_NOTE
 }
 
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 // Models
 model Plan {
   id                String    @id @default(uuid())
@@ -111,24 +118,29 @@ model Subject {
 }
 
 model Note {
-  id                    String    @id @default(uuid())
-  subjectId             String    @map("subject_id")
+  id                    String            @id @default(uuid())
+  subjectId             String            @map("subject_id")
   title                 String
-  rawContent            String    @map("raw_content") @db.Text
-  knowledgeBase         String?   @map("knowledge_base") @db.Text
-  aiProcessedContent    String?   @map("ai_processed_content") @db.Text
-  fileUrl               String?   @map("file_url")
-  fileName              String?   @map("file_name")
-  fileSize              Int?      @map("file_size")
-  fileType              String?   @map("file_type")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  rawContent            String            @map("raw_content") @db.Text
+  knowledgeBase         String?           @map("knowledge_base") @db.Text
+  aiProcessedContent    String?           @map("ai_processed_content") @db.Text
+  fileUrl               String?           @map("file_url")
+  fileName              String?           @map("file_name")
+  fileSize              Int?              @map("file_size")
+  fileType              String?           @map("file_type")
+  processingStatus      ProcessingStatus  @default(PENDING) @map("processing_status")
+  processingError       String?           @map("processing_error") @db.Text
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
   
-  subject               Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject               Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   learningTools         LearningTool[]
   learningToolNotes     LearningToolNote[]
+  chunks                NoteChunk[]
+  knowledgeBaseData     KnowledgeBase?
   
   @@index([subjectId])
+  @@index([processingStatus])
   @@map("notes")
 }
 
@@ -163,6 +175,101 @@ model LearningToolNote {
   @@index([learningToolId])
   @@index([noteId])
   @@map("learning_tool_notes")
+}
+
+// Knowledge base chunks with embeddings for semantic search
+model NoteChunk {
+  id              String                     @id @default(uuid())
+  noteId          String                     @map("note_id")
+  knowledgeBaseId String                     @map("knowledge_base_id")
+  chunkIndex      Int                        @map("chunk_index")
+  position        Int                        // Sequential position in document
+  content         String                     @db.Text
+  heading         String?
+  tokens          Int?                       // Token count for this chunk
+  embedding       Unsupported("vector(1024)")?  // pgvector extension
+  
+  // Metadata for source mapping
+  metadata        Json?                      // Flexible metadata storage
+  pageNumber      Int?                       @map("page_number")
+  startPosition   Int?                       @map("start_position")
+  endPosition     Int?                       @map("end_position")
+  sectionType     String?                    @map("section_type")
+  hasImages       Boolean                    @default(false) @map("has_images")
+  keyTerms        String[]                   @map("key_terms")
+  
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  
+  note            Note                       @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  knowledgeBase   KnowledgeBase              @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  
+  @@index([noteId])
+  @@index([knowledgeBaseId])
+  @@index([noteId, chunkIndex])
+  @@map("note_chunks")
+}
+
+// Knowledge base metadata and aggregated information
+model KnowledgeBase {
+  id                String          @id @default(uuid())
+  noteId            String          @unique @map("note_id")
+  
+  // Processing metadata
+  embeddingModel    String          @map("embedding_model")
+  chunkingStrategy  String          @map("chunking_strategy")
+  
+  // Aggregated metadata
+  totalChunks       Int             @map("total_chunks")
+  totalTokens       Int             @map("total_tokens")
+  extractedConcepts String[]        @map("extracted_concepts")
+  topicSummary      String?         @map("topic_summary") @db.Text
+  
+  // AI-generated knowledge graph
+  keyEntities       Json?           @map("key_entities")      // {name, type, description}[]
+  relationships     Json?           @map("relationships")     // {from, to, type}[]
+  
+  // Status and usage tracking
+  processedAt       DateTime        @default(now()) @map("processed_at")
+  lastUsedAt        DateTime        @default(now()) @map("last_used_at")
+  usageCount        Int             @default(0) @map("usage_count")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  
+  note              Note            @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  chunks            NoteChunk[]
+  aiOperations      AIOperationLog[]
+  
+  @@map("knowledge_bases")
+}
+
+// AI operation logging for monitoring and analytics
+model AIOperationLog {
+  id              String         @id @default(uuid())
+  userId          String         @map("user_id")
+  knowledgeBaseId String?        @map("knowledge_base_id")
+  operationType   String         @map("operation_type") // 'EXTRACT', 'EMBED', 'GENERATE', etc.
+  operation       String         // legacy: 'extract', 'embed', 'generate', etc.
+  model           String         // 'qwen', 'e5', 'kimi', 'llama'
+  status          String         // 'SUCCESS', 'FAILED', 'PENDING'
+  inputTokens     Int            @map("input_tokens")
+  outputTokens    Int            @map("output_tokens")
+  tokensUsed      Int?           @map("tokens_used") // Total tokens
+  durationMs      Int            @map("duration_ms")
+  responseTime    Int?           @map("response_time") // Response time in ms
+  creditCost      Float          @map("credit_cost")
+  cost            Float?         // Cost in credits
+  success         Boolean
+  errorMessage    String?        @map("error_message") @db.Text
+  metadata        Json?          // Additional context
+  createdAt       DateTime       @default(now()) @map("created_at")
+  
+  knowledgeBase   KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt])
+  @@index([knowledgeBaseId])
+  @@index([operation, model])
+  @@index([createdAt])
+  @@map("ai_operation_logs")
 }
 
 // Promo codes for special offers (e.g., Product Hunt, early adopters)

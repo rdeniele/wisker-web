@@ -423,8 +423,6 @@ Return your response as a JSON object with this exact structure:
       chunks.push(currentChunk);
     }
     
-    console.log(`Processing ${chunks.length} chunks to generate questions from all ${notes.length} notes`);
-    
     // Distribute questions across chunks proportionally
     const questionsPerChunk = Math.ceil(totalQuestions / chunks.length);
     
@@ -437,8 +435,6 @@ Return your response as a JSON object with this exact structure:
       );
       
       if (questionsForThisChunk <= 0) break;
-      
-      console.log(`Generating ${questionsForThisChunk} questions from chunk ${i + 1}/${chunks.length}...`);
       
       const systemPrompt = `You are an expert educator creating quiz questions from study material.
 Generate ${questionsForThisChunk} multiple-choice questions at ${difficulty} difficulty level.
@@ -486,8 +482,6 @@ Guidelines:
       allQuestions.push(...renumberedQuestions);
     }
     
-    console.log(`Generated ${allQuestions.length} total questions from ${chunks.length} chunks`);
-    
     return {
       questions: allQuestions
     };
@@ -517,7 +511,6 @@ Guidelines:
       const maxCharsPerChunk = 100000; // ~25,000 tokens
       
       if (content.length > maxCharsPerChunk) {
-        console.log(`Content is large (${content.length} chars), processing in chunks to include all notes...`);
         return await this.generateQuizInChunks(content, questionCount, difficulty);
       }
 
@@ -607,8 +600,6 @@ Guidelines:
       chunks.push(currentChunk);
     }
     
-    console.log(`Processing ${chunks.length} chunks to generate flashcards from all ${notes.length} notes`);
-    
     // Distribute cards across chunks proportionally
     const cardsPerChunk = Math.ceil(totalCards / chunks.length);
     
@@ -621,8 +612,6 @@ Guidelines:
       );
       
       if (cardsForThisChunk <= 0) break;
-      
-      console.log(`Generating ${cardsForThisChunk} flashcards from chunk ${i + 1}/${chunks.length}...`);
       
       const systemPrompt = `You are an expert educator creating flashcards for effective studying.
 Generate ${cardsForThisChunk} flashcards that help students memorize key concepts.
@@ -668,8 +657,6 @@ Guidelines:
       allCards.push(...renumberedCards);
     }
     
-    console.log(`Generated ${allCards.length} total flashcards from ${chunks.length} chunks`);
-    
     return {
       cards: allCards
     };
@@ -698,7 +685,6 @@ Guidelines:
       const maxCharsPerChunk = 100000; // ~25,000 tokens
       
       if (content.length > maxCharsPerChunk) {
-        console.log(`Content is large (${content.length} chars), processing in chunks to include all notes...`);
         return await this.generateFlashcardsInChunks(content, cardCount);
       }
 
@@ -789,13 +775,9 @@ Guidelines:
       chunks.push(currentChunk);
     }
     
-    console.log(`Processing ${chunks.length} chunks to include all ${notes.length} notes`);
-    
     // Generate summary for each chunk
     const chunkSummaries: SummaryContent[] = [];
     for (let i = 0; i < chunks.length; i++) {
-      console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
-      
       // Build format instructions based on summaryType
       let formatInstructions = "";
       let summaryFormat = "";
@@ -856,8 +838,6 @@ Guidelines:
     }
     
     // Combine all chunk summaries into a final summary
-    console.log(`Combining ${chunkSummaries.length} chunk summaries...`);
-    
     const combinedSummaryText = chunkSummaries
       .map((s, i) => {
         if (summaryType === "paragraph") {
@@ -910,7 +890,6 @@ Guidelines:
       const maxCharsPerChunk = 100000; // ~25,000 tokens, leaving room for prompt and response
       
       if (content.length > maxCharsPerChunk) {
-        console.log(`Content is large (${content.length} chars), processing in chunks to include all notes...`);
         return await this.generateSummaryInChunks(content, summaryLength, summaryType, config);
       }
 
@@ -1231,10 +1210,6 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
       if (processedText.length > maxCharsPerChunk) {
         // Split into chunks and process separately
-        console.log(
-          `PDF is large (${processedText.length} chars), processing in chunks...`,
-        );
-
         const chunks: string[] = [];
         let currentChunk = "";
         const lines = processedText.split("\n");
@@ -1265,14 +1240,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
           chunks.push(currentChunk);
         }
 
-        console.log(
-          `Split into ${chunks.length} chunks (max ${absoluteMaxChunks})`,
-        );
-
         // Process each chunk
         const processedChunks: string[] = [];
         for (let i = 0; i < chunks.length; i++) {
-          console.log(`Processing chunk ${i + 1}/${chunks.length}...`);
           const chunkNote = await this.generateStructuredNoteFromKnowledge(
             chunks[i],
           );
@@ -1289,9 +1259,6 @@ Return a well-formatted markdown text that students can easily learn from.`;
         structuredNote = markdownToHtml(markdownNote);
       } else {
         // Small enough to process in one go
-        console.log(
-          "Processing PDF in single request (under chunk size limit)",
-        );
         const markdownNote =
           await this.generateStructuredNoteFromKnowledge(processedText);
 

@@ -12,6 +12,8 @@ import { CreateNoteRequest, UpdateNoteRequest, NoteDto } from "@/types/api";
 import { subjectService } from "./subject.service";
 import { aiService } from "./ai.service";
 import { StorageService } from "./storage.service";
+import { knowledgeBaseService } from "./knowledgebase.service";
+import { kimiService } from "./kimi.service";
 
 export class NoteService {
   /**
@@ -188,7 +190,6 @@ export class NoteService {
         try {
           if (data.pdfText) {
             // Process PDF text: Use extracted text to generate structured note
-            console.log("Processing PDF text with AI...");
             const { knowledgeBase: extractedKnowledge, structuredNote } =
               await aiService.processPDFWithKnowledge(data.pdfText);
 
@@ -205,11 +206,9 @@ export class NoteService {
             // Credits calculated
           } else if (data.pdfBase64) {
             // Legacy support: Handle base64 PDF (not used anymore but kept for compatibility)
-            console.log("Processing PDF base64 with AI (legacy)...");
             rawContent = data.pdfBase64; // Store as-is
 
             // Upload PDF to storage
-            console.log("Uploading PDF to storage...");
             const uploadResult = await StorageService.uploadFile(
               data.pdfBase64,
               `${data.title}.pdf`,
@@ -222,7 +221,6 @@ export class NoteService {
             fileType = "application/pdf";
           } else if (data.imageBase64) {
             // Process image: extract knowledge base and generate structured note
-            console.log("Processing image with AI...");
             const { knowledgeBase: extractedKnowledge, structuredNote } =
               await aiService.processImageWithKnowledge(data.imageBase64);
 
@@ -240,7 +238,6 @@ export class NoteService {
             const extension = imageType.split("/")[1];
 
             // Upload image to storage
-            console.log("Uploading image to storage...");
             const uploadResult = await StorageService.uploadFile(
               data.imageBase64,
               `${data.title}.${extension}`,
@@ -428,6 +425,75 @@ export class NoteService {
         throw error;
       }
       throw new DatabaseError("Failed to process note", error);
+    }
+  }
+
+  /**
+   * Process note with knowledge base (new workflow)
+   * Creates chunks and embeddings for reusable knowledge base
+   */
+  async processNoteWithKnowledgeBase(
+    noteId: string,
+    userId: string
+  ): Promise<NoteDto> {
+    try {
+      // Verify ownership
+      const note = await this.getNoteById(noteId, userId);
+
+      // Check if knowledge base already exists
+      const kbExists = await knowledgeBaseService.isKnowledgeBaseReady(noteId);
+      if (kbExists) {
+        return note;
+      }
+
+      // Update status to processing
+      await prisma.note.update({
+        where: { id: noteId },
+        data: { processingStatus: "PROCESSING" },
+      });
+
+      // Create knowledge base with vision extraction if file exists
+      const useVision = !!(note.fileUrl && (
+        note.fileType?.startsWith("image/") || 
+        note.fileType === "application/pdf"
+      ));
+
+      const result = await knowledgeBaseService.createKnowledgeBase({
+        noteId,
+        rawContent: note.rawContent || undefined,
+        fileUrl: note.fileUrl || undefined,
+        fileType: note.fileType || undefined,
+        extractWithVision: useVision,
+      });
+
+      // Return updated note
+      return await this.getNoteById(noteId, userId);
+    } catch (error) {
+      console.error("Failed to process note with knowledge base:", error);
+
+      // Update status to failed
+      await prisma.note.update({
+        where: { id: noteId },
+        data: {
+          processingStatus: "FAILED",
+          processingError:
+            error instanceof Error ? error.message : "Unknown error",
+        },
+      });
+
+      if (
+        error instanceof NotFoundError ||
+        error instanceof ForbiddenError ||
+        error instanceof AIUsageLimitExceededError ||
+        error instanceof AIProcessingError ||
+        error instanceof DatabaseError
+      ) {
+        throw error;
+      }
+      throw new DatabaseError(
+        "Failed to process note with knowledge base",
+        error
+      );
     }
   }
 
