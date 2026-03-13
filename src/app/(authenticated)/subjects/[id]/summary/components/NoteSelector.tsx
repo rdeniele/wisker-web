@@ -1,16 +1,19 @@
 "use client";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   FiArrowLeft,
   FiCheckSquare,
   FiSquare,
   FiFileText,
+  FiAlertTriangle,
+  FiAlertCircle,
 } from "react-icons/fi";
 
 interface Note {
   id: string;
   title: string;
   rawContent: string;
+  knowledgeBase?: string | null;
 }
 
 interface NoteSelectorProps {
@@ -21,6 +24,10 @@ interface NoteSelectorProps {
   onBack: () => void;
 }
 
+// Content size thresholds (in characters)
+const WARNING_THRESHOLD = 20000; // ~5,000 tokens
+const ERROR_THRESHOLD = 40000; // ~10,000 tokens
+
 export default function NoteSelector({
   subjectId: _subjectId,
   subjectName,
@@ -29,6 +36,50 @@ export default function NoteSelector({
   onBack,
 }: NoteSelectorProps) {
   const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
+
+  // Calculate total content size of selected notes
+  const totalContentSize = useMemo(() => {
+    let total = 0;
+    selectedNotes.forEach((noteId) => {
+      const note = notes.find((n) => n.id === noteId);
+      if (note) {
+        // Use knowledgeBase if available (from PDF uploads), otherwise rawContent
+        const content = note.knowledgeBase || note.rawContent;
+        total += content.length;
+      }
+    });
+    return total;
+  }, [selectedNotes, notes]);
+
+  const getSizeStatus = () => {
+    if (totalContentSize > ERROR_THRESHOLD) {
+      return {
+        level: 'error' as const,
+        message: 'Content size is very large. Generation may take longer or fail. Consider selecting fewer notes.',
+        color: 'text-red-600',
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-200',
+        icon: FiAlertCircle,
+      };
+    } else if (totalContentSize > WARNING_THRESHOLD) {
+      return {
+        level: 'warning' as const,
+        message: 'Content size is large. Generation may take a bit longer.',
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-200',
+        icon: FiAlertTriangle,
+      };
+    }
+    return null;
+  };
+
+  const sizeStatus = getSizeStatus();
+
+  const formatSize = (size: number) => {
+    if (size < 1000) return `${size} chars`;
+    return `${(size / 1000).toFixed(1)}K chars`;
+  };
 
   const toggleNote = (noteId: string) => {
     const newSelected = new Set(selectedNotes);
@@ -112,37 +163,75 @@ export default function NoteSelector({
                 No notes available. Create some notes first!
               </div>
             ) : (
-              notes.map((note) => (
-                <button
-                  key={note.id}
-                  onClick={() => toggleNote(note.id)}
-                  className={`w-full p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                    selectedNotes.has(note.id)
-                      ? "border-blue-500 bg-blue-50 shadow-md"
-                      : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="mt-1">
-                      {selectedNotes.has(note.id) ? (
-                        <FiCheckSquare className="text-blue-600" size={20} />
-                      ) : (
-                        <FiSquare className="text-gray-400" size={20} />
-                      )}
+              notes.map((note) => {
+                const content = note.knowledgeBase || note.rawContent;
+                return (
+                  <button
+                    key={note.id}
+                    onClick={() => toggleNote(note.id)}
+                    className={`w-full p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                      selectedNotes.has(note.id)
+                        ? "border-blue-500 bg-blue-50 shadow-md"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1">
+                        {selectedNotes.has(note.id) ? (
+                          <FiCheckSquare className="text-blue-600" size={20} />
+                        ) : (
+                          <FiSquare className="text-gray-400" size={20} />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">
+                          {note.title}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {formatSize(content.length)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-1">
-                        {note.title}
-                      </h3>
-                      <p className="text-sm text-gray-500">
-                        {note.rawContent.length} characters
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
+
+          {/* Size Status Warning */}
+          {selectedNotes.size > 0 && sizeStatus && (
+            <div
+              className={`mb-6 p-4 rounded-xl border-2 ${sizeStatus.borderColor} ${sizeStatus.bgColor}`}
+            >
+              <div className="flex items-start gap-3">
+                <sizeStatus.icon className={sizeStatus.color} size={20} />
+                <div className="flex-1">
+                  <h4 className={`font-semibold ${sizeStatus.color} mb-1`}>
+                    {sizeStatus.level === 'error'
+                      ? 'Content Size Too Large'
+                      : 'Large Content Size'}
+                  </h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    {sizeStatus.message}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Total: {formatSize(totalContentSize)} (Recommended: under{' '}
+                    {formatSize(WARNING_THRESHOLD)})
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Content Size Info */}
+          {selectedNotes.size > 0 && !sizeStatus && (
+            <div className="mb-6 p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <span className="font-semibold">Total content size:</span>{' '}
+                {formatSize(totalContentSize)}
+              </p>
+            </div>
+          )}
 
           {/* Continue Button */}
           <button

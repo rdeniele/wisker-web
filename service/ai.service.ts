@@ -197,11 +197,24 @@ export class AIService {
           (!(error instanceof Error && error.message.includes("503")) &&
             !(error instanceof Error && error.message.includes("429")))
         ) {
-          console.error("Together AI API error:", error);
+          console.error("Together AI API error:", {
+            error,
+            message: error instanceof Error ? error.message : String(error),
+            attempt,
+            maxRetries,
+          });
+          
+          // Preserve AIProcessingError if it's already thrown
+          if (error instanceof AIProcessingError) {
+            throw error;
+          }
+          
           const errorMessage =
             error instanceof Error && error.message.includes("503")
               ? "The AI service is temporarily unavailable. Please try again in a few minutes."
-              : "Failed to process request with AI service. Please try again.";
+              : error instanceof Error
+                ? error.message
+                : "Failed to process request with AI service. Please try again.";
           throw new AIProcessingError(errorMessage, error);
         }
 
@@ -399,7 +412,8 @@ Return your response as a JSON object with this exact structure:
     totalQuestions: number,
     difficulty: "easy" | "medium" | "hard"
   ): Promise<QuizContent> {
-    const maxCharsPerChunk = 100000;
+    // Reduced to ensure chunks fit within API token limits
+    const maxCharsPerChunk = 24000;
     
     // Split content into chunks at note boundaries (marked by \n\n---\n\n)
     const noteSeparator = "\n\n---\n\n";
@@ -414,8 +428,8 @@ Return your response as a JSON object with this exact structure:
           chunks.push(currentChunk);
           currentChunk = note;
         } else {
-          // Single note is too long, include it anyway but truncate
-          chunks.push(this.truncateContent(note, 25000));
+          // Single note is too long, truncate more aggressively
+          chunks.push(this.truncateContent(note, 5000));
         }
       } else {
         currentChunk += (currentChunk ? noteSeparator : "") + note;
@@ -510,14 +524,14 @@ Guidelines:
       const { questionCount = 10, difficulty = "medium" } = options;
 
       // Check if content needs to be processed in chunks
-      const maxCharsPerChunk = 100000; // ~25,000 tokens
+      const maxContentSize = 24000; // ~6,000 tokens
       
-      if (content.length > maxCharsPerChunk) {
+      if (content.length > maxContentSize) {
         return await this.generateQuizInChunks(content, questionCount, difficulty);
       }
 
       // Truncate content if too large
-      const truncatedContent = this.truncateContent(content, 26000);
+      const truncatedContent = this.truncateContent(content, 6000);
 
       const systemPrompt = `You are an expert educator creating quiz questions from study material.
 Generate ${questionCount} multiple-choice questions at ${difficulty} difficulty level.
@@ -576,7 +590,8 @@ Guidelines:
     content: string,
     totalCards: number
   ): Promise<FlashcardContent> {
-    const maxCharsPerChunk = 100000;
+    // Reduced to ensure chunks fit within API token limits
+    const maxCharsPerChunk = 24000;
     
     // Split content into chunks at note boundaries (marked by \n\n---\n\n)
     const noteSeparator = "\n\n---\n\n";
@@ -591,8 +606,8 @@ Guidelines:
           chunks.push(currentChunk);
           currentChunk = note;
         } else {
-          // Single note is too long, include it anyway but truncate
-          chunks.push(this.truncateContent(note, 25000));
+          // Single note is too long, truncate more aggressively
+          chunks.push(this.truncateContent(note, 5000));
         }
       } else {
         currentChunk += (currentChunk ? noteSeparator : "") + note;
@@ -684,14 +699,14 @@ Guidelines:
       const { cardCount = 15 } = options;
 
       // Check if content needs to be processed in chunks
-      const maxCharsPerChunk = 100000; // ~25,000 tokens
+      const maxContentSize = 24000; // ~6,000 tokens
       
-      if (content.length > maxCharsPerChunk) {
+      if (content.length > maxContentSize) {
         return await this.generateFlashcardsInChunks(content, cardCount);
       }
 
       // Truncate content if too large
-      const truncatedContent = this.truncateContent(content, 26000);
+      const truncatedContent = this.truncateContent(content, 6000);
 
       const systemPrompt = `You are an expert educator creating flashcards for effective studying.
 Generate ${cardCount} flashcards that help students memorize key concepts.
@@ -751,7 +766,9 @@ Guidelines:
     summaryType: "paragraph" | "bullet" | "keypoints",
     config: { chars: number; bullets: number; keypoints: number }
   ): Promise<SummaryContent> {
-    const maxCharsPerChunk = 100000;
+    // Reduced to ensure chunks fit within API token limits
+    // ~5,000-6,000 tokens per chunk, leaving room for prompts
+    const maxCharsPerChunk = 24000;
     
     // Split content into chunks at note boundaries (marked by \n\n---\n\n)
     const noteSeparator = "\n\n---\n\n";
@@ -766,8 +783,9 @@ Guidelines:
           chunks.push(currentChunk);
           currentChunk = note;
         } else {
-          // Single note is too long, include it anyway but truncate
-          chunks.push(this.truncateContent(note, 25000));
+          // Single note is too long, truncate more aggressively
+          // Use 5,000 tokens (~20,000 chars) to ensure it fits within API limits
+          chunks.push(this.truncateContent(note, 5000));
         }
       } else {
         currentChunk += (currentChunk ? noteSeparator : "") + note;
@@ -889,14 +907,16 @@ Guidelines:
       const config = lengthConfig[summaryLength];
 
       // Check if content needs to be processed in chunks
-      const maxCharsPerChunk = 100000; // ~25,000 tokens, leaving room for prompt and response
+      // Use chunking for content larger than ~6,000 tokens to ensure API limits
+      const maxContentSize = 24000; // ~6,000 tokens
       
-      if (content.length > maxCharsPerChunk) {
+      if (content.length > maxContentSize) {
         return await this.generateSummaryInChunks(content, summaryLength, summaryType, config);
       }
 
       // Process normally for smaller content
-      const truncatedContent = this.truncateContent(content, 27000);
+      // Use 6,000 tokens max to leave room for prompts and response
+      const truncatedContent = this.truncateContent(content, 6000);
 
       // Build format instructions based on summaryType
       let formatInstructions = "";
@@ -961,7 +981,12 @@ Guidelines:
       const parsed = this.parseJSONResponse(response);
       return parsed as SummaryContent;
     } catch (error) {
-      console.error("Summary generation error:", error);
+      console.error("Summary generation error:", {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        type: error?.constructor?.name,
+      });
       if (error instanceof AIProcessingError) {
         throw error;
       }

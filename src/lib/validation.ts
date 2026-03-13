@@ -149,5 +149,21 @@ export const learningToolQuerySchema = paginationSchema.extend({
 
 // Helper function to validate request data
 export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): T {
-  return schema.parse(data);
+  try {
+    return schema.parse(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Convert Zod errors to ValidationError for better error responses
+      const { ValidationError } = require("./errors");
+      const formattedErrors = error.errors.map(err => ({
+        path: err.path.join('.'),
+        message: err.message,
+      }));
+      throw new ValidationError(
+        error.errors[0]?.message || "Validation failed",
+        formattedErrors
+      );
+    }
+    throw error;
+  }
 }

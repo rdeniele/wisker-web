@@ -71,7 +71,18 @@ export async function POST(request: NextRequest) {
 
     return successResponse(learningTool, 201);
   } catch (error) {
-    console.error("Error generating learning tool:", error instanceof Error ? error.message : String(error));
-    return errorResponse(error as Error);
+    console.error("Error generating learning tool:", {
+      error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error?.constructor?.name,
+    });
+    
+    // Ensure we're returning a proper error response
+    if (!error) {
+      return errorResponse(new Error("Unknown error occurred"));
+    }
+    
+    return errorResponse(error);
   }
 }

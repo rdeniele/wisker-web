@@ -16,37 +16,51 @@ export function successResponse<T>(
 }
 
 export function errorResponse(
-  error: Error | AppError,
+  error: unknown,
   status?: number,
 ): NextResponse<ApiResponse> {
+  // Ensure we have a valid error object
+  let errorObj: Error;
+  
+  if (error instanceof Error) {
+    errorObj = error;
+  } else if (typeof error === 'string') {
+    errorObj = new Error(error);
+  } else if (error && typeof error === 'object' && 'message' in error) {
+    errorObj = new Error(String(error.message));
+  } else {
+    errorObj = new Error('An unexpected error occurred');
+  }
+
   console.error("API Error Response:", {
-    type: error.constructor.name,
-    message: error.message,
-    isAppError: error instanceof AppError,
+    type: errorObj.constructor.name,
+    message: errorObj.message,
+    isAppError: errorObj instanceof AppError,
+    originalError: error,
   });
 
-  if (error instanceof AppError) {
+  if (errorObj instanceof AppError) {
     return NextResponse.json(
       {
         success: false,
         error: {
-          code: error.code,
-          message: error.message,
-          details: error.details,
+          code: errorObj.code,
+          message: errorObj.message || "An error occurred",
+          details: errorObj.details,
         },
       },
-      { status: error.statusCode },
+      { status: errorObj.statusCode },
     );
   }
 
   // For non-AppError errors, still return the error message instead of generic message
-  console.error("Unhandled error:", error);
+  console.error("Unhandled error:", errorObj.message, errorObj.stack);
   return NextResponse.json(
     {
       success: false,
       error: {
         code: "INTERNAL_ERROR",
-        message: error.message || "An unexpected error occurred",
+        message: errorObj.message || "An unexpected error occurred",
       },
     },
     { status: status || 500 },

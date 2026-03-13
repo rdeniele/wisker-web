@@ -314,7 +314,12 @@ export class LearningToolService {
       // Fetch the complete learning tool with relations
       return this.getLearningToolById(result.id, userId);
     } catch (error) {
-      console.error("Learning tool service error:", error instanceof Error ? error.message : String(error));
+      console.error("Learning tool service error:", {
+        error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        type: error?.constructor?.name,
+      });
 
       // Re-throw known error types to preserve error messages
       if (

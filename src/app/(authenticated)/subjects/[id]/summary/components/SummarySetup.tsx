@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import {
   FiArrowLeft,
   FiFileText,
@@ -7,13 +7,23 @@ import {
   FiList,
   FiZap,
   FiInfo,
+  FiAlertTriangle,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { useToast } from "@/../hook/useToast";
+
+interface Note {
+  id: string;
+  title: string;
+  rawContent: string;
+  knowledgeBase?: string | null;
+}
 
 interface SummarySetupProps {
   subjectId: string;
   subjectName: string;
   selectedNoteIds: string[];
+  selectedNotes: Note[];
   selectedNotesCount: number;
   onGenerate: (config: SummaryConfig) => void;
   onBack: () => void;
@@ -25,10 +35,15 @@ export interface SummaryConfig {
   summaryType: "paragraph" | "bullet" | "keypoints";
 }
 
+// Content size thresholds (in characters)
+const WARNING_THRESHOLD = 20000; // ~5,000 tokens
+const ERROR_THRESHOLD = 40000; // ~10,000 tokens
+
 export default function SummarySetup({
   subjectId,
   subjectName,
   selectedNoteIds,
+  selectedNotes,
   selectedNotesCount,
   onGenerate,
   onBack,
@@ -41,6 +56,46 @@ export default function SummarySetup({
   >("paragraph");
   const [isPending, startTransition] = useTransition();
   const { showToast } = useToast();
+
+  // Calculate total content size
+  const totalContentSize = useMemo(() => {
+    let total = 0;
+    selectedNotes.forEach((note) => {
+      const content = note.knowledgeBase || note.rawContent;
+      total += content.length;
+    });
+    return total;
+  }, [selectedNotes]);
+
+  const getSizeStatus = () => {
+    if (totalContentSize > ERROR_THRESHOLD) {
+      return {
+        level: 'error' as const,
+        message: 'Content size is very large. Generation may take longer or fail.',
+        color: 'text-red-600',
+        bgColor: 'bg-red-50',
+        borderColor: 'border-red-200',
+        icon: FiAlertCircle,
+      };
+    } else if (totalContentSize > WARNING_THRESHOLD) {
+      return {
+        level: 'warning' as const,
+        message: 'Content size is large. Generation may take a bit longer.',
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-50',
+        borderColor: 'border-yellow-200',
+        icon: FiAlertTriangle,
+      };
+    }
+    return null;
+  };
+
+  const sizeStatus = getSizeStatus();
+
+  const formatSize = (size: number) => {
+    if (size < 1000) return `${size} chars`;
+    return `${(size / 1000).toFixed(1)}K chars`;
+  };
 
   const handleGenerate = async () => {
     startTransition(async () => {
@@ -66,7 +121,10 @@ export default function SummarySetup({
           try {
             const errorData = await response.json();
             console.error("API Error:", errorData);
-            errorMessage = errorData.error?.message || errorMessage;
+            errorMessage =
+              errorData.error?.message ||
+              errorData.message ||
+              errorMessage;
           } catch (parseError) {
             // If response isn't JSON, try to get text
             console.error("Failed to parse error response:", parseError);
@@ -184,6 +242,40 @@ export default function SummarySetup({
               {selectedNotesCount !== 1 ? "s" : ""}
             </p>
           </div>
+
+          {/* Size Warning */}
+          {sizeStatus && (
+            <div
+              className={`mb-8 p-4 rounded-xl border-2 ${sizeStatus.borderColor} ${sizeStatus.bgColor}`}
+            >
+              <div className="flex items-start gap-3">
+                <sizeStatus.icon className={sizeStatus.color} size={20} />
+                <div className="flex-1">
+                  <h4 className={`font-semibold ${sizeStatus.color} mb-1`}>
+                    {sizeStatus.level === 'error'
+                      ? 'Content Size Very Large'
+                      : 'Large Content Size'}
+                  </h4>
+                  <p className="text-sm text-gray-700 mb-2">
+                    {sizeStatus.message}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Total: {formatSize(totalContentSize)} from {selectedNotesCount}{' '}
+                    note{selectedNotesCount !== 1 ? 's' : ''} (Recommended: under{' '}
+                    {formatSize(WARNING_THRESHOLD)})
+                  </p>
+                  {sizeStatus.level === 'error' && (
+                    <button
+                      onClick={onBack}
+                      className="mt-3 text-sm text-red-700 hover:text-red-800 underline font-medium"
+                    >
+                      ← Go back and select fewer notes
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Summary Length */}
           <div className="mb-8">

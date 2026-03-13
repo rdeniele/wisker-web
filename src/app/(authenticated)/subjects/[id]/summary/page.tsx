@@ -18,6 +18,7 @@ interface Note {
   id: string;
   title: string;
   rawContent: string;
+  knowledgeBase?: string | null;
 }
 
 function SubjectSummaryPage({ params }: SubjectSummaryPageProps) {
@@ -102,11 +103,17 @@ function SubjectSummaryPage({ params }: SubjectSummaryPageProps) {
 
   // Step 2: Configure summary
   if (!config) {
+    // Get selected notes data to pass to SummarySetup
+    const selectedNotesData = notes.filter((n) =>
+      selectedNoteIds.includes(n.id)
+    );
+    
     return (
       <SummarySetup
         subjectId={id}
         subjectName={subject.title}
         selectedNoteIds={selectedNoteIds}
+        selectedNotes={selectedNotesData}
         selectedNotesCount={selectedNoteIds.length}
         onGenerate={handleGenerate}
         onBack={handleBack}
