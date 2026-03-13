@@ -11,6 +11,10 @@ import {
 import { insufficientCreditsResponse } from "@/lib/credit-errors";
 import { recordActivity } from "@/service/streak.service";
 
+// Increase body size limit to 50MB for PowerPoint uploads
+export const maxDuration = 60; // 60 seconds timeout
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/notes/create
  * Create a new note
@@ -21,12 +25,37 @@ export async function POST(request: NextRequest) {
     const user = await getAuthenticatedUser();
     console.error("[CREATE_NOTE] User authenticated:", user.id);
 
-    // Parse and validate request body
-    const body = await request.json();
-    console.error("[CREATE_NOTE] Request body parsed, has pdfText:", !!body.pdfText, "length:", body.pdfText?.length);
-    // Processing note creation request
+    // Check if request is FormData (PowerPoint) or JSON (PDF/Image)
+    const contentType = request.headers.get("content-type") || "";
+    let validatedData;
 
-    const validatedData = validateRequest(createNoteSchema, body);
+    if (contentType.includes("multipart/form-data")) {
+      // Handle FormData for PowerPoint uploads
+      console.error("[CREATE_NOTE] Processing FormData upload");
+      const formData = await request.formData();
+      const file = formData.get("file") as File;
+      const subjectId = formData.get("subjectId") as string;
+      const title = formData.get("title") as string;
+
+      if (!file || !subjectId || !title) {
+        throw new Error("Missing required fields");
+      }
+
+      // Convert file to base64
+      const buffer = await file.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+
+      validatedData = validateRequest(createNoteSchema, {
+        subjectId,
+        title,
+        pptBase64: base64,
+      });
+    } else {
+      // Handle JSON for PDF/Image uploads  
+      const body = await request.json();
+      console.error("[CREATE_NOTE] Request body parsed, has pdfText:", !!body.pdfText, "length:", body.pdfText?.length);
+      validatedData = validateRequest(createNoteSchema, body);
+    }
 
     // Ensure rawContent has a default value
     const noteData = {

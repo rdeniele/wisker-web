@@ -40,19 +40,46 @@ async function initializeStorage() {
 
     if (bucketExists) {
       console.log("✓ Storage bucket already exists!");
-    } else {
-      // Create bucket
-      const { error: createError } = await supabase.storage.createBucket(
+      console.log("  Updating bucket configuration...");
+      
+      // Update existing bucket to support PowerPoint and increase size limit
+      const { error: updateError } = await supabase.storage.updateBucket(
         BUCKET_NAME,
         {
           public: true,
-          fileSizeLimit: 10485760, // 10MB
+          fileSizeLimit: 52428800, // 50MB
           allowedMimeTypes: [
             "application/pdf",
             "image/jpeg",
             "image/png",
             "image/gif",
             "image/webp",
+            "application/vnd.ms-powerpoint", // .ppt
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+          ],
+        },
+      );
+
+      if (updateError) {
+        console.error("  Warning: Could not update bucket:", updateError.message);
+      } else {
+        console.log("  ✓ Bucket configuration updated!");
+      }
+    } else {
+      // Create bucket
+      const { error: createError } = await supabase.storage.createBucket(
+        BUCKET_NAME,
+        {
+          public: true,
+          fileSizeLimit: 52428800, // 50MB
+          allowedMimeTypes: [
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "image/webp",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
           ],
         },
       );
@@ -66,8 +93,8 @@ async function initializeStorage() {
 
     console.log("\nBucket Details:");
     console.log("  Name:", BUCKET_NAME);
-    console.log("  Max file size: 10MB");
-    console.log("  Allowed types: PDF, JPEG, PNG, GIF, WebP");
+    console.log("  Max file size: 50MB");
+    console.log("  Allowed types: PDF, Images, PowerPoint (.ppt, .pptx)");
     console.log("  Public access: Yes");
 
     process.exit(0);

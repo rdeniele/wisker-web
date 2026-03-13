@@ -165,9 +165,46 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         );
       } else if (isPPT) {
         setUploadProgress("Processing PowerPoint file...");
-        const base64Content = await convertFileToBase64(file);
-        requestBody.pptBase64 = base64Content;
-        showToast("PowerPoint uploaded, extracting content...", "info");
+        // For PowerPoint, use FormData to avoid JSON size limits
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("subjectId", subjectId);
+        formData.append("title", title);
+        formData.append("fileType", "powerpoint");
+
+        const response = await fetch("/api/notes/create", {
+          method: "POST",
+          body: formData, // Send as FormData instead of JSON
+        });
+
+        // Handle response
+        let data;
+        const responseText = await response.text();
+
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error("Failed to parse server response");
+          throw new Error(`Server error: ${responseText.substring(0, 200)}`);
+        }
+
+        if (!response.ok) {
+          console.error("Upload failed:", response.status, data);
+          const errorMessage =
+            data.error?.message || data.message || "Failed to upload file";
+          throw new Error(errorMessage);
+        }
+
+        setUploadProgress("Creating structured note...");
+        showToast("File uploaded and processed successfully!", "success");
+
+        if (onFileSelect) {
+          onFileSelect(files);
+        }
+
+        setIsUploading(false);
+        setUploadProgress("");
+        return; // Exit early for PowerPoint uploads
       } else {
         setUploadProgress("Converting image...");
         const base64Content = await convertFileToBase64(file);

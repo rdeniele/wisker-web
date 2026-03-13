@@ -28,13 +28,31 @@ export class StorageService {
       // Create bucket with public access for file downloads
       await supabase.storage.createBucket(BUCKET_NAME, {
         public: true,
-        fileSizeLimit: 10485760, // 10MB
+        fileSizeLimit: 52428800, // 50MB (in bytes)
         allowedMimeTypes: [
           "application/pdf",
           "image/jpeg",
           "image/png",
           "image/gif",
           "image/webp",
+          // PowerPoint MIME types
+          "application/vnd.ms-powerpoint", // .ppt
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+        ],
+      });
+    } else {
+      // Update existing bucket to support PowerPoint and increase size limit
+      await supabase.storage.updateBucket(BUCKET_NAME, {
+        public: true,
+        fileSizeLimit: 52428800, // 50MB
+        allowedMimeTypes: [
+          "application/pdf",
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+          "application/vnd.ms-powerpoint",
+          "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         ],
       });
     }
