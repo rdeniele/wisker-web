@@ -77,10 +77,28 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
     }
 
     const file = files[0];
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    // Check file type first
+    const isPDF = file.type === "application/pdf";
+    const isImage = file.type.startsWith("image/");
+    const isPPT = file.type === "application/vnd.ms-powerpoint" || 
+                  file.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+    if (!isPDF && !isImage && !isPPT) {
+      showToast("Only PDF, PowerPoint, and image files are supported", "error");
+      return;
+    }
+
+    // Different size limits for different file types
+    const maxSizePDF = 10 * 1024 * 1024; // 10MB for PDFs
+    const maxSizeImage = 10 * 1024 * 1024; // 10MB for images
+    const maxSizePPT = 50 * 1024 * 1024; // 50MB for PowerPoint files
+    
+    const maxSize = isPPT ? maxSizePPT : (isPDF ? maxSizePDF : maxSizeImage);
+    const maxSizeMB = isPPT ? 50 : 10;
 
     if (file.size > maxSize) {
-      showToast("File size exceeds 10MB limit", "error");
+      showToast(`File size exceeds ${maxSizeMB}MB limit`, "error");
       return;
     }
 
@@ -88,17 +106,6 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
     setUploadProgress("Uploading file...");
 
     try {
-      const isPDF = file.type === "application/pdf";
-      const isImage = file.type.startsWith("image/");
-      const isPPT = file.type === "application/vnd.ms-powerpoint" || 
-                    file.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-
-      if (!isPDF && !isImage && !isPPT) {
-        showToast("Only PDF, PowerPoint, and image files are supported", "error");
-        setIsUploading(false);
-        setUploadProgress("");
-        return;
-      }
 
       // Generate a title from the filename (remove extension)
       const title = file.name.replace(/\.[^/.]+$/, "");
@@ -336,8 +343,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
       {/* File size note */}
       <div className="text-xs text-gray-500 text-center mb-2">
-        Maximum file size: 10MB. AI will extract text and create a
-        well-structured note.
+        Maximum file size: 10MB (PDF/Images), 50MB (PowerPoint)
         <br />
         <span className="text-orange-500 font-medium">
           PDFs & PowerPoint: Text extraction. Images: AI vision processing
