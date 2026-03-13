@@ -90,9 +90,11 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
     try {
       const isPDF = file.type === "application/pdf";
       const isImage = file.type.startsWith("image/");
+      const isPPT = file.type === "application/vnd.ms-powerpoint" || 
+                    file.type === "application/vnd.openxmlformats-officedocument.presentationml.presentation";
 
-      if (!isPDF && !isImage) {
-        showToast("Only PDF and image files are supported", "error");
+      if (!isPDF && !isImage && !isPPT) {
+        showToast("Only PDF, PowerPoint, and image files are supported", "error");
         setIsUploading(false);
         setUploadProgress("");
         return;
@@ -107,6 +109,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         content?: string;
         pdfText?: string;
         imageBase64?: string;
+        pptBase64?: string;
       } = {
         subjectId,
         title,
@@ -153,6 +156,11 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
           `Extracted ${charCount.toLocaleString()} characters from PDF`,
           "info",
         );
+      } else if (isPPT) {
+        setUploadProgress("Processing PowerPoint file...");
+        const base64Content = await convertFileToBase64(file);
+        requestBody.pptBase64 = base64Content;
+        showToast("PowerPoint uploaded, extracting content...", "info");
       } else {
         setUploadProgress("Converting image...");
         const base64Content = await convertFileToBase64(file);
@@ -182,7 +190,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       }
 
       if (!response.ok) {
-        console.error("Upload failed");
+        console.error("Upload failed:", response.status, data);
         const errorMessage =
           data.error?.message || data.message || "Failed to upload file";
         throw new Error(errorMessage);
@@ -267,7 +275,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
       {/* Header */}
       <h2 className="text-2xl font-bold text-center w-full mt-2 mb-2 text-orange-400">
-        Wisker AI PDF/Image Summarizer
+        Wisker AI File Summarizer
       </h2>
 
       {/* Cat Image */}
@@ -286,13 +294,13 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       {/* Upload Section */}
       <div className="flex flex-col items-center mb-2">
         <span className="text-xl font-bold text-gray-800 mb-1">
-          Upload a PDF or Image
+          Upload PDF, PowerPoint, or Image
         </span>
         <label className="w-full flex justify-center">
           <input
             ref={inputRef}
             type="file"
-            accept=".pdf,image/*"
+            accept=".pdf,.ppt,.pptx,image/*"
             className="hidden"
             onChange={handleInputChange}
             disabled={isUploading}
@@ -332,11 +340,11 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
         well-structured note.
         <br />
         <span className="text-orange-500 font-medium">
-          PDFs: Text extraction (all pages). Images: AI vision processing
+          PDFs & PowerPoint: Text extraction. Images: AI vision processing
         </span>
         <br />
         <span className="text-blue-500 font-medium">
-          Cost: 1 AI credit per ~100k characters (PDFs), 2 credits (images)
+          Cost: 1 AI credit per ~100k characters
         </span>
       </div>
 

@@ -175,23 +175,28 @@ export class NoteService {
 
       // If PDF or image is provided, extract text using AI and upload to storage
       // Process files if provided
-      if (data.pdfText || data.pdfBase64 || data.imageBase64) {
+      console.error("[NOTE_SERVICE] Processing file - pdfText:", !!data.pdfText, "pptBase64:", !!data.pptBase64, "length:", data.pdfText?.length);
+      if (data.pdfText || data.pdfBase64 || data.imageBase64 || data.pptBase64) {
         // COST PROTECTION: Enforce hard limits on PDF size
-        const MAX_PDF_CHARS = 500000; // Absolute maximum: 500k chars
+        const MAX_PDF_CHARS = 1000000; // Absolute maximum: 1M chars (~10 chunks max)
 
         if (data.pdfText && data.pdfText.length > MAX_PDF_CHARS) {
-          throw new DatabaseError(
+          throw new AIProcessingError(
             `PDF is too large (${data.pdfText.length.toLocaleString()} characters). ` +
               `Maximum allowed: ${MAX_PDF_CHARS.toLocaleString()} characters. ` +
               `Please upload a smaller PDF or split it into multiple files.`,
           );
         }
+        
+        console.error("[NOTE_SERVICE] PDF size check passed:", data.pdfText?.length, "chars");
 
         try {
           if (data.pdfText) {
             // Process PDF text: Use extracted text to generate structured note
+            console.error("[NOTE_SERVICE] Calling aiService.processPDFWithKnowledge");
             const { knowledgeBase: extractedKnowledge, structuredNote } =
               await aiService.processPDFWithKnowledge(data.pdfText);
+            console.error("[NOTE_SERVICE] PDF processing complete - KB length:", extractedKnowledge.length, "Note length:", structuredNote.length);
 
             knowledgeBase = extractedKnowledge; // Store raw extracted text as knowledge
             rawContent = structuredNote; // Store AI-generated structured note as content
@@ -250,9 +255,56 @@ export class NoteService {
             fileType = imageType;
 
             // Image extraction completed
+          } else if (data.pptBase64) {
+            // Process PowerPoint: extract text and generate structured note
+            console.error("[NOTE_SERVICE] Processing PowerPoint file");
+            const officeparser = (await import("officeparser")).default;
+            
+            // Convert base64 to buffer
+            const buffer = Buffer.from(data.pptBase64, "base64");
+            
+            // Extract text from PowerPoint
+            const result: any = await new Promise((resolve, reject) => {
+              officeparser.parseOffice(buffer, (ast: any, err: any) => {
+                if (err) reject(err);
+                else resolve(ast);
+              });
+            });
+            
+            // Convert AST to string (officeparser returns text content as string property)
+            const extractedText = typeof result === 'string' ? result : JSON.stringify(result);
+            
+            console.error("[NOTE_SERVICE] PPT text extracted, length:", extractedText.length);
+            
+            if (!extractedText || extractedText.trim().length === 0) {
+              throw new AIProcessingError(
+                "No text could be extracted from PowerPoint file. It might be empty or contain only images.",
+              );
+            }
+
+            // Process through AI similar to PDF
+            const { knowledgeBase: extractedKnowledge, structuredNote } =
+              await aiService.processPDFWithKnowledge(extractedText);
+            
+            knowledgeBase = extractedKnowledge;
+            rawContent = structuredNote;
+            
+            // Upload PowerPoint to storage
+            const uploadResult = await StorageService.uploadFile(
+              data.pptBase64,
+              `${data.title}.pptx`,
+              userId,
+              "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            );
+            fileUrl = uploadResult.url;
+            fileName = `${data.title}.pptx`;
+            fileSize = uploadResult.size;
+            fileType = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            
+            console.error("[NOTE_SERVICE] PowerPoint processing complete");
           }
         } catch (aiError) {
-          console.error("AI processing error");
+          console.error("AI processing error:", aiError);
 
           // Re-throw AppError instances directly to avoid error nesting
           if (aiError instanceof AppError) {
@@ -293,6 +345,7 @@ export class NoteService {
         fileType: note.fileType ?? undefined,
       };
     } catch (error) {
+      console.error("[NOTE_SERVICE] Error in createNote:", error);
       if (
         error instanceof NotesLimitExceededError ||
         error instanceof NotFoundError ||

@@ -40,17 +40,18 @@ export const createNoteSchema = z
     pdfText: z.string().optional(),
     pdfBase64: z.string().optional(),
     imageBase64: z.string().optional(),
+    pptBase64: z.string().optional(),
   })
   .refine(
     (data) => {
-      // At least one of rawContent, pdfText, pdfBase64, or imageBase64 must be provided
+      // At least one of rawContent, pdfText, pdfBase64, imageBase64, or pptBase64 must be provided
       return (
-        data.rawContent || data.pdfText || data.pdfBase64 || data.imageBase64
+        data.rawContent || data.pdfText || data.pdfBase64 || data.imageBase64 || data.pptBase64
       );
     },
     {
       message:
-        "At least one of rawContent, pdfText, pdfBase64, or imageBase64 must be provided",
+        "At least one of rawContent, pdfText, pdfBase64, imageBase64, or pptBase64 must be provided",
     },
   );
 

@@ -58,6 +58,7 @@ interface TogetherAIResponse {
 // Helper function to convert Markdown to HTML for TipTap editor
 function markdownToHtml(markdown: string): string {
   try {
+    console.error("[AI_SERVICE] Converting markdown to HTML - length:", markdown.length);
     // Configure marked options
     marked.setOptions({
       breaks: true, // Convert \n to <br>
@@ -65,6 +66,7 @@ function markdownToHtml(markdown: string): string {
     });
 
     const html = marked.parse(markdown) as string;
+    console.error("[AI_SERVICE] Markdown conversion successful - HTML length:", html.length);
     return html;
   } catch (error) {
     console.error("Failed to convert markdown to HTML:", error);
@@ -1124,6 +1126,7 @@ Return only the extracted text and descriptions, without any additional commenta
     knowledgeBase: string,
   ): Promise<string> {
     try {
+      console.error("[AI_SERVICE] generateStructuredNoteFromKnowledge called - KB length:", knowledgeBase.length);
       const systemPrompt = `You are an expert educational content writer and learning specialist.
 Your task is to transform raw extracted content (from PDFs or images) into well-structured, 
 engaging study notes optimized for learning and retention.
@@ -1153,8 +1156,10 @@ Return a well-formatted markdown text that students can easily learn from.`;
         temperature: 0.6,
       });
 
+      console.error("[AI_SERVICE] AI response received - length:", response.length);
       return response;
     } catch (error) {
+      console.error("[AI_SERVICE] ERROR in generateStructuredNoteFromKnowledge:", error);
       throw new AIProcessingError(
         "Failed to generate structured note from knowledge",
         error,
@@ -1171,7 +1176,10 @@ Return a well-formatted markdown text that students can easily learn from.`;
     knowledgeBase: string;
     structuredNote: string;
   }> {
+    console.error("[AI_SERVICE] processPDFWithKnowledge called - text length:", extractedText.length);
+    console.error("[AI_SERVICE] API key configured:", !!this.apiKey);
     if (!this.apiKey) {
+      console.error("[AI_SERVICE] ERROR: Together AI API key not configured!");
       throw new AIProcessingError(
         "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
       );
@@ -1179,7 +1187,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
     try {
       // Step 1: Validate the pre-extracted text (this becomes the knowledge base)
+      console.error("[AI_SERVICE] Calling extractTextFromPDF");
       const knowledgeBase = await this.extractTextFromPDF(extractedText);
+      console.error("[AI_SERVICE] KB extracted - length:", knowledgeBase.length);
 
       if (!knowledgeBase || knowledgeBase.trim().length === 0) {
         throw new AIProcessingError(
@@ -1191,7 +1201,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
       // Model limit: 32,769 tokens total, using 4,000 for output = 28,769 for input
       // At 4 chars/token = ~115,000 chars max per request
       const maxCharsPerChunk = 90000; // Conservative limit per chunk
-      const maxTotalChars = 300000; // HARD LIMIT: Max 300k chars = ~3 chunks = ~3 AI credits
+      const maxTotalChars = 450000; // HARD LIMIT: Max 450k chars = ~5 chunks = ~5 AI credits
       const absoluteMaxChunks = 5; // Never process more than 5 chunks
 
       let processedText = knowledgeBase;
@@ -1199,8 +1209,8 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
       // COST PROTECTION: Truncate if too large
       if (knowledgeBase.length > maxTotalChars) {
-        console.warn(
-          `⚠️ PDF is very large (${knowledgeBase.length} chars). Truncating to ${maxTotalChars} chars to prevent excessive costs.`,
+        console.error(
+          `[AI_SERVICE] ⚠️ PDF is very large (${knowledgeBase.length} chars). Truncating to ${maxTotalChars} chars to prevent excessive costs.`,
         );
         processedText = knowledgeBase.substring(0, maxTotalChars);
         wasTruncated = true;
@@ -1209,6 +1219,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
       let structuredNote: string;
 
       if (processedText.length > maxCharsPerChunk) {
+        console.error("[AI_SERVICE] Text is large, processing in chunks:", Math.ceil(processedText.length / maxCharsPerChunk));
         // Split into chunks and process separately
         const chunks: string[] = [];
         let currentChunk = "";
@@ -1273,11 +1284,13 @@ Return a well-formatted markdown text that students can easily learn from.`;
         structuredNote = markdownToHtml(finalMarkdown);
       }
 
+      console.error("[AI_SERVICE] PDF processing complete - returning result");
       return {
         knowledgeBase,
         structuredNote,
       };
     } catch (error) {
+      console.error("[AI_SERVICE] ERROR in processPDFWithKnowledge:", error);
       if (error instanceof AIProcessingError) {
         throw error;
       }
