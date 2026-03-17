@@ -5,6 +5,9 @@ import NavBar from "@/components/Navbar/NavBar";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/lib/AuthContext";
 
+// Force dynamic rendering since we use cookies for auth
+export const dynamic = 'force-dynamic';
+
 export default async function AuthenticatedLayout({
   children,
 }: {

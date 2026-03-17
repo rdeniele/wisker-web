@@ -20,7 +20,7 @@ TOGETHER_API_KEY="paste_your_api_key_here"
 Optional - specify a different model:
 
 ```env
-TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+TOGETHER_AI_MODEL="meta-llama/Llama-3.3-70B-Instruct-Turbo"
 ```
 
 ### Step 3: Restart Your Dev Server

@@ -84,7 +84,7 @@ export class AIService {
     // Use serverless model by default to avoid dedicated endpoint requirement
     this.model =
       process.env.TOGETHER_AI_MODEL ||
-      "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo";
+      "meta-llama/Llama-3.3-70B-Instruct-Turbo";
     this.visionModel =
       process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3-VL-8B-Instruct";
 

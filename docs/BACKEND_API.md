@@ -508,7 +508,7 @@ AI Generates Tool → Save Tool → Increment AI Usage
 
 **Together AI Features:**
 
-- Uses Meta-Llama 3.1 70B model by default
+- Uses Llama 3.3 70B model by default (serverless)
 - Structured JSON responses
 - Smart prompt engineering
 - Automatic retry and error handling
@@ -651,7 +651,7 @@ NEXT_PUBLIC_SUPABASE_URL="https://..."
 NEXT_PUBLIC_SUPABASE_ANON_KEY="..."
 SUPABASE_SERVICE_ROLE_KEY="..."
 TOGETHER_API_KEY="your_together_api_key_here"
-TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+TOGETHER_AI_MODEL="meta-llama/Llama-3.3-70B-Instruct-Turbo"
 ```
 
 ## Testing Endpoints

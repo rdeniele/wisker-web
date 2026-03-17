@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: "Sign in or create an account",
 };
 
+// Force dynamic rendering since we use cookies for auth
+export const dynamic = 'force-dynamic';
+
 interface AuthLayoutProps {
   children: React.ReactNode;
 }

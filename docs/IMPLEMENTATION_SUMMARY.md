@@ -47,7 +47,7 @@ docs/
 TOGETHER_API_KEY=your_together_api_key_here
 
 # Model configurations
-TOGETHER_AI_MODEL=meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo
+TOGETHER_AI_MODEL=meta-llama/Llama-3.3-70B-Instruct-Turbo
 TOGETHER_AI_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct
 TOGETHER_AI_KIMI_MODEL=moonshotai/Kimi-K2.5
 TOGETHER_AI_EMBEDDING_MODEL=BAAI/bge-large-en-v1.5

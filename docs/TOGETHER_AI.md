@@ -26,8 +26,8 @@ Add your Together AI API key to your `.env` file:
 # Together AI Configuration
 TOGETHER_API_KEY="your_api_key_here"
 
-# Optional: Specify a different model (default: meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo)
-TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+# Optional: Specify a different model (default: meta-llama/Llama-3.3-70B-Instruct-Turbo)
+TOGETHER_AI_MODEL="meta-llama/Llama-3.3-70B-Instruct-Turbo"
 ```
 
 **Important:** Never commit your `.env` file to version control!
@@ -36,16 +36,26 @@ TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
 
 Together AI supports many open-source models. Here are recommended options:
 
-#### Best for Quality (Recommended)
+#### High Quality Serverless (Recommended - Default)
 
 ```env
-TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo"
+TOGETHER_AI_MODEL="meta-llama/Llama-3.3-70B-Instruct-Turbo"
 ```
 
-#### Fast and Cost-Effective
+#### Other Serverless Options
 
 ```env
-TOGETHER_AI_MODEL="meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+# Fast and cost-effective
+TOGETHER_AI_MODEL="Qwen/Qwen2.5-7B-Instruct-Turbo"
+
+# Mixtral (good quality)
+TOGETHER_AI_MODEL="mistralai/Mixtral-8x7B-Instruct-v0.1"
+
+# Mistral Small (budget-friendly)
+TOGETHER_AI_MODEL="mistralai/Mistral-Small-Instruct-2501"
+
+# Kimi K2.5 (multi-modal)
+TOGETHER_AI_MODEL="moonshotai/Kimi-K2.5"
 ```
 
 #### High Quality Alternative
