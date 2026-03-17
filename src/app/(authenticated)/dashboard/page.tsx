@@ -4,7 +4,6 @@ import CombineBanners from "./components/DashboardBanners/CombineBanners";
 import StudyStats from "./components/StudyStats/StudyStats";
 import StudyStreak from "./components/StudyStreak/StudyStreak";
 import TodaysFocus from "./components/TodaysFocus/TodaysFocus";
-import LineGraph from "./components/UserGraph/LineGraph";
 
 function DashboardPage() {
   return (
@@ -22,11 +21,6 @@ function DashboardPage() {
       <div className="mt-8 md:mt-10 lg:mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <StudyStreak />
         <TodaysFocus />
-      </div>
-
-      {/* Activity Graph */}
-      <div className="mt-8 md:mt-10 lg:mt-12">
-        <LineGraph />
       </div>
 
       {/* Subjects section */}

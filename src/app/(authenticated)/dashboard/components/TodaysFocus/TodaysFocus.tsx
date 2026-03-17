@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useTransition, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 
 interface LearningTool {
   id: string;
@@ -18,9 +17,6 @@ interface LearningTool {
 }
 
 function TodaysFocus() {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [recentTools, setRecentTools] = useState<LearningTool[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -54,12 +50,6 @@ function TodaysFocus() {
     fetchRecentActivity();
   }, []);
 
-  // Clear loading state when navigation completes
-  useEffect(() => {
-    if (!isPending && navigatingTo) {
-      setNavigatingTo(null);
-    }
-  }, [isPending, navigatingTo]);
 
   return (
     <div className="w-full">
@@ -88,22 +78,10 @@ function TodaysFocus() {
         ) : recentTools.length > 0 ? (
           <div className="space-y-3 flex-1">
             {recentTools.map((tool) => {
-              const subjectId = tool.subject?.id || "";
-              const link = tool.subject
-                ? `/subjects/${subjectId}`
-                : `/notes/${tool.note?.id || ""}`;
-
               return (
-                <button
+                <div
                   key={tool.id}
-                  onClick={() => {
-                    setNavigatingTo(`tool-${tool.id}`);
-                    startTransition(() => {
-                      router.push(link);
-                    });
-                  }}
-                  disabled={navigatingTo === `tool-${tool.id}`}
-                  className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -115,27 +93,7 @@ function TodaysFocus() {
                             : "bg-blue-100"
                       }`}
                     >
-                      {navigatingTo === `tool-${tool.id}` ? (
-                        <svg
-                          className="animate-spin h-5 w-5 text-gray-600"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                      ) : tool.type === "QUIZ" ? (
+                      {tool.type === "QUIZ" ? (
                         "📝"
                       ) : tool.type === "FLASHCARD" ? (
                         "🎴"
@@ -144,7 +102,7 @@ function TodaysFocus() {
                       )}
                     </div>
                     <div className="text-left">
-                      <p className="font-bold text-gray-800 group-hover:text-gray-900">
+                      <p className="font-bold text-gray-800">
                         {tool.type === "QUIZ"
                           ? "Quiz"
                           : tool.type === "FLASHCARD"
@@ -156,10 +114,13 @@ function TodaysFocus() {
                       </p>
                     </div>
                   </div>
-                  <span className="text-gray-400 group-hover:text-gray-600 text-xl">
-                    →
+                  <span className="text-xs text-gray-400">
+                    {new Date(tool.createdAt).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </span>
-                </button>
+                </div>
               );
             })}
           </div>
