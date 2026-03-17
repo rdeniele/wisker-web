@@ -51,6 +51,29 @@ export async function GET() {
       where: { marketingOptIn: true },
     });
 
+    // Calculate date ranges for signup tracking
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // Get weekly signups (last 7 days)
+    const weeklySignups = await prisma.user.count({
+      where: {
+        createdAt: {
+          gte: oneWeekAgo,
+        },
+      },
+    });
+
+    // Get monthly signups (last 30 days)
+    const monthlySignups = await prisma.user.count({
+      where: {
+        createdAt: {
+          gte: oneMonthAgo,
+        },
+      },
+    });
+
     // Get recent users
     const recentUsers = await prisma.user.findMany({
       take: 5,
@@ -76,6 +99,8 @@ export async function GET() {
         activeSubscriptions,
         marketingOptIns,
         totalRevenue,
+        weeklySignups,
+        monthlySignups,
         recentUsers,
       },
     });

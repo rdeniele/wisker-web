@@ -12,6 +12,8 @@ interface DashboardStats {
   activeSubscriptions: number;
   marketingOptIns: number;
   totalRevenue: number;
+  weeklySignups: number;
+  monthlySignups: number;
   recentUsers: Array<{
     email: string;
     planType: string;
@@ -199,6 +201,39 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-500 mt-1">
               {Math.round((stats.marketingOptIns / stats.totalUsers) * 100)}% of
               users
+            </p>
+          </div>
+        </div>
+
+        {/* Signup Tracking */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-600">Signups (Last 7 Days)</p>
+              <span className="text-2xl">📈</span>
+            </div>
+            <p className="text-3xl font-bold text-green-600">
+              {stats.weeklySignups}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats.totalUsers > 0
+                ? Math.round((stats.weeklySignups / stats.totalUsers) * 100)
+                : 0}% of total users
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm text-gray-600">Signups (Last 30 Days)</p>
+              <span className="text-2xl">📊</span>
+            </div>
+            <p className="text-3xl font-bold text-blue-600">
+              {stats.monthlySignups}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats.totalUsers > 0
+                ? Math.round((stats.monthlySignups / stats.totalUsers) * 100)
+                : 0}% of total users
             </p>
           </div>
         </div>
