@@ -86,7 +86,7 @@ export class AIService {
       process.env.TOGETHER_AI_MODEL ||
       "meta-llama/Llama-3.3-70B-Instruct-Turbo";
     this.visionModel =
-      process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3-VL-8B-Instruct";
+      process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3.5-9B";
 
     // API key will be validated when methods are called
   }

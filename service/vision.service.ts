@@ -40,7 +40,7 @@ export class VisionExtractionService {
   constructor() {
     this.apiKey = process.env.TOGETHER_API_KEY || "";
     this.model =
-      process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3-VL-8B-Instruct";
+      process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3.5-9B";
 
     // API key will be validated when methods are called
   }
