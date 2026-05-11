@@ -3,6 +3,7 @@ import React, { useState, useTransition, useEffect } from "react";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { SHOW_SUBSCRIPTION_UI } from "@/lib/subscription-ui-visibility";
 
 // Example icons (Heroicons SVGs)
 const DashboardIcon = () => (
@@ -101,6 +102,10 @@ const navLinks = [
   { name: "Feedback", icon: <FeedbackIcon />, href: "/feedback" },
   { name: "Upgrade", icon: <UpgradeIcon />, href: "/upgrade" },
 ];
+
+const visibleNavLinks = SHOW_SUBSCRIPTION_UI
+  ? navLinks
+  : navLinks.filter((link) => link.href !== "/upgrade");
 
 const MenuIcon = () => (
   <svg
@@ -209,6 +214,10 @@ function Sidebar() {
         // Use only first name
         setUserName(firstName || "Student");
 
+        if (!SHOW_SUBSCRIPTION_UI) {
+          return;
+        }
+
         // Fetch user's subscription plan from the same endpoint as navbar
         try {
           const response = await fetch("/api/subscription/status");
@@ -314,9 +323,11 @@ function Sidebar() {
             <div className="font-semibold text-gray-800 transition-colors truncate">
               {userName || "Loading..."}
             </div>
-            <div className="text-xs text-gray-500 transition-colors truncate">
-              {userPlan || "Free Plan"}
-            </div>
+            {SHOW_SUBSCRIPTION_UI && (
+              <div className="text-xs text-gray-500 transition-colors truncate">
+                {userPlan || "Free Plan"}
+              </div>
+            )}
           </div>
         </div>
 
@@ -325,7 +336,7 @@ function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 flex flex-col gap-2 overflow-y-auto">
-          {navLinks.map((link) => {
+          {visibleNavLinks.map((link) => {
             const isActive = pathname === link.href;
             const isLoading = navigatingTo === link.href;
             const isSubjectsLink = link.name === "Notes";
@@ -537,9 +548,11 @@ function Sidebar() {
             <div className="font-semibold text-gray-800 truncate">
               {userName || "Loading..."}
             </div>
-            <div className="text-xs text-gray-500 truncate">
-              {userPlan || "Free Plan"}
-            </div>
+            {SHOW_SUBSCRIPTION_UI && (
+              <div className="text-xs text-gray-500 truncate">
+                {userPlan || "Free Plan"}
+              </div>
+            )}
           </div>
         </div>
 
@@ -548,7 +561,7 @@ function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 flex flex-col gap-2 overflow-y-auto">
-          {navLinks.map((link) => {
+          {visibleNavLinks.map((link) => {
             const isActive = pathname === link.href;
             const isLoading = navigatingTo === link.href;
             const isSubjectsLink = link.name === "Notes";

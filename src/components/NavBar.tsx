@@ -3,6 +3,10 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/lib/AuthContext";
+import {
+  landingOutlineButtonClass,
+  landingPrimaryButtonClass,
+} from "@/lib/landing-button-styles";
 
 const logoUrl = "/images/Wisker.png"; // Local logo in public directory
 
@@ -63,48 +67,43 @@ export default function NavBar() {
             Home
           </Link>
           <a
-            href="#how-it-works"
-            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
-          >
-            How It Works
-          </a>
-          <a
             href="#features"
             className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
           >
             Features
           </a>
           <a
-            href="#blogs"
+            href="#how-it-works"
             className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
           >
-            Blogs
+            How It Works
           </a>
           <a
-            href="#pricing"
+            href="#for-students"
             className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
           >
-            Pricing
+            For students
+          </a>
+          <a
+            href="#faq"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            FAQ
           </a>
           {!isSignedIn ? (
             <>
-              <a
-                href="/login"
-                className="text-white bg-orange-500 no-underline px-4 py-2 rounded-lg font-bold text-base border-2 border-transparent shadow-sm transition-all duration-150 hover:bg-orange-600 hover:text-white hover:border-orange-400 active:scale-95 focus:outline-none"
-              >
+              <a href="/login" className={landingOutlineButtonClass}>
                 Login
               </a>
-              <a
-                href="/signup"
-                className="px-6 py-2 bg-[#b3d1ff] text-gray-900 rounded-xl font-extrabold text-base border-2 border-gray-700 no-underline shadow-sm transition-all duration-150 hover:bg-[#8bb6f7] hover:text-white active:scale-95 focus:outline-none"
-              >
+              <a href="/signup" className={landingPrimaryButtonClass}>
                 Sign Up Free
               </a>
             </>
           ) : (
             <button
+              type="button"
               onClick={logout}
-              className="px-6 py-2 bg-[#e6f0ff] text-[#4a90e2] rounded-xl font-extrabold text-base border-2 border-[#b3d1ff] shadow-sm transition-all duration-150 hover:bg-[#b3d1ff] hover:text-[#171717] active:scale-95 focus:outline-none"
+              className={landingOutlineButtonClass}
             >
               Logout
             </button>
@@ -123,48 +122,43 @@ export default function NavBar() {
             Home
           </Link>
           <a
-            href="#how-it-works"
-            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
-          >
-            How It Works
-          </a>
-          <a
             href="#features"
             className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
           >
             Features
           </a>
           <a
-            href="#blogs"
+            href="#how-it-works"
             className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
           >
-            Blogs
+            How It Works
           </a>
           <a
-            href="#pricing"
+            href="#for-students"
             className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
           >
-            Pricing
+            For students
+          </a>
+          <a
+            href="#faq"
+            className="text-gray-700 font-bold text-base px-2 py-1 hover:text-[#4a90e2] transition-colors"
+          >
+            FAQ
           </a>
           {!isSignedIn ? (
             <>
-              <a
-                href="/login"
-                className="text-white bg-orange-300 no-underline px-4 py-2 rounded-lg font-bold text-base border-2 border-transparent shadow-sm transition-all duration-150 hover:bg-orange-600 hover:text-white hover:border-orange-400 active:scale-95 focus:outline-none"
-              >
+              <a href="/login" className={landingOutlineButtonClass}>
                 Login
               </a>
-              <a
-                href="/signup"
-                className="px-6 py-2 bg-[#b3d1ff] text-gray-900 rounded-xl font-extrabold text-base border-2 border-gray-700 no-underline shadow-sm transition-all duration-150 hover:bg-[#8bb6f7] hover:text-white active:scale-95 focus:outline-none"
-              >
+              <a href="/signup" className={landingPrimaryButtonClass}>
                 Sign Up Free
               </a>
             </>
           ) : (
             <button
+              type="button"
               onClick={logout}
-              className="px-6 py-2 bg-[#e6f0ff] text-[#4a90e2] rounded-xl font-extrabold text-base border-2 border-[#b3d1ff] shadow-sm transition-all duration-150 hover:bg-[#b3d1ff] hover:text-[#171717] active:scale-95 focus:outline-none"
+              className={landingOutlineButtonClass}
             >
               Logout
             </button>

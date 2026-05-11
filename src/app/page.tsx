@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuth, AuthProvider } from "@/lib/AuthContext";
 import NavBar from "@/components/NavBar";
 import Hero from "@/components/sections/Hero";
-import HowItWorks from "@/components/sections/HowItWorks";
+import Subheadline from "@/components/sections/Subheadline";
 import Features from "@/components/sections/Features";
-// import Blogs from "@/components/sections/Blogs";
-import Pricing from "@/components/sections/Pricing";
+import HowItWorks from "@/components/sections/HowItWorks";
+import AudienceSection from "@/components/sections/AudienceSection";
 import SignUpCTA from "@/components/sections/SignUpCTA";
+import FAQ from "@/components/sections/FAQ";
 import CommunitySection from "@/components/CommunitySection";
 import Footer from "@/components/Footer";
 
@@ -48,11 +49,12 @@ function HomeContent() {
       <NavBar />
       <main className="w-full max-w-[1200px] mx-auto px-4">
         <Hero />
-        <HowItWorks />
+        <Subheadline />
         <Features />
-        {/* <Blogs /> */}
-        <Pricing />
+        <HowItWorks />
+        <AudienceSection />
         <SignUpCTA />
+        <FAQ />
         <CommunitySection />
       </main>
       <Footer />

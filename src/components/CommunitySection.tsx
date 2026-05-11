@@ -3,10 +3,11 @@ import { FaEnvelope, FaFacebook, FaLinkedin } from "react-icons/fa";
 
 const CommunitySection = () => (
   <>
-    <div className="w-full border-t-2 border-gray-200 mt-6 sm:mt-8"></div>
+    <div className="w-full border-t-2 border-[#b3d1ff]/50 mt-6 sm:mt-8"></div>
     <div className="w-full flex flex-col items-center justify-center py-8 sm:py-12 gap-6">
       <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-center text-[#676561] mb-2">
-        Join <span className="text-orange-300 font-extrabold">10,000+</span>{" "}
+        <span className="text-[#6B5CE0]">Join</span>{" "}
+        <span className="text-[#FD9E2F] font-extrabold">10,000+</span>{" "}
         students already smashing their grades
       </h2>
       <p className="text-gray-700 text-center text-base sm:text-lg max-w-2xl mb-4">
@@ -17,7 +18,7 @@ const CommunitySection = () => (
         {/* Social icons for Facebook, LinkedIn, Email */}
         <a
           href="mailto:info@wisker.app"
-          className="flex flex-col items-center gap-2 text-gray-700 font-semibold text-base hover:text-blue-500 transition-colors"
+          className="flex flex-col items-center gap-2 text-gray-700 font-semibold text-base hover:text-[#7678ed] transition-colors"
         >
           <FaEnvelope className="w-10 h-10" />
           <span>Email</span>
@@ -26,7 +27,7 @@ const CommunitySection = () => (
           href="https://www.facebook.com/profile.php?id=61577887210771"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col items-center gap-2 text-gray-700 font-semibold text-base hover:text-blue-600 transition-colors"
+          className="flex flex-col items-center gap-2 text-gray-700 font-semibold text-base hover:text-[#6B5CE0] transition-colors"
         >
           <FaFacebook className="w-10 h-10" />
           <span>Facebook</span>
@@ -35,14 +36,14 @@ const CommunitySection = () => (
           href="https://www.linkedin.com/company/wisker/?viewAsMember=true"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex flex-col items-center gap-2 text-gray-700 font-semibold text-base hover:text-blue-700 transition-colors"
+          className="flex flex-col items-center gap-2 text-gray-700 font-semibold text-base hover:text-[#524CE5] transition-colors"
         >
           <FaLinkedin className="w-10 h-10" />
           <span>LinkedIn</span>
         </a>
       </div>
     </div>
-    <div className="w-full border-t-2 border-gray-200 mb-6 sm:mb-8"></div>
+    <div className="w-full border-t-2 border-[#b3d1ff]/50 mb-6 sm:mb-8"></div>
   </>
 );
 

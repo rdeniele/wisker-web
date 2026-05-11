@@ -4,7 +4,7 @@ import {
   FaHome,
   FaBookOpen,
   FaListAlt,
-  FaBlog,
+  FaQuestionCircle,
   FaEnvelope,
   FaFacebook,
   FaLinkedin,
@@ -49,15 +49,6 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#how-it-works"
-                  className="flex items-center gap-2 hover:text-[#b3d1ff] transition-colors"
-                >
-                  <FaBookOpen />
-                  How It Works
-                </a>
-              </li>
-              <li>
-                <a
                   href="#features"
                   className="flex items-center gap-2 hover:text-[#b3d1ff] transition-colors"
                 >
@@ -67,11 +58,20 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#blogs"
+                  href="#how-it-works"
                   className="flex items-center gap-2 hover:text-[#b3d1ff] transition-colors"
                 >
-                  <FaBlog />
-                  Blogs
+                  <FaBookOpen />
+                  How It Works
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#faq"
+                  className="flex items-center gap-2 hover:text-[#b3d1ff] transition-colors"
+                >
+                  <FaQuestionCircle />
+                  FAQ
                 </a>
               </li>
             </ul>
