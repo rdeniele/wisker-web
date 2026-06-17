@@ -13,6 +13,7 @@ import SignUpCTA from "@/components/sections/SignUpCTA";
 import FAQ from "@/components/sections/FAQ";
 import CommunitySection from "@/components/CommunitySection";
 import Footer from "@/components/Footer";
+import { BottomAd } from "@/components/ui/AdSenseAd";
 
 function HomeContent() {
   const { isSignedIn, loading } = useAuth();
@@ -55,6 +56,11 @@ function HomeContent() {
         <AudienceSection />
         <SignUpCTA />
         <FAQ />
+        {/* Ad placement - unobtrusive bottom section ad */}
+        <div className="py-12 border-t border-gray-200">
+          <p className="text-center text-xs text-gray-400 mb-4">Sponsored</p>
+          <BottomAd />
+        </div>
         <CommunitySection />
       </main>
       <Footer />

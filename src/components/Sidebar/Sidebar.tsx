@@ -182,7 +182,6 @@ function Sidebar() {
   const [, startTransition] = useTransition();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
-  const [userPlan, setUserPlan] = useState<string | null>(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isSubjectsExpanded, setIsSubjectsExpanded] = useState(false);
   const [subjects, setSubjects] = useState<
@@ -213,43 +212,6 @@ function Sidebar() {
 
         // Use only first name
         setUserName(firstName || "Student");
-
-        if (!SHOW_SUBSCRIPTION_UI) {
-          return;
-        }
-
-        // Fetch user's subscription plan from the same endpoint as navbar
-        try {
-          const response = await fetch("/api/subscription/status");
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-              const subData = data.data;
-
-              // Format plan type (FREE -> Free, PRO -> Pro, PREMIUM -> Premium)
-              const planType = subData.planType || "FREE";
-              const formattedPlan =
-                planType.charAt(0) + planType.slice(1).toLowerCase();
-
-              // Check if subscription is active
-              const isActive =
-                subData.isActive && subData.subscriptionStatus === "active";
-              const planLabel = isActive
-                ? `${formattedPlan} (Active)`
-                : formattedPlan;
-
-              setUserPlan(`${planLabel} Plan`);
-            } else {
-              setUserPlan("Free Plan");
-            }
-          } else {
-            // Fallback to Free plan if API call fails
-            setUserPlan("Free Plan");
-          }
-        } catch (error) {
-          console.error("Failed to fetch user plan:", error);
-          setUserPlan("Free Plan");
-        }
       }
     };
 
@@ -319,15 +281,10 @@ function Sidebar() {
           <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center transition-colors">
             <span className="text-2xl">🐾</span>
           </div>
-          <div className="group-hover/sidebar:flex flex-col hidden">
+          <div className="group-hover/sidebar:flex flex-col hidden flex-1 min-w-0">
             <div className="font-semibold text-gray-800 transition-colors truncate">
               {userName || "Loading..."}
             </div>
-            {SHOW_SUBSCRIPTION_UI && (
-              <div className="text-xs text-gray-500 transition-colors truncate">
-                {userPlan || "Free Plan"}
-              </div>
-            )}
           </div>
         </div>
 
@@ -548,11 +505,6 @@ function Sidebar() {
             <div className="font-semibold text-gray-800 truncate">
               {userName || "Loading..."}
             </div>
-            {SHOW_SUBSCRIPTION_UI && (
-              <div className="text-xs text-gray-500 truncate">
-                {userPlan || "Free Plan"}
-              </div>
-            )}
           </div>
         </div>
 

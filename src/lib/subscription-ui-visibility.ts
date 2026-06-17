@@ -1,5 +1,5 @@
 /**
- * When false, hides Upgrade navigation, plan label, credit meter, and upgrade promo
- * on the dashboard. API routes and /upgrade pages stay in place.
+ * When false, hides Upgrade navigation link, plan label in sidebar, and upgrade promo banner.
+ * Credits display still shows in navbar. API routes and /upgrade pages stay in place.
  */
-export const SHOW_SUBSCRIPTION_UI = true;
+export const SHOW_SUBSCRIPTION_UI = false;

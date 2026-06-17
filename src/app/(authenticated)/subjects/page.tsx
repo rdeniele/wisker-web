@@ -4,6 +4,7 @@ import { IoBookSharp } from "react-icons/io5";
 import CreateSubject from "./components/CreateSubject";
 import UpdateSubject from "./components/UpdateSubject";
 import SubjectCard from "./components/SubjectCard";
+import { BottomAd } from "@/components/ui/AdSenseAd";
 
 interface Subject {
   id: string;
@@ -193,22 +194,30 @@ function SubjectsPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-            {transformedSubjects.map((subject) => (
-              <SubjectCard
-                key={subject.id}
-                subject={subject}
-                navigatingTo={navigatingTo}
-                onNavigationStart={handleNavigationStart}
-                onEdit={(id) => {
-                  setSelectedSubjectId(id);
-                  setShowUpdateModal(true);
-                }}
-                onDelete={(id) => {
-                  setDeleteConfirmId(id);
-                }}
-              />
-            ))}
+          <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+              {transformedSubjects.map((subject) => (
+                <SubjectCard
+                  key={subject.id}
+                  subject={subject}
+                  navigatingTo={navigatingTo}
+                  onNavigationStart={handleNavigationStart}
+                  onEdit={(id) => {
+                    setSelectedSubjectId(id);
+                    setShowUpdateModal(true);
+                  }}
+                  onDelete={(id) => {
+                    setDeleteConfirmId(id);
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Ad placement - after subjects grid */}
+            <div className="mt-12 md:mt-16 pt-8 md:pt-10 border-t border-gray-200">
+              <p className="text-center text-xs text-gray-400 mb-4">Sponsored</p>
+              <BottomAd />
+            </div>
           </div>
         )}
 

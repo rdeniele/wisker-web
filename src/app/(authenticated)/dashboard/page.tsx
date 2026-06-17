@@ -4,6 +4,7 @@ import CombineBanners from "./components/DashboardBanners/CombineBanners";
 import StudyStats from "./components/StudyStats/StudyStats";
 import StudyStreak from "./components/StudyStreak/StudyStreak";
 import TodaysFocus from "./components/TodaysFocus/TodaysFocus";
+import { BottomAd } from "@/components/ui/AdSenseAd";
 
 function DashboardPage() {
   return (
@@ -31,6 +32,12 @@ function DashboardPage() {
       {/* Upcoming Exam Section */}
       <div className="mt-8 md:mt-10 lg:mt-12">
         <UpcomingExam />
+      </div>
+
+      {/* Ad placement - bottom of dashboard */}
+      <div className="mt-12 md:mt-16 lg:mt-20 pt-8 md:pt-10 border-t border-gray-200">
+        <p className="text-center text-xs text-gray-400 mb-4">Sponsored</p>
+        <BottomAd />
       </div>
     </div>
   );

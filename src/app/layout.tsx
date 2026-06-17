@@ -43,6 +43,13 @@ export default function RootLayout({
           }}
         />
         <meta name="color-scheme" content="light only" />
+        {/* Google AdSense */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4143521375584293"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body
         className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-background text-foreground`}

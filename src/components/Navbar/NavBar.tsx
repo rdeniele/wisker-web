@@ -326,7 +326,7 @@ function NavBar() {
       <div
         className={`flex items-center gap-2 md:gap-4 ml-2 transition-all duration-300 ${isSearchOpen ? "opacity-0 scale-95 pointer-events-none" : "opacity-100 scale-100"}`}
       >
-        {SHOW_SUBSCRIPTION_UI && <CreditsDisplay />}
+        <CreditsDisplay />
 
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>
