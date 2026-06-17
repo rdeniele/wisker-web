@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   title: "Wisker",
   description:
     "Your intelligent study companion - create notes, flashcards, and learning tools powered by AI",
+  other: {
+    "google-site-verification": "4143521375584293",
+  },
 };
 
 export default function RootLayout({
