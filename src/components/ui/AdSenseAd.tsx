@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 interface AdSenseAdProps {
   adSlot: string;
@@ -13,17 +13,33 @@ export function AdSenseAd({
   adFormat = "auto",
   className = "",
 }: AdSenseAdProps) {
+  const hasPushed = useRef(false);
+
   useEffect(() => {
-    try {
-      // Push ads from previously registered ad slots
-      if (typeof window !== "undefined" && (window as any).adsbygoogle) {
-        ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push(
-          {},
-        );
+    // Only push once per component instance
+    if (hasPushed.current) return;
+    hasPushed.current = true;
+
+    // Wait for the DOM to be ready and the ad element to be in place
+    const timer = setTimeout(() => {
+      try {
+        if (typeof window !== "undefined" && (window as any).adsbygoogle) {
+          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push(
+            {},
+          );
+        }
+      } catch (error) {
+        // Silently handle - ad might already be processed
+        if (
+          error instanceof Error &&
+          !error.message.includes("already have ads")
+        ) {
+          console.error("AdSense error:", error);
+        }
       }
-    } catch (error) {
-      console.error("AdSense error:", error);
-    }
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
