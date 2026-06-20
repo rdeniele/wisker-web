@@ -76,6 +76,67 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       return;
     }
 
+    // Multiple images -> combine into a single note via vision AI.
+    const fileArray = Array.from(files);
+    const allImages =
+      fileArray.length > 0 && fileArray.every((f) => f.type.startsWith("image/"));
+
+    if (fileArray.length > 1 && allImages) {
+      if (fileArray.length > 10) {
+        showToast("You can upload up to 10 images at once", "error");
+        return;
+      }
+      if (fileArray.some((f) => f.size > 10 * 1024 * 1024)) {
+        showToast("Each image must be 10MB or smaller", "error");
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadProgress(`Converting ${fileArray.length} images...`);
+      try {
+        const imageBase64s = await Promise.all(
+          fileArray.map((f) => convertFileToBase64(f)),
+        );
+        const title =
+          fileArray[0].name.replace(/\.[^/.]+$/, "") || "Scanned notes";
+
+        setUploadProgress("Processing with AI...");
+        const response = await fetch("/api/notes/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subjectId, title, imageBase64s }),
+        });
+
+        const responseText = await response.text();
+        let resData;
+        try {
+          resData = JSON.parse(responseText);
+        } catch {
+          throw new Error(`Server error: ${responseText.substring(0, 200)}`);
+        }
+        if (!response.ok) {
+          throw new Error(
+            resData.error?.message || resData.message || "Failed to upload images",
+          );
+        }
+
+        showToast(
+          `${fileArray.length} images uploaded and processed successfully!`,
+          "success",
+        );
+        if (onFileSelect) onFileSelect(files);
+      } catch (error) {
+        showToast(
+          error instanceof Error ? error.message : "Failed to upload images",
+          "error",
+        );
+      } finally {
+        setIsUploading(false);
+        setUploadProgress("");
+      }
+      return;
+    }
+
     const file = files[0];
     
     // Check file type first
@@ -338,13 +399,14 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
       {/* Upload Section */}
       <div className="flex flex-col items-center mb-2">
         <span className="text-xl font-bold text-gray-800 mb-1">
-          Upload PDF, PowerPoint, or Image
+          Upload PDF, PowerPoint, or Images
         </span>
         <label className="w-full flex justify-center">
           <input
             ref={inputRef}
             type="file"
             accept=".pdf,.ppt,.pptx,image/*"
+            multiple
             className="hidden"
             onChange={handleInputChange}
             disabled={isUploading}

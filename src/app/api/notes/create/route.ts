@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       validatedData.pdfText ||
       validatedData.pdfBase64 ||
       validatedData.imageBase64 ||
+      (validatedData.imageBase64s && validatedData.imageBase64s.length > 0) ||
       validatedData.pptBase64;
 
     if (requiresAI) {

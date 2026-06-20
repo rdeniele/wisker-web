@@ -40,18 +40,25 @@ export const createNoteSchema = z
     pdfText: z.string().optional(),
     pdfBase64: z.string().optional(),
     imageBase64: z.string().optional(),
+    // One or more images (vision AI), combined into a single note. Max 10.
+    imageBase64s: z.array(z.string()).max(10, "You can upload up to 10 images at once").optional(),
     pptBase64: z.string().optional(),
   })
   .refine(
     (data) => {
-      // At least one of rawContent, pdfText, pdfBase64, imageBase64, or pptBase64 must be provided
+      // At least one content source must be provided
       return (
-        data.rawContent || data.pdfText || data.pdfBase64 || data.imageBase64 || data.pptBase64
+        data.rawContent ||
+        data.pdfText ||
+        data.pdfBase64 ||
+        data.imageBase64 ||
+        (data.imageBase64s && data.imageBase64s.length > 0) ||
+        data.pptBase64
       );
     },
     {
       message:
-        "At least one of rawContent, pdfText, pdfBase64, imageBase64, or pptBase64 must be provided",
+        "At least one of rawContent, pdfText, pdfBase64, imageBase64, imageBase64s, or pptBase64 must be provided",
     },
   );
 

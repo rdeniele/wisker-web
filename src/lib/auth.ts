@@ -1,24 +1,36 @@
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { userService } from "@/service/user.service";
-import { NotFoundError } from "@/lib/errors";
+import { NotFoundError, UnauthorizedError } from "@/lib/errors";
 import { User } from "@supabase/supabase-js";
 
 /**
  * Get the authenticated user and ensure they exist in the Prisma database.
  * If the user doesn't exist in Prisma, they will be created automatically.
  *
+ * Supports two auth transports:
+ *  - Web app: the Supabase session stored in cookies (default).
+ *  - Mobile app: a Supabase access token sent as `Authorization: Bearer <jwt>`.
+ *
  * @throws Error if user is not authenticated
  * @returns The authenticated Supabase user
  */
 export async function getAuthenticatedUser(): Promise<User> {
   const supabase = await createClient();
+
+  // Prefer an explicit Bearer token (mobile); fall back to cookies (web).
+  const authHeader = (await headers()).get("authorization");
+  const token = authHeader?.replace(/^Bearer\s+/i, "");
+
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = token
+    ? await supabase.auth.getUser(token)
+    : await supabase.auth.getUser();
 
   if (authError || !user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedError();
   }
 
   // Ensure user exists in Prisma database (sync if needed)

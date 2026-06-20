@@ -1122,6 +1122,67 @@ Return only the extracted text and descriptions, without any additional commenta
     }
   }
 
+  /** Infer the image MIME type from the start of a base64 string. */
+  private imageMimeFromBase64(base64: string): string {
+    if (base64.startsWith("/9j/")) return "image/jpeg";
+    if (base64.startsWith("iVBORw")) return "image/png";
+    if (base64.startsWith("R0lGOD")) return "image/gif";
+    if (base64.startsWith("UklGR")) return "image/webp";
+    return "image/jpeg";
+  }
+
+  /**
+   * Extract text from multiple images in a single vision request.
+   * The images are treated as ordered pages/parts of the same material.
+   * @param images - Base64 encoded images, in order
+   * @returns Combined extracted text content
+   */
+  async extractTextFromImages(images: string[]): Promise<string> {
+    if (images.length === 0) {
+      throw new AIProcessingError("No images provided");
+    }
+    if (images.length === 1) {
+      return this.extractTextFromImage(images[0]);
+    }
+
+    try {
+      const systemPrompt = `You are an expert at extracting text from images.
+The user provides multiple images that are pages or parts of the SAME study material, in order.
+Extract all text content from every image, maintaining structure and formatting, and combine them into one continuous document in the given order.
+If there are diagrams, tables, or other visual elements, describe them clearly.
+Return only the extracted text and descriptions, without any additional commentary.`;
+
+      const content: TogetherAIMessage["content"] = [
+        {
+          type: "text",
+          text: `Extract all text and describe visual elements from these ${images.length} images. They are parts of the same material, in order:`,
+        },
+        ...images.map((img) => ({
+          type: "image_url" as const,
+          image_url: { url: `data:${this.imageMimeFromBase64(img)};base64,${img}` },
+        })),
+      ];
+
+      const messages: TogetherAIMessage[] = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content },
+      ];
+
+      const response = await this.makeRequest(
+        messages,
+        {
+          maxTokens: 6000,
+          temperature: 0.1,
+        },
+        this.visionModel,
+      );
+
+      return response;
+    } catch (error) {
+      throw new AIProcessingError("Failed to extract text from images", error);
+    }
+  }
+
   /**
    * Generate a well-structured, learning-optimized note from raw knowledge base
    * This transforms raw PDF/image content into a better formatted note for learning
@@ -1329,6 +1390,50 @@ Return a well-formatted markdown text that students can easily learn from.`;
       }
       throw new AIProcessingError(
         "Failed to process image with knowledge extraction",
+        error,
+      );
+    }
+  }
+
+  /**
+   * Process multiple images into one note: extract combined content as the
+   * knowledge base, then generate a single structured note from all of them.
+   * @param images - Base64 encoded images, in order
+   * @returns Object with knowledgeBase and structuredNote
+   */
+  async processImagesWithKnowledge(images: string[]): Promise<{
+    knowledgeBase: string;
+    structuredNote: string;
+  }> {
+    if (images.length <= 1) {
+      return this.processImageWithKnowledge(images[0]);
+    }
+
+    if (!this.apiKey) {
+      throw new AIProcessingError(
+        "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
+      );
+    }
+
+    try {
+      const knowledgeBase = await this.extractTextFromImages(images);
+
+      if (!knowledgeBase || knowledgeBase.trim().length === 0) {
+        throw new AIProcessingError(
+          "No content could be extracted from the images. They might be empty or unclear.",
+        );
+      }
+
+      const structuredNote =
+        await this.generateStructuredNoteFromKnowledge(knowledgeBase);
+
+      return { knowledgeBase, structuredNote };
+    } catch (error) {
+      if (error instanceof AIProcessingError) {
+        throw error;
+      }
+      throw new AIProcessingError(
+        "Failed to process images with knowledge extraction",
         error,
       );
     }

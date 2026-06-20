@@ -82,7 +82,8 @@ export interface CreateNoteRequest {
   rawContent?: string;
   pdfText?: string; // Optional: Extracted PDF text (text-only PDFs)
   pdfBase64?: string; // Optional: PDF file as base64 (legacy, for storage only)
-  imageBase64?: string; // Optional: Image file as base64 (vision AI)
+  imageBase64?: string; // Optional: single image as base64 (vision AI)
+  imageBase64s?: string[]; // Optional: multiple images as base64, combined into one note (vision AI)
   pptBase64?: string; // Optional: PowerPoint file as base64
 }
 

@@ -173,9 +173,17 @@ export class NoteService {
       let fileSize: number | undefined;
       let fileType: string | undefined;
 
-      // If PDF or image is provided, extract text using AI and upload to storage
+      // Normalize image input: accept a single image or an array, combined into one note.
+      const images: string[] =
+        data.imageBase64s && data.imageBase64s.length > 0
+          ? data.imageBase64s
+          : data.imageBase64
+            ? [data.imageBase64]
+            : [];
+
+      // If PDF or image(s) provided, extract text using AI and upload to storage
       // Process files if provided
-      if (data.pdfText || data.pdfBase64 || data.imageBase64 || data.pptBase64) {
+      if (data.pdfText || data.pdfBase64 || images.length > 0 || data.pptBase64) {
         // COST PROTECTION: Enforce hard limits on PDF size
         const MAX_PDF_CHARS = 1000000; // Absolute maximum: 1M chars (~10 chunks max)
 
@@ -219,33 +227,35 @@ export class NoteService {
             fileName = `${data.title}.pdf`;
             fileSize = uploadResult.size;
             fileType = "application/pdf";
-          } else if (data.imageBase64) {
-            // Process image: extract knowledge base and generate structured note
+          } else if (images.length > 0) {
+            // Process image(s): extract combined knowledge base and generate one structured note
             const { knowledgeBase: extractedKnowledge, structuredNote } =
-              await aiService.processImageWithKnowledge(data.imageBase64);
+              await aiService.processImagesWithKnowledge(images);
 
             knowledgeBase = extractedKnowledge; // Store raw extracted content as knowledge
             rawContent = structuredNote; // Store AI-generated structured note as content
 
-            // Determine image type from base64 header
-            const imageType = data.imageBase64.startsWith("/9j/")
+            // Upload the first image to storage as the representative file.
+            const firstImage = images[0];
+            const imageType = firstImage.startsWith("/9j/")
               ? "image/jpeg"
-              : data.imageBase64.startsWith("iVBORw")
+              : firstImage.startsWith("iVBORw")
                 ? "image/png"
-                : data.imageBase64.startsWith("R0lGOD")
+                : firstImage.startsWith("R0lGOD")
                   ? "image/gif"
                   : "image/jpeg";
             const extension = imageType.split("/")[1];
+            const baseName =
+              images.length > 1 ? `${data.title} (${images.length} images)` : data.title;
 
-            // Upload image to storage
             const uploadResult = await StorageService.uploadFile(
-              data.imageBase64,
+              firstImage,
               `${data.title}.${extension}`,
               userId,
               imageType,
             );
             fileUrl = uploadResult.url;
-            fileName = `${data.title}.${extension}`;
+            fileName = `${baseName}.${extension}`;
             fileSize = uploadResult.size;
             fileType = imageType;
 

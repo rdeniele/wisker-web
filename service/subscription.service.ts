@@ -247,6 +247,32 @@ export async function consumeCredits(
 }
 
 /**
+ * Grant credits to a user (e.g. as a reward for watching an ad).
+ *
+ * Implemented by reducing creditsUsedToday, which raises creditsRemaining
+ * (= dailyCredits - creditsUsedToday). This naturally caps the balance at
+ * dailyCredits — a user can never exceed their daily allowance via rewards.
+ */
+export async function grantCredits(
+  userId: string,
+  amount: number,
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { creditsUsedToday: true },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { creditsUsedToday: Math.max(0, user.creditsUsedToday - amount) },
+  });
+}
+
+/**
  * Update user's subscription plan
  */
 export async function updateSubscriptionPlan(
