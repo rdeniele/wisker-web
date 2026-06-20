@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { learningToolService } from "@/service/learningtool.service";
 import { validateRequest, generateLearningToolSchema } from "@/lib/validation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import {
   checkCredits,
   consumeCredits,
@@ -17,16 +17,8 @@ import { recordActivity } from "@/service/streak.service";
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (supports both web cookies and mobile Bearer token)
+    const user = await getAuthenticatedUser();
 
     // Parse and validate request body
     const body = await request.json();
