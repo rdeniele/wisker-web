@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { userService } from "@/service/user.service";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 /**
  * GET /api/user/usage
@@ -9,16 +9,8 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function GET(_request: NextRequest) {
   try {
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (supports both web cookies and mobile Bearer token)
+    const user = await getAuthenticatedUser();
 
     // Get usage stats
     const stats = await userService.getUserUsageStats(user.id);

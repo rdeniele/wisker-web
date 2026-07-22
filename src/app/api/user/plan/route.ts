@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
 import { userService } from "@/service/user.service";
 import { validateRequest, updateUserPlanSchema } from "@/lib/validation";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 /**
  * PATCH /api/user/plan
@@ -10,16 +10,8 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function PATCH(request: NextRequest) {
   try {
-    // Get authenticated user
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (supports both web cookies and mobile Bearer token)
+    const user = await getAuthenticatedUser();
 
     // Parse and validate request body
     const body = await request.json();

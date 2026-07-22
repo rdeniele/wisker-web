@@ -1,8 +1,7 @@
 import { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { StorageService } from "@/service/storage.service";
 import { apiResponse, errorResponse } from "@/lib/api-response";
-import { UnauthorizedError } from "@/lib/errors";
 import prisma from "@/lib/prisma";
 
 /**
@@ -11,17 +10,8 @@ import prisma from "@/lib/prisma";
  */
 export async function GET(_req: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      throw new UnauthorizedError();
-    }
+    // Get authenticated user (supports both web cookies and mobile Bearer token)
+    const user = await getAuthenticatedUser();
 
     // Get storage stats
     const stats = await StorageService.getUserStorageStats(user.id);
@@ -57,17 +47,8 @@ export async function GET(_req: NextRequest) {
  */
 export async function DELETE(_req: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      throw new UnauthorizedError();
-    }
+    // Get authenticated user (supports both web cookies and mobile Bearer token)
+    const user = await getAuthenticatedUser();
 
     // Delete all user files from storage
     await StorageService.deleteUserFiles(user.id);

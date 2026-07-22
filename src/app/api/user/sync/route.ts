@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/lib/api-response";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -9,16 +9,8 @@ import { prisma } from "@/lib/prisma";
  */
 export async function POST(_request: NextRequest) {
   try {
-    // Get authenticated user from Supabase
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return errorResponse(new Error("Unauthorized"), 401);
-    }
+    // Get authenticated user (supports both web cookies and mobile Bearer token)
+    const user = await getAuthenticatedUser();
 
     // Check if user exists in Prisma
     let prismaUser = await prisma.user.findUnique({
