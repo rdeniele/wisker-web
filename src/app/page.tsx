@@ -20,31 +20,14 @@ function HomeContent() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect authenticated users to dashboard
+    // Redirect authenticated users to dashboard once auth state resolves.
+    // The landing page renders immediately below regardless, so this never
+    // blocks first paint for anonymous visitors.
     if (!loading && isSignedIn) {
       router.push("/dashboard");
     }
   }, [isSignedIn, loading, router]);
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">Loading...</div>
-      </div>
-    );
-  }
-
-  // Don't show landing page while redirecting
-  if (isSignedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-gray-600">Redirecting...</div>
-      </div>
-    );
-  }
-
-  // Show landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-white">
       <NavBar />

@@ -9,6 +9,29 @@ export async function updateSession(request: NextRequest) {
     });
   }
 
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    "/",
+    "/login",
+    "/signup",
+    "/auth",
+    "/terms",
+    "/privacy",
+  ];
+
+  const isPublicRoute = publicRoutes.some((route) =>
+    request.nextUrl.pathname.startsWith(route),
+  );
+
+  // Skip the Supabase network round-trip entirely for public routes — the
+  // result is never used to gate access to them, so calling it here only
+  // adds latency (this is what was slowing down the landing page).
+  if (isPublicRoute) {
+    return NextResponse.next({
+      request,
+    });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -48,22 +71,8 @@ export async function updateSession(request: NextRequest) {
 
   const user = data?.claims;
 
-  // Public routes that don't require authentication
-  const publicRoutes = [
-    "/",
-    "/login",
-    "/signup",
-    "/auth",
-    "/terms",
-    "/privacy",
-  ];
-
-  const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route),
-  );
-
-  if (!user && !isPublicRoute) {
-    // no user, potentially respond by redirecting the user to the login page
+  if (!user) {
+    // no user on a protected route, redirect to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
