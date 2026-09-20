@@ -1,28 +1,72 @@
 @import "tailwindcss";
 
-/* Force light mode only - ignore system preferences */
-html {
-  color-scheme: light only;
-}
+/* =============================================================================
+   WISKER DESIGN SYSTEM
+   -----------------------------------------------------------------------------
+   Warm cream canvas, ink text, a single friendly orange for action, and indigo
+   for focus/secondary emphasis. Surfaces are white with a flat "edge" shadow
+   (offset, no blur) that gives buttons and cards their tactile, chunky feel.
+
+   Everything below flows from these tokens. Tailwind's stock gray / orange /
+   blue / purple / green / red / yellow ramps are re-pointed at the Wisker
+   palette, so any utility (`text-gray-600`, `bg-orange-50`, …) already speaks
+   the brand language. Reach for the semantic names (`ink`, `cream`, `brand`,
+   `accent`) in new code.
+   ========================================================================== */
 
 :root {
-  /* Light mode colors */
-  --background: #fafafa;
-  --foreground: #171717;
+  color-scheme: light only;
+
+  /* Core */
+  --ink: #231f20;
+  --cream: #fff9f2;
+  --sand: #fff4e8;
+  --line: #f0e4d4;
+  --edge: #efe0cc; /* flat card / button shadow */
+  --brand-edge: #d97b18; /* flat shadow under primary buttons */
+  --accent-edge: #4341d6; /* flat shadow under indigo buttons */
+
+  /* Legacy semantic aliases (shadcn-style) */
+  --background: var(--cream);
+  --foreground: var(--ink);
   --card: #ffffff;
-  --card-foreground: #171717;
-  --primary: #6366f1;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #171717;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #f3f4f6;
-  --accent-foreground: #171717;
-  --border: #e5e7eb;
+  --card-foreground: var(--ink);
+  --primary: #f9993a;
+  --primary-foreground: var(--ink);
+  --secondary: #eeedff;
+  --secondary-foreground: var(--ink);
+  --muted: #f6efe6;
+  --muted-foreground: #75695f;
+  --accent: #615fff;
+  --accent-foreground: #ffffff;
+  --border: var(--line);
+
+  /* Layout metrics shared by the app shell */
+  --sidebar-w: 264px;
+  --sidebar-w-collapsed: 84px;
+  --topbar-h: 68px;
+  --mobile-header-h: 60px;
+  --bottom-nav-h: 68px;
 }
 
-@theme inline {
+@theme {
+  /* Typography */
+  --font-sans:
+    var(--nf-nunito), "Nunito Sans", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-display:
+    var(--nf-fredoka), "Fredoka", ui-rounded, "Nunito Sans", system-ui,
+    sans-serif;
+  --font-fredoka: var(--font-display);
+
+  /* Semantic colors → utilities like bg-cream, text-ink, bg-brand */
+  --color-ink: #231f20;
+  --color-cream: #fff9f2;
+  --color-sand: #fff4e8;
+  --color-line: #f0e4d4;
+  --color-brand: #f9993a;
+  --color-brand-edge: #d97b18;
+  --color-accent: #615fff;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -33,17 +77,722 @@ html {
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-fredoka: var(--font-fredoka);
-  --font-poppins: var(--font-poppins);
+
+  /* Neutrals — warm, ink-based. 500+ passes AA on white and cream. */
+  --color-gray-50: #fdf8f2;
+  --color-gray-100: #f6efe6;
+  --color-gray-200: #f0e4d4;
+  --color-gray-300: #e2d3bf;
+  --color-gray-400: #9a8f85;
+  --color-gray-500: #75695f;
+  --color-gray-600: #5b534c;
+  --color-gray-700: #453e39;
+  --color-gray-800: #332d2a;
+  --color-gray-900: #231f20;
+  --color-gray-950: #171314;
+  --color-neutral-700: #332d2a;
+
+  /* Orange — brand. 500 is the fill; 700+ is for text on light surfaces. */
+  --color-orange-50: #fff6ea;
+  --color-orange-100: #ffefd9;
+  --color-orange-200: #fdddb0;
+  --color-orange-300: #fbc178;
+  --color-orange-400: #faab55;
+  --color-orange-500: #f9993a;
+  --color-orange-600: #d97b18;
+  --color-orange-700: #a65500;
+  --color-orange-800: #7f4100;
+  --color-orange-900: #5c2f00;
+
+  /* Indigo — secondary / focus. Blue and purple collapse into it so the app
+     has exactly one cool hue. */
+  --color-blue-50: #f4f3ff;
+  --color-blue-100: #eeedff;
+  --color-blue-200: #dad9ff;
+  --color-blue-300: #b8b7ff;
+  --color-blue-400: #8e8cff;
+  --color-blue-500: #615fff;
+  --color-blue-600: #4c4ae6;
+  --color-blue-700: #3d3bc4;
+  --color-blue-800: #322f9c;
+  --color-blue-900: #2b2a7a;
+  --color-indigo-50: #f4f3ff;
+  --color-indigo-100: #eeedff;
+  --color-indigo-200: #dad9ff;
+  --color-indigo-300: #b8b7ff;
+  --color-indigo-400: #8e8cff;
+  --color-indigo-500: #615fff;
+  --color-indigo-600: #4c4ae6;
+  --color-indigo-700: #3d3bc4;
+  --color-indigo-800: #322f9c;
+  --color-indigo-900: #2b2a7a;
+  --color-purple-50: #f4f3ff;
+  --color-purple-100: #eeedff;
+  --color-purple-200: #dad9ff;
+  --color-purple-300: #b8b7ff;
+  --color-purple-400: #8e8cff;
+  --color-purple-500: #615fff;
+  --color-purple-600: #4c4ae6;
+  --color-purple-700: #3d3bc4;
+  --color-purple-800: #322f9c;
+  --color-purple-900: #2b2a7a;
+  --color-violet-50: #f4f3ff;
+  --color-violet-100: #eeedff;
+  --color-violet-500: #615fff;
+  --color-violet-600: #4c4ae6;
+
+  /* Success */
+  --color-green-50: #eaf8ee;
+  --color-green-100: #d5f0de;
+  --color-green-200: #b0e1c2;
+  --color-green-300: #7fc79a;
+  --color-green-400: #52b078;
+  --color-green-500: #34995f;
+  --color-green-600: #237a48;
+  --color-green-700: #1b5f39;
+  --color-green-800: #164b2e;
+  --color-green-900: #103824;
+  --color-emerald-50: #eaf8ee;
+  --color-emerald-500: #34995f;
+  --color-emerald-600: #237a48;
+
+  /* Error */
+  --color-red-50: #fdecec;
+  --color-red-100: #fbd9d9;
+  --color-red-200: #f5b8b8;
+  --color-red-300: #e89b9b;
+  --color-red-400: #de7373;
+  --color-red-500: #d04848;
+  --color-red-600: #b93131;
+  --color-red-700: #952626;
+  --color-red-800: #7a2020;
+  --color-red-900: #5e1a1a;
+  --color-rose-50: #fdecec;
+  --color-rose-500: #d04848;
+  --color-rose-600: #b93131;
+
+  /* Warning */
+  --color-yellow-50: #fff8e0;
+  --color-yellow-100: #ffefb8;
+  --color-yellow-200: #ffe08a;
+  --color-yellow-300: #ffd05c;
+  --color-yellow-400: #f5b92e;
+  --color-yellow-500: #e29f0e;
+  --color-yellow-600: #8f5c00;
+  --color-yellow-700: #734a00;
+  --color-yellow-800: #5a3a00;
+  --color-yellow-900: #422a00;
+  --color-amber-50: #fff8e0;
+  --color-amber-100: #ffefb8;
+  --color-amber-500: #e29f0e;
+  --color-amber-600: #8f5c00;
+
+  /* Shape — chunkier than stock Tailwind, matching the landing reference */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
+  --radius-4xl: 40px;
+
+  /* Depth — flat "edge" shadows for resting surfaces, soft pop for overlays */
+  --shadow-xs: 0 1px 0 #efe0cc;
+  --shadow-sm: 0 2px 0 #efe0cc;
+  --shadow-md: 0 4px 0 #efe0cc;
+  --shadow-lg: 0 6px 0 #efe0cc;
+  --shadow-xl:
+    0 20px 48px -16px rgb(35 31 32 / 0.24), 0 0 0 1px rgb(240 228 212 / 1);
+  --shadow-2xl:
+    0 32px 80px -24px rgb(35 31 32 / 0.34), 0 0 0 1px rgb(240 228 212 / 1);
+
+  --breakpoint-xs: 30rem;
+
+  /* Motion */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* -------------------------------------------------------------------------
+   Base
+   ---------------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 88px;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  text-wrap: balance;
+}
+
+button,
+[role="button"],
+a,
+summary {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+[role="button"],
+input[type="checkbox"],
+input[type="radio"],
+select {
+  touch-action: manipulation;
+}
+
+button:not(:disabled),
+[role="button"] {
+  cursor: pointer;
+}
+
+::selection {
+  background: #ffdcae;
+  color: var(--ink);
+}
+
+/* Visible keyboard focus everywhere; mouse/touch users never see it. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid rgb(97 95 255 / 0.55);
+  outline-offset: 2px;
+}
+
+/* A grid with no explicit columns would size its single column to its widest
+   child and overflow on phones. Give it a shrinkable column instead. */
+@layer base {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Components
+   ---------------------------------------------------------------------- */
+
+@layer components {
+  /* ---------- Buttons ---------- */
+  .btn {
+    --btn-bg: #fff;
+    --btn-fg: var(--ink);
+    --btn-edge: var(--edge);
+    --btn-border: var(--line);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 48px;
+    padding: 0.7rem 1.4rem;
+    border-radius: 16px;
+    border: 1px solid var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    box-shadow: 0 4px 0 var(--btn-edge);
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+    transition:
+      transform 0.12s var(--ease-out-quart),
+      box-shadow 0.12s var(--ease-out-quart),
+      background-color 0.15s,
+      border-color 0.15s,
+      color 0.15s;
+  }
+  .btn:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--btn-edge);
+  }
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: 0 2px 0 var(--btn-edge);
+  }
+  @media (hover: hover) {
+    .btn:hover:not(:disabled):not([aria-disabled="true"]) {
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 var(--btn-edge);
+    }
+    .btn:active:not(:disabled):not([aria-disabled="true"]) {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 var(--btn-edge);
+    }
+  }
+
+  .btn-primary {
+    --btn-bg: #f9993a;
+    --btn-fg: var(--ink);
+    --btn-edge: var(--brand-edge);
+    --btn-border: #f9993a;
+  }
+  @media (hover: hover) {
+    .btn-primary:hover:not(:disabled) {
+      --btn-bg: #fba24b;
+      --btn-border: #fba24b;
+    }
+  }
+  .btn-accent {
+    --btn-bg: #615fff;
+    --btn-fg: #fff;
+    --btn-edge: var(--accent-edge);
+    --btn-border: #615fff;
+  }
+  @media (hover: hover) {
+    .btn-accent:hover:not(:disabled) {
+      --btn-bg: #706eff;
+      --btn-border: #706eff;
+    }
+  }
+  .btn-ink {
+    --btn-bg: var(--ink);
+    --btn-fg: var(--cream);
+    --btn-edge: #c79c63;
+    --btn-border: var(--ink);
+  }
+  .btn-secondary {
+    --btn-bg: #fff;
+    --btn-fg: var(--ink);
+    --btn-edge: var(--edge);
+    --btn-border: #efe2d2;
+  }
+  .btn-danger {
+    --btn-bg: #fdecec;
+    --btn-fg: #b93131;
+    --btn-edge: #f5b8b8;
+    --btn-border: #f5b8b8;
+  }
+  .btn-ghost {
+    --btn-bg: transparent;
+    --btn-fg: var(--ink);
+    --btn-border: transparent;
+    box-shadow: none;
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--sand);
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-ghost:active:not(:disabled) {
+    transform: scale(0.98);
+    box-shadow: none;
+  }
+  .btn-sm {
+    min-height: 40px;
+    padding: 0.45rem 1rem;
+    border-radius: 14px;
+    font-size: 0.9375rem;
+    box-shadow: 0 3px 0 var(--btn-edge);
+  }
+  .btn-lg {
+    min-height: 56px;
+    padding: 0.9rem 1.9rem;
+    border-radius: 18px;
+    font-size: 1.125rem;
+    box-shadow: 0 5px 0 var(--btn-edge);
+  }
+  .btn-ghost.btn-sm,
+  .btn-ghost.btn-lg {
+    box-shadow: none;
+  }
+  .btn-block {
+    display: flex;
+    width: 100%;
+  }
+  .btn-icon {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0;
+    border-radius: 14px;
+    box-shadow: none;
+    --btn-bg: transparent;
+    --btn-border: transparent;
+    color: var(--ink);
+  }
+  .btn-icon:hover:not(:disabled) {
+    background: var(--sand);
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-icon:active:not(:disabled) {
+    transform: scale(0.94);
+    box-shadow: none;
+  }
+
+  /* ---------- Surfaces ---------- */
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow: 0 4px 0 var(--edge);
+  }
+  .card-flat {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+  }
+  .card-tint {
+    background: var(--sand);
+    border: 1px solid #f3e3cc;
+    border-radius: 24px;
+  }
+  .card-interactive {
+    transition:
+      transform 0.18s var(--ease-out-quart),
+      box-shadow 0.18s var(--ease-out-quart),
+      border-color 0.18s;
+  }
+  @media (hover: hover) {
+    .card-interactive:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 0 var(--edge);
+      border-color: #f3cfa0;
+    }
+  }
+  .card-interactive:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 0 var(--edge);
+  }
+
+  /* ---------- Form controls ---------- */
+  .field {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    padding: 0.7rem 1rem;
+    border-radius: 14px;
+    border: 2px solid #efe2d2;
+    background: #fffdfa;
+    color: var(--ink);
+    font-family: var(--font-sans);
+    /* 16px stops iOS from zooming on focus */
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s,
+      background-color 0.15s;
+  }
+  .field::placeholder {
+    color: #8a7f74;
+    font-weight: 500;
+  }
+  .field:hover:not(:disabled) {
+    border-color: #e2d3bf;
+  }
+  .field:focus {
+    outline: none;
+    border-color: #615fff;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgb(97 95 255 / 0.16);
+  }
+  .field[aria-invalid="true"] {
+    border-color: #de7373;
+  }
+  .field[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 4px rgb(208 72 72 / 0.16);
+  }
+  .field:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: var(--color-gray-100);
+  }
+
+  /* ---------- Small pieces ---------- */
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #a65500;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: #ffefd9;
+    border: 1px solid #fad9a8;
+    color: #7f4100;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+  .chip-accent {
+    background: #eeedff;
+    border-color: #dad9ff;
+    color: #3d3bc4;
+  }
+  .chip-success {
+    background: #eaf8ee;
+    border-color: #b0e1c2;
+    color: #1b5f39;
+  }
+  .chip-danger {
+    background: #fdecec;
+    border-color: #f5b8b8;
+    color: #952626;
+  }
+  .chip-neutral {
+    background: #f6efe6;
+    border-color: #efe2d2;
+    color: #5b534c;
+  }
+
+  /* ---------- Links ---------- */
+  .link {
+    color: #a65500;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: #fbc178;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+    transition: color 0.15s, text-decoration-color 0.15s;
+  }
+  .link:hover {
+    color: var(--ink);
+    text-decoration-color: currentColor;
+  }
+
+  /* ---------- Loading ---------- */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f3e9db;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(255 255 255 / 0.65),
+      transparent
+    );
+    animation: wisker-shimmer 1.4s infinite;
+  }
+
+  /* ---------- Prose for generated / user content ---------- */
+  .prose-wisker {
+    color: var(--ink);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+  .prose-wisker h1,
+  .prose-wisker h2,
+  .prose-wisker h3 {
+    margin-top: 1.6em;
+    margin-bottom: 0.5em;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+  .prose-wisker h1 {
+    font-size: 1.75rem;
+  }
+  .prose-wisker h2 {
+    font-size: 1.4rem;
+  }
+  .prose-wisker h3 {
+    font-size: 1.15rem;
+  }
+  .prose-wisker p,
+  .prose-wisker ul,
+  .prose-wisker ol {
+    margin: 0.85em 0;
+  }
+  .prose-wisker ul {
+    list-style: disc;
+    padding-left: 1.4em;
+  }
+  .prose-wisker ol {
+    list-style: decimal;
+    padding-left: 1.4em;
+  }
+  .prose-wisker li {
+    margin: 0.3em 0;
+  }
+  .prose-wisker strong {
+    font-weight: 800;
+  }
+  .prose-wisker blockquote {
+    border-left: 4px solid #fbc178;
+    padding: 0.2em 0 0.2em 1em;
+    color: #5b534c;
+  }
+  .prose-wisker code {
+    background: #f6efe6;
+    border-radius: 6px;
+    padding: 0.1em 0.4em;
+    font-size: 0.92em;
+  }
+  .prose-wisker a {
+    color: #4c4ae6;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Utilities
+   ---------------------------------------------------------------------- */
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+@utility animate-float {
+  animation: wisker-float 4.5s ease-in-out infinite;
+}
+@utility animate-float-slow {
+  animation: wisker-float 5.5s ease-in-out infinite;
+}
+@utility animate-marquee {
+  animation: wisker-marquee 32s linear infinite;
+}
+@utility animate-fade-up {
+  animation: wisker-fade-up 0.45s var(--ease-out-quart) both;
+}
+@utility animate-pop-in {
+  animation: wisker-pop-in 0.22s var(--ease-out-quart) both;
+}
+@utility animate-sheet-up {
+  animation: wisker-sheet-up 0.3s var(--ease-out-quart) both;
+}
+@utility animate-toast-in {
+  animation: wisker-toast-in 0.3s var(--ease-spring) both;
+}
+@utility animate-fade-in {
+  animation: wisker-fade-in 0.2s ease-out both;
+}
+
+/* -------------------------------------------------------------------------
+   Keyframes
+   ---------------------------------------------------------------------- */
+
+@keyframes wisker-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes wisker-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes wisker-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes wisker-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes wisker-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes wisker-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes wisker-sheet-up {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes wisker-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Respect the user's motion preference: keep state changes, drop movement. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-marquee {
+    animation: none !important;
+  }
 }

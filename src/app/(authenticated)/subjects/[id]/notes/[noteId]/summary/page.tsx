@@ -1,4 +1,5 @@
 "use client";
+import PageLoading from "@/components/ui/PageLoading";
 import { notFound, useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import SummarySetup, { SummaryConfig } from "./components/SummarySetup";
@@ -15,7 +16,7 @@ interface Note {
 }
 
 function SummaryPage({ params }: SummaryPageProps) {
-  const { id: _id, noteId } = use(params);
+  const { noteId } = use(params);
   const router = useRouter();
   const [config, setConfig] = useState<SummaryConfig | null>(null);
   const [note, setNote] = useState<Note | null>(null);
@@ -53,11 +54,7 @@ function SummaryPage({ params }: SummaryPageProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!note) {
@@ -76,15 +73,11 @@ function SummaryPage({ params }: SummaryPageProps) {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        <SummaryView
-          noteTitle={note.title}
-          config={config}
-          onBack={handleBack}
-        />
-      </div>
-    </div>
+    <SummaryView
+      noteTitle={note.title}
+      config={config}
+      onBack={handleBack}
+    />
   );
 }
 

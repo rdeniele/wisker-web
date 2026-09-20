@@ -1,4 +1,5 @@
 "use client";
+import PageLoading from "@/components/ui/PageLoading";
 import { notFound, useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import NoteSelector from "./components/NoteSelector";
@@ -59,11 +60,7 @@ function SubjectSummaryPage({ params }: SubjectSummaryPageProps) {
   }, [id]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!subject) {
@@ -123,15 +120,11 @@ function SubjectSummaryPage({ params }: SubjectSummaryPageProps) {
 
   // Step 3: View summary
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        <SummaryView
-          subjectName={subject.title}
-          config={config}
-          onBack={handleBack}
-        />
-      </div>
-    </div>
+    <SummaryView
+      subjectName={subject.title}
+      config={config}
+      onBack={handleBack}
+    />
   );
 }
 

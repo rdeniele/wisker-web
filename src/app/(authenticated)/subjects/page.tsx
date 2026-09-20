@@ -1,10 +1,17 @@
 "use client";
 import { useState, useTransition, useEffect } from "react";
-import { IoBookSharp } from "react-icons/io5";
+import { LuPlus } from "react-icons/lu";
 import CreateSubject from "./components/CreateSubject";
 import UpdateSubject from "./components/UpdateSubject";
 import SubjectCard from "./components/SubjectCard";
 import { BottomAd } from "@/components/ui/AdSenseAd";
+import Button from "@/components/ui/button";
+import Alert from "@/components/ui/Alert";
+import EmptyState from "@/components/ui/EmptyState";
+import Skeleton from "@/components/ui/Skeleton";
+import PageHeader from "@/components/ui/pageheader";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { relativeTime } from "@/lib/format";
 
 interface Subject {
   id: string;
@@ -114,88 +121,83 @@ function SubjectsPage() {
     }
   };
 
-  const getRelativeTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSecs = Math.floor(diffMs / 1000);
-    const diffMins = Math.floor(diffSecs / 60);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-    const diffWeeks = Math.floor(diffDays / 7);
-
-    if (diffSecs < 60) return `${diffSecs}s ago`;
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return `${diffWeeks}w ago`;
-  };
-
   // Transform subjects to match the format expected by SubjectCard
   const transformedSubjects = subjects.map((subject) => ({
     id: subject.id,
     name: subject.title,
     notes: subject._count?.notes || 0,
-    time: getRelativeTime(subject.updatedAt),
+    time: relativeTime(subject.updatedAt),
     img: "/images/wisky-laptop.png",
   }));
 
-  return (
-    <div className="px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Minimalistic Header */}
-        <div className="mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            Organize your notes
-          </h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            {transformedSubjects.length}{" "}
-            {transformedSubjects.length === 1 ? "subject" : "subjects"} to
-            explore
-          </p>
-        </div>
+  const count = transformedSubjects.length;
 
+  return (
+    <div>
+      <PageHeader
+        centered={false}
+        title="Your subjects"
+        subtitle={
+          isLoading
+            ? "Loading your study spaces..."
+            : count === 0
+              ? "Create a subject to start organising your notes."
+              : `${count} ${count === 1 ? "subject" : "subjects"} to explore`
+        }
+        actions={
+          <Button className="hidden sm:inline-flex" onClick={() => setShowModal(true)}>
+            <LuPlus className="h-5 w-5" aria-hidden />
+            New subject
+          </Button>
+        }
+      />
+
+      <div className="mt-6 sm:mt-8">
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-red-600 font-semibold mb-2">{error}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={fetchSubjects}
-                className="text-red-700 underline hover:no-underline text-sm"
-              >
-                Try again
-              </button>
-              <button
-                onClick={() => (window.location.href = "/api/auth/login")}
-                className="text-red-700 underline hover:no-underline text-sm"
-              >
-                Re-authenticate
-              </button>
-            </div>
-          </div>
+          <Alert
+            tone="error"
+            className="mb-6"
+            action={
+              <div className="flex shrink-0 gap-2">
+                <Button size="sm" variant="danger" onClick={fetchSubjects}>
+                  Try again
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => (window.location.href = "/api/auth/login")}
+                >
+                  Re-authenticate
+                </Button>
+              </div>
+            }
+          >
+            {error}
+          </Alert>
         )}
 
-        {/* Loading State */}
         {isLoading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
-            <p className="text-gray-500">Loading subjects...</p>
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3" aria-busy="true">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-[236px] rounded-[26px]" />
+            ))}
           </div>
-        ) : transformedSubjects.length === 0 ? (
-          <div className="text-center py-20">
-            <IoBookSharp className="text-6xl text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg mb-6">No subjects yet</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-2xl font-medium transition-colors"
-            >
-              Create your first subject
-            </button>
-          </div>
+        ) : count === 0 && !error ? (
+          <EmptyState
+            mascot="hi"
+            title="No subjects yet"
+            message="A subject is a folder for one course. Add notes to it and Wisker builds quizzes, flashcards and summaries."
+            action={
+              <Button size="lg" onClick={() => setShowModal(true)}>
+                <LuPlus className="h-5 w-5" aria-hidden />
+                Create your first subject
+              </Button>
+            }
+          />
         ) : (
           <div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
               {transformedSubjects.map((subject) => (
                 <SubjectCard
                   key={subject.id}
@@ -214,109 +216,57 @@ function SubjectsPage() {
             </div>
 
             {/* Ad placement - after subjects grid */}
-            <div className="mt-12 md:mt-16 pt-8 md:pt-10 border-t border-gray-200">
-              <p className="text-center text-xs text-gray-400 mb-4">Sponsored</p>
+            <div className="mt-12 border-t border-line pt-8">
+              <p className="mb-2 text-center text-xs font-bold uppercase tracking-wider text-gray-500">
+                Sponsored
+              </p>
               <BottomAd />
             </div>
           </div>
         )}
-
-        {/* Minimalistic Floating Add Button */}
-        <button
-          className="fixed bottom-8 right-8 w-14 h-14 sm:w-16 sm:h-16 bg-linear-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-full flex items-center justify-center text-2xl sm:text-3xl z-50 transition-all hover:scale-110 active:scale-95"
-          onClick={() => setShowModal(true)}
-          aria-label="Add Subject"
-          style={{ boxShadow: "0 8px 0 0 rgba(139, 92, 246, 0.18)" }}
-        >
-          +
-        </button>
       </div>
 
-      {/* Modal Overlay - Cleaner backdrop */}
+      {/* Phone: floating add button, parked above the bottom navigation */}
+      <button
+        type="button"
+        className="btn btn-primary fixed bottom-[calc(var(--bottom-nav-h)+env(safe-area-inset-bottom,0px)+16px)] right-4 z-30 h-14 w-14 rounded-full p-0 sm:hidden"
+        onClick={() => setShowModal(true)}
+        aria-label="New subject"
+      >
+        <LuPlus className="h-7 w-7" aria-hidden />
+      </button>
+
       {showModal && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
-          onClick={() => setShowModal(false)}
-        >
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <CreateSubject
-              onClose={() => setShowModal(false)}
-              onSuccess={() => {
-                fetchSubjects(); // Refresh the subjects list
-              }}
-            />
-          </div>
-        </div>
+        <CreateSubject
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            fetchSubjects(); // Refresh the subjects list
+          }}
+        />
       )}
 
-      {/* Update Subject Modal Overlay */}
       {showUpdateModal && selectedSubjectId && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
-          onClick={() => {
+        <UpdateSubject
+          subjectId={selectedSubjectId}
+          onClose={() => {
             setShowUpdateModal(false);
             setSelectedSubjectId(null);
           }}
-        >
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
-            <UpdateSubject
-              subjectId={selectedSubjectId}
-              onClose={() => {
-                setShowUpdateModal(false);
-                setSelectedSubjectId(null);
-              }}
-              onSuccess={() => {
-                fetchSubjects(); // Refresh the subjects list
-              }}
-            />
-          </div>
-        </div>
+          onSuccess={() => {
+            fetchSubjects(); // Refresh the subjects list
+          }}
+        />
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmId && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/20 backdrop-blur-sm"
-          onClick={() => !isDeleting && setDeleteConfirmId(null)}
-        >
-          <div
-            className="relative bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4"
-            onClick={(e) => e.stopPropagation()}
-            style={{ boxShadow: "0 8px 0 #ececec" }}
-          >
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">
-              Delete Subject?
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this subject? This action cannot
-              be undone and will delete all associated notes and learning tools.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setDeleteConfirmId(null)}
-                disabled={isDeleting}
-                className="px-6 py-2.5 rounded-2xl font-medium text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteSubject(deleteConfirmId)}
-                disabled={isDeleting}
-                className="px-6 py-2.5 rounded-2xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {isDeleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete"
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        title="Delete this subject?"
+        description="This can't be undone. All notes and study tools inside it will be deleted too."
+        confirmLabel="Delete subject"
+        busy={isDeleting}
+        onClose={() => !isDeleting && setDeleteConfirmId(null)}
+        onConfirm={() => deleteConfirmId && handleDeleteSubject(deleteConfirmId)}
+      />
     </div>
   );
 }

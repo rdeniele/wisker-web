@@ -1,12 +1,11 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Sidebar from "@/components/Sidebar/Sidebar";
-import NavBar from "@/components/Navbar/NavBar";
+import AppShell from "@/components/shell/AppShell";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/lib/AuthContext";
 
 // Force dynamic rendering since we use cookies for auth
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function AuthenticatedLayout({
   children,
@@ -25,13 +24,7 @@ export default async function AuthenticatedLayout({
   return (
     <ToastProvider>
       <AuthProvider>
-        <div className="flex min-h-screen bg-background font-fredoka overflow-x-hidden">
-          <Sidebar />
-          <div className="flex-1 flex flex-col min-w-0 lg:ml-16">
-            <NavBar />
-            <main className="flex-1 overflow-x-hidden pt-[57px]">{children}</main>
-          </div>
-        </div>
+        <AppShell>{children}</AppShell>
       </AuthProvider>
     </ToastProvider>
   );

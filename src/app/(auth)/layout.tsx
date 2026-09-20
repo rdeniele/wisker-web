@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 // Force dynamic rendering since we use cookies for auth
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -30,7 +30,5 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
     // Continue rendering even if Supabase check fails
   }
 
-  return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-900">{children}</main>
-  );
+  return <div className="min-h-dvh bg-cream">{children}</div>;
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import Toast from "@/components/ui/Toast";
-import { AlertColor } from "@mui/material";
+import Toast, { type ToastSeverity } from "@/components/ui/Toast";
 
 interface ToastContextType {
-  showToast: (message: string, type: AlertColor) => void;
+  showToast: (message: string, type: ToastSeverity) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -13,7 +12,7 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toast, setToast] = useState<{
     message: string;
-    type: AlertColor;
+    type: ToastSeverity;
     isOpen: boolean;
   }>({
     message: "",
@@ -21,7 +20,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     isOpen: false,
   });
 
-  const showToast = useCallback((message: string, type: AlertColor) => {
+  const showToast = useCallback((message: string, type: ToastSeverity) => {
     setToast({ message, type, isOpen: true });
   }, []);
 

@@ -61,19 +61,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           },
         },
       },
-    } as any); // Type assertion to work around Prisma type generation delay
+    });
 
     if (!note) {
       return errorResponse(new Error("Note not found"), 404);
     }
 
-    // Type assertion for note to access knowledgeBaseData
-    const noteWithKB = note as any;
+    const noteWithKB = note;
 
     // Calculate statistics
     const hasKnowledgeBase = !!noteWithKB.knowledgeBaseData;
     const chunkCount = noteWithKB.knowledgeBaseData?.chunks?.length || 0;
-    const totalTokens = noteWithKB.knowledgeBaseData?.chunks?.reduce((sum: number, chunk: any) => sum + (chunk.tokens || 0), 0) || 0;
+    const totalTokens = noteWithKB.knowledgeBaseData?.chunks?.reduce((sum, chunk) => sum + (chunk.tokens || 0), 0) || 0;
     const isReady = noteWithKB.processingStatus === "COMPLETED" && hasKnowledgeBase && chunkCount > 0;
 
     return successResponse({

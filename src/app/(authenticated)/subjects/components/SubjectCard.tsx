@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import OptionWidget from "@/components/ui/OptionWidget";
-// import SubjectActionButtons from "./SubjectActionButtons";
+import Link from "next/link";
+import { LuPencil, LuTrash2, LuLayers, LuListChecks, LuBookOpen } from "react-icons/lu";
+import ActionMenu from "@/components/ui/ActionMenu";
+import Mascot from "@/components/ui/Mascot";
 
 interface Subject {
   id: string;
@@ -21,6 +20,10 @@ interface SubjectCardProps {
   onDelete: (id: string) => void;
 }
 
+/**
+ * A subject as a card. The whole card opens the subject (a real link, so
+ * middle-click and keyboard work); the kebab menu and quick actions sit above it.
+ */
 export default function SubjectCard({
   subject,
   navigatingTo,
@@ -28,103 +31,81 @@ export default function SubjectCard({
   onEdit,
   onDelete,
 }: SubjectCardProps) {
-  const router = useRouter();
-  const [showMenu, setShowMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  // Handle click outside to close menu
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    }
-
-    if (showMenu) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showMenu]);
+  const opening = navigatingTo === subject.id;
+  const hasNotes = subject.notes > 0;
 
   return (
-    <div
-      className="group bg-white rounded-3xl p-5 border border-gray-100 hover:border-purple-200 transition-all duration-300 flex flex-col h-full cursor-pointer"
-      style={{ boxShadow: "0 4px 0 #ececec" }}
-      onClick={() => {
-        onNavigationStart(subject.id);
-        router.push(`/subjects/${subject.id}`);
-      }}
-    >
-      {/* Header with image and menu */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0 group-hover:bg-purple-100 transition-colors">
-          <Image
-            src={subject.img}
-            alt={subject.name}
-            width={32}
-            height={32}
-            className="object-contain"
-            draggable={false}
-          />
-        </div>
-
-        <div className="relative" ref={menuRef}>
-          <button
-            className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-500 hover:text-gray-700 flex items-center justify-center transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowMenu(!showMenu);
-            }}
-            aria-label="Options"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 16 16"
-            >
-              <circle cx="8" cy="3" r="1.5" />
-              <circle cx="8" cy="8" r="1.5" />
-              <circle cx="8" cy="13" r="1.5" />
-            </svg>
-          </button>
-
-          {showMenu && (
-            <OptionWidget
-              onView={() => {
-                router.push(`/subjects/${subject.id}`);
-              }}
-              onEdit={() => {
-                onEdit(subject.id);
-              }}
-              onDelete={() => {
-                onDelete(subject.id);
-              }}
-              onClose={() => setShowMenu(false)}
-            />
-          )}
-        </div>
+    <article className="card card-interactive group relative flex h-full flex-col rounded-[26px] p-5">
+      <div className="flex items-start justify-between">
+        <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-indigo-100">
+          <Mascot name="laptop" size={40} />
+        </span>
+        {/* Sits above the stretched link below */}
+        <ActionMenu
+          className="relative z-10 -mr-2 -mt-1.5"
+          label={`Options for ${subject.name}`}
+          items={[
+            {
+              label: "Edit",
+              icon: <LuPencil className="h-4 w-4" />,
+              onSelect: () => onEdit(subject.id),
+            },
+            {
+              label: "Delete",
+              tone: "danger",
+              icon: <LuTrash2 className="h-4 w-4" />,
+              onSelect: () => onDelete(subject.id),
+            },
+          ]}
+        />
       </div>
 
-      {/* Subject name and details */}
-      <div className="flex-1 mb-3">
-        <h3 className="font-bold text-lg text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-600 transition-colors">
+      <h3 className="mt-3 line-clamp-2 sm:min-h-[2.6em] font-display text-xl font-semibold leading-[1.3] text-ink">
+        <Link
+          href={`/subjects/${subject.id}`}
+          onClick={() => onNavigationStart(subject.id)}
+          className="rounded-lg after:absolute after:inset-0 after:rounded-[26px] after:content-['']"
+          aria-busy={opening || undefined}
+        >
           {subject.name}
-        </h3>
-        <p className="text-sm text-gray-500">
-          {subject.notes} notes • {subject.time}
-        </p>
-      </div>
+        </Link>
+      </h3>
+      <p className="mt-1 text-[15px] font-semibold text-gray-600">
+        {subject.notes} {subject.notes === 1 ? "note" : "notes"} · {subject.time}
+      </p>
 
-      {/* Action buttons */}
-      {/* <SubjectActionButtons
-        subjectId={subject.id}
-        navigatingTo={navigatingTo}
-        onNavigationStart={onNavigationStart}
-      /> */}
-    </div>
+      {/* Quick study shortcuts */}
+      <div className="relative z-10 mt-4 flex flex-wrap gap-2 border-t border-line pt-4">
+        {hasNotes ? (
+          <>
+            <Link
+              href={`/subjects/${subject.id}/quiz`}
+              className="chip chip-accent min-h-9 px-3.5 hover:brightness-95"
+            >
+              <LuListChecks className="h-4 w-4" aria-hidden />
+              Quiz
+            </Link>
+            <Link
+              href={`/subjects/${subject.id}/flashcard`}
+              className="chip min-h-9 px-3.5 hover:brightness-95"
+            >
+              <LuLayers className="h-4 w-4" aria-hidden />
+              Cards
+            </Link>
+            <Link
+              href={`/subjects/${subject.id}/summary`}
+              className="chip chip-success min-h-9 px-3.5 hover:brightness-95"
+            >
+              <LuBookOpen className="h-4 w-4" aria-hidden />
+              Summary
+            </Link>
+          </>
+        ) : (
+          <p className="py-1.5 text-sm font-semibold text-gray-500">
+            Add a note to unlock study tools.
+          </p>
+        )}
+      </div>
+    </article>
   );
 }

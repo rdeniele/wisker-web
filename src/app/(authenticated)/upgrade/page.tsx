@@ -1,5 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { LuCheck } from "react-icons/lu";
+import Button from "@/components/ui/button";
+import Alert from "@/components/ui/Alert";
+import Mascot from "@/components/ui/Mascot";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { useToast } from "@/contexts/ToastContext";
 
 type BillingPeriod = "yearly" | "monthly";
 
@@ -36,6 +42,7 @@ interface PricingTier {
 }
 
 export default function UpgradePage() {
+  const { showToast } = useToast();
   const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>("yearly");
   const [loading, setLoading] = useState<string | null>(null);
   const [plansFromDB, setPlansFromDB] = useState<PlanFromDB[]>([]);
@@ -64,7 +71,7 @@ export default function UpgradePage() {
         if (data.success) {
           setPlansFromDB(data.plans);
         }
-      } catch (error) {
+      } catch {
         // Error fetching plans
       } finally {
         setLoadingPlans(false);
@@ -112,7 +119,7 @@ export default function UpgradePage() {
           message: data.error || "Invalid promo code",
         });
       }
-    } catch (error) {
+    } catch {
       setPromoValidation({
         isValid: false,
         message: "Failed to validate promo code",
@@ -174,7 +181,7 @@ export default function UpgradePage() {
           window.location.href = "/upgrade/success?promo=true";
         } else {
           const errorMsg = data.error || "Failed to activate promo. Please try again.";
-          alert(errorMsg);
+          showToast(errorMsg, "error");
           setLoading(null);
         }
       } else {
@@ -212,13 +219,13 @@ export default function UpgradePage() {
           window.location.href = data.checkoutUrl;
         } else {
           const errorMsg = data.error || "Failed to create checkout session. Please try again.";
-          alert(errorMsg);
+          showToast(errorMsg, "error");
           setLoading(null);
         }
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : "An error occurred. Please try again.";
-      alert(errorMsg);
+      showToast(errorMsg, "error");
       setLoading(null);
     }
   };
@@ -296,218 +303,172 @@ export default function UpgradePage() {
   // Show loading state
   if (loadingPlans) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading plans...</p>
-        </div>
+      <div className="grid min-h-[60vh] place-items-center">
+        <LoadingSpinner size="lg" message="Loading plans..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-            Choose Your Plan
-          </h1>
-          <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 px-4">
-            Upgrade your learning experience with Wisker
-          </p>
+    <div className="mx-auto max-w-6xl">
+      {/* Header */}
+      <div className="mb-8 text-center sm:mb-12">
+        <Mascot name="star" size={96} className="mx-auto" />
+        <h1 className="mt-2 text-[2rem] font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">
+          Choose your plan
+        </h1>
+        <p className="mt-3 text-base font-semibold text-gray-600 sm:text-lg">
+          Upgrade your learning experience with Wisker
+        </p>
 
-          {/* Billing Toggle */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="inline-flex items-center bg-white rounded-full p-1 shadow-md border border-gray-200">
+        {/* Billing Toggle */}
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <div
+            role="radiogroup"
+            aria-label="Billing period"
+            className="inline-flex items-center rounded-full border border-line bg-white p-1 shadow-sm"
+          >
+            {(["yearly", "monthly"] as const).map((period) => (
               <button
-                onClick={() => setBillingPeriod("yearly")}
-                className={`px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base font-semibold transition-all duration-200 ${
-                  billingPeriod === "yearly"
-                    ? "bg-orange-500 text-white shadow-md"
-                    : "text-gray-600 hover:text-gray-900"
+                key={period}
+                type="button"
+                role="radio"
+                aria-checked={billingPeriod === period}
+                onClick={() => setBillingPeriod(period)}
+                className={`min-h-11 rounded-full px-6 font-display text-base font-semibold capitalize transition-colors ${
+                  billingPeriod === period
+                    ? "bg-orange-500 text-ink"
+                    : "text-gray-600 hover:text-ink"
                 }`}
               >
-                Yearly
+                {period}
               </button>
-              <button
-                onClick={() => setBillingPeriod("monthly")}
-                className={`px-4 sm:px-6 py-2 rounded-full text-sm sm:text-base font-semibold transition-all duration-200 ${
-                  billingPeriod === "monthly"
-                    ? "bg-orange-500 text-white shadow-md"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+            ))}
+          </div>
+
+          {/* Save Badge for Yearly */}
+          {billingPeriod === "yearly" && (
+            <span className="chip chip-success">Save 20% with annual billing</span>
+          )}
+        </div>
+
+        {/* Promo Code Input */}
+        <div className="mx-auto mt-8 max-w-md text-left">
+          <div className="rounded-[24px] border-2 border-dashed border-[#f3d6ae] bg-sand p-4 sm:p-5">
+            <h2 className="mb-3 text-lg font-semibold text-ink">Have a promo code?</h2>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={promoCode}
+                onChange={handlePromoCodeChange}
+                placeholder="Enter code (e.g., EARLYCAT50)"
+                aria-label="Promo code"
+                className="field min-w-0 flex-1"
+                disabled={validatingPromo}
+              />
+              <Button
+                onClick={handleApplyPromoCode}
+                disabled={!promoCode.trim() || validatingPromo}
+                isLoading={validatingPromo}
               >
-                Monthly
-              </button>
+                Apply
+              </Button>
             </div>
 
-            {/* Save Badge for Yearly */}
-            {billingPeriod === "yearly" && (
-              <span className="bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-semibold">
-                Save 20% with annual billing
-              </span>
+            {/* Validation Message */}
+            {promoValidation && (
+              <Alert
+                tone={promoValidation.isValid ? "success" : "error"}
+                className="mt-3"
+              >
+                {promoValidation.message}
+              </Alert>
             )}
           </div>
+        </div>
+      </div>
 
-          {/* Promo Code Input */}
-          <div className="mt-8 max-w-md mx-auto">
-            <div className="bg-white rounded-xl p-4 sm:p-6 border-2 border-dashed border-orange-300">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">🎟️</span>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Have a promo code?
-                </h3>
-              </div>
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={promoCode}
-                  onChange={handlePromoCodeChange}
-                  placeholder="Enter code (e.g., EARLYCAT50)"
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm sm:text-base uppercase"
-                  disabled={validatingPromo}
-                />
-                <button
-                  onClick={handleApplyPromoCode}
-                  disabled={!promoCode.trim() || validatingPromo}
-                  className="px-4 sm:px-6 py-2 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base whitespace-nowrap"
-                >
-                  {validatingPromo ? "..." : "Apply"}
-                </button>
-              </div>
-
-              {/* Validation Message */}
-              {promoValidation && (
-                <div
-                  className={`mt-3 p-3 rounded-lg flex items-start gap-2 text-sm ${
-                    promoValidation.isValid
-                      ? "bg-green-50 text-green-800 border border-green-200"
-                      : "bg-red-50 text-red-800 border border-red-200"
-                  }`}
-                >
-                  <span className="text-lg">
-                    {promoValidation.isValid ? "✓" : "✕"}
-                  </span>
-                  <span>{promoValidation.message}</span>
-                </div>
+      {/* Pricing Cards */}
+      <div className="mb-8 grid grid-cols-1 gap-6 sm:mb-12 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        {currentPlans.map((plan, index) => (
+          <div
+            key={index}
+            className={`relative flex flex-col rounded-[28px] bg-white p-6 sm:p-8 ${
+              plan.isMostPopular
+                ? "border-2 border-orange-500 shadow-[0_6px_0_#d97b18] sm:col-span-2 lg:col-span-1"
+                : "border border-line shadow-[0_5px_0_#efe0cc]"
+            }`}
+          >
+            {/* Badges */}
+            <div className="absolute -top-4 left-0 right-0 flex flex-wrap justify-center gap-2 px-2">
+              {plan.isMostPopular && (
+                <span className="rounded-full bg-orange-500 px-4 py-1 font-display text-sm font-semibold text-ink shadow-sm">
+                  Most popular
+                </span>
+              )}
+              {plan.isCurrentPlan && (
+                <span className="rounded-full bg-indigo-500 px-4 py-1 font-display text-sm font-semibold text-white shadow-sm">
+                  Current plan
+                </span>
               )}
             </div>
-          </div>
-        </div>
 
-        {/* Pricing Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
-          {currentPlans.map((plan, index) => (
-            <div
-              key={index}
-              className={`relative bg-white rounded-2xl p-6 sm:p-8 transition-all duration-200 ${
-                plan.isMostPopular
-                  ? "border-2 border-orange-500 sm:col-span-2 lg:col-span-1 lg:transform lg:scale-105"
-                  : "border border-gray-200"
-              }`}
-              style={{ boxShadow: "0 4px 0 #ececec" }}
+            <h3 className="mt-3 text-2xl font-semibold text-ink">{plan.displayName}</h3>
+
+            {plan.discount && (
+              <p className="mt-2">
+                <span className="chip chip-danger">{plan.discount}</span>
+              </p>
+            )}
+
+            <div className="mb-6 mt-4">
+              {plan.originalPrice && (
+                <div className="text-lg text-gray-500 line-through">{plan.originalPrice}</div>
+              )}
+              <div className="flex items-baseline">
+                <span className="font-display text-4xl font-semibold text-ink">{plan.price}</span>
+                <span className="ml-1 text-base font-semibold text-gray-600">{plan.period}</span>
+              </div>
+              {plan.displayName !== "Free" && billingPeriod === "yearly" && (
+                <p className="mt-1 text-sm font-semibold text-gray-600">
+                  Save 20% with annual billing
+                </p>
+              )}
+            </div>
+
+            <ul className="mb-8 flex-1 space-y-3">
+              {plan.features.map((feature, idx) => (
+                <li key={idx} className="flex items-start gap-3">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-md bg-green-100 text-green-700">
+                    <LuCheck className="h-3.5 w-3.5" strokeWidth={3.5} aria-hidden />
+                  </span>
+                  <span className="text-[15px] font-semibold text-gray-700">{feature}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              fullWidth
+              size="lg"
+              variant={plan.isMostPopular ? "primary" : "ink"}
+              disabled={plan.buttonDisabled || loading !== null}
+              isLoading={loading === plan.displayName}
+              onClick={() => handleSelectPlan(plan)}
             >
-              {/* Badges */}
-              <div className="absolute -top-3 sm:-top-4 left-0 right-0 flex justify-center gap-2 flex-wrap px-2">
-                {plan.isMostPopular && (
-                  <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-md">
-                    Most Popular
-                  </span>
-                )}
-                {plan.isCurrentPlan && (
-                  <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-md">
-                    Current Plan
-                  </span>
-                )}
-              </div>
+              {loading === plan.displayName ? "Processing..." : plan.buttonText}
+            </Button>
+          </div>
+        ))}
+      </div>
 
-              {/* Plan Name */}
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 mt-6 sm:mt-4">
-                {plan.displayName}
-              </h3>
-
-              {/* Discount Badge */}
-              {plan.discount && (
-                <div className="mb-2">
-                  <span className="bg-red-100 text-red-600 px-2 sm:px-3 py-1 rounded-full text-xs font-semibold">
-                    {plan.discount}
-                  </span>
-                </div>
-              )}
-
-              {/* Pricing */}
-              <div className="mb-4 sm:mb-6">
-                {plan.originalPrice && (
-                  <div className="text-gray-400 line-through text-base sm:text-lg">
-                    {plan.originalPrice}
-                  </div>
-                )}
-                <div className="flex items-baseline">
-                  <span className="text-3xl sm:text-4xl font-bold text-gray-900">
-                    {plan.price}
-                  </span>
-                  <span className="text-gray-600 ml-1 text-sm sm:text-base">
-                    {plan.period}
-                  </span>
-                </div>
-                {plan.displayName !== "Free" && billingPeriod === "yearly" && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Save 20% with annual billing
-                  </p>
-                )}
-              </div>
-
-              {/* Features */}
-              <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-orange-500 font-bold mt-1 text-sm sm:text-base">
-                      •
-                    </span>
-                    <span className="text-gray-700 text-sm sm:text-base">
-                      {feature}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA Button */}
-              <button
-                disabled={plan.buttonDisabled || loading !== null}
-                onClick={() => handleSelectPlan(plan)}
-                className={`w-full py-2.5 sm:py-3 rounded-lg text-sm sm:text-base font-semibold transition-all duration-200 ${
-                  plan.buttonDisabled || loading !== null
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : plan.isMostPopular
-                      ? "bg-orange-500 text-white hover:bg-orange-600 active:scale-95"
-                      : "bg-gray-900 text-white hover:bg-gray-800 active:scale-95"
-                }`}
-                style={{
-                  boxShadow:
-                    plan.buttonDisabled || loading !== null
-                      ? "none"
-                      : "0 4px 0 0 rgba(251, 146, 60, 0.18)",
-                }}
-              >
-                {loading === plan.displayName
-                  ? "Processing..."
-                  : plan.buttonText}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Launch Offer Note */}
-        <div className="bg-linear-to-r from-orange-100 to-yellow-100 border-2 border-orange-300 rounded-xl p-4 sm:p-6 text-center mx-2 sm:mx-0">
-          <p className="text-sm sm:text-base text-gray-800 font-semibold mb-1 sm:mb-2">
-            🎉 Launch Offer: All plans are 50% off for a limited time!
-          </p>
-          <p className="text-sm sm:text-base text-gray-700">
-            Get an extra 20% off when you choose annual billing.
-          </p>
-        </div>
+      {/* Launch Offer Note */}
+      <div className="rounded-[24px] border-2 border-[#f3d6ae] bg-orange-50 p-5 text-center sm:p-6">
+        <p className="font-display text-lg font-semibold text-ink">
+          Launch offer: all plans are 50% off for a limited time.
+        </p>
+        <p className="mt-1 text-[15px] font-semibold text-gray-700">
+          Get an extra 20% off when you choose annual billing.
+        </p>
       </div>
     </div>
   );

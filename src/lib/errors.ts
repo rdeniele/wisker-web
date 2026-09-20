@@ -99,7 +99,12 @@ export class DatabaseError extends AppError {
     // Extract more details from Prisma errors
     let enhancedDetails = details;
     if (details && typeof details === 'object') {
-      const prismaError = details as any;
+      const prismaError = details as {
+        message?: string;
+        code?: unknown;
+        meta?: unknown;
+        clientVersion?: unknown;
+      };
       enhancedDetails = {
         originalError: prismaError.message || String(details),
         code: prismaError.code,

@@ -41,51 +41,51 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-    } as any); // Type assertion to work around Prisma type generation delay
+    });
 
     // Calculate statistics
     const totalNotes = notes.length;
-    const notesWithKB = notes.filter((n: any) => n.knowledgeBaseData).length;
+    const notesWithKB = notes.filter((n) => n.knowledgeBaseData).length;
     const kbAdoptionRate = totalNotes > 0 ? (notesWithKB / totalNotes) * 100 : 0;
 
-    const totalChunks = notes.reduce((sum: number, note: any) => 
+    const totalChunks = notes.reduce((sum, note) => 
       sum + (note.knowledgeBaseData?.chunks?.length || 0), 0
     );
 
-    const totalTokens = notes.reduce((sum: number, note: any) => 
-      sum + (note.knowledgeBaseData?.chunks?.reduce((chunkSum: number, chunk: any) => 
+    const totalTokens = notes.reduce((sum, note) => 
+      sum + (note.knowledgeBaseData?.chunks?.reduce((chunkSum, chunk) => 
         chunkSum + (chunk.tokens || 0), 0) || 0), 0
     );
 
     // AI Operations statistics
-    const allOperations = notes.flatMap((note: any) => 
+    const allOperations = notes.flatMap((note) => 
       note.knowledgeBaseData?.aiOperations || []
     );
 
-    const operationsByType = allOperations.reduce((acc: any, op: any) => {
+    const operationsByType = allOperations.reduce((acc, op) => {
       acc[op.operationType] = (acc[op.operationType] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const operationsByStatus = allOperations.reduce((acc: any, op: any) => {
+    const operationsByStatus = allOperations.reduce((acc, op) => {
       acc[op.status] = (acc[op.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const totalCost = allOperations.reduce((sum: number, op: any) => 
+    const totalCost = allOperations.reduce((sum, op) => 
       sum + (op.cost || 0), 0
     );
 
-    const totalTokensUsed = allOperations.reduce((sum: number, op: any) => 
+    const totalTokensUsed = allOperations.reduce((sum, op) => 
       sum + (op.tokensUsed || 0), 0
     );
 
     const avgResponseTime = allOperations.length > 0
-      ? allOperations.reduce((sum: number, op: any) => sum + (op.responseTime || 0), 0) / allOperations.length
+      ? allOperations.reduce((sum, op) => sum + (op.responseTime || 0), 0) / allOperations.length
       : 0;
 
     // Calculate cost savings (KB-based generation is ~30% cheaper)
-    const kbOperationsCount = allOperations.filter((op: any) => 
+    const kbOperationsCount = allOperations.filter((op) => 
       ['GENERATE_QUIZ', 'GENERATE_FLASHCARDS', 'GENERATE_SUMMARY'].includes(op.operationType)
     ).length;
     
@@ -93,19 +93,19 @@ export async function GET(request: NextRequest) {
 
     // Most active knowledge bases
     const kbActivity = notes
-      .filter((n: any) => n.knowledgeBaseData)
-      .map((n: any) => ({
+      .filter((n) => n.knowledgeBaseData)
+      .map((n) => ({
         noteId: n.id,
         noteTitle: n.title,
         chunkCount: n.knowledgeBaseData!.chunks.length,
         operationCount: n.knowledgeBaseData!.aiOperations.length,
-        totalCost: n.knowledgeBaseData!.aiOperations.reduce((sum: number, op: any) => sum + (op.cost || 0), 0),
+        totalCost: n.knowledgeBaseData!.aiOperations.reduce((sum, op) => sum + (op.cost || 0), 0),
       }))
       .sort((a, b) => b.operationCount - a.operationCount)
       .slice(0, 5);
 
     // Processing status distribution
-    const statusDistribution = notes.reduce((acc: any, note: any) => {
+    const statusDistribution = notes.reduce((acc, note) => {
       const status = note.processingStatus || 'PENDING';
       acc[status] = (acc[status] || 0) + 1;
       return acc;

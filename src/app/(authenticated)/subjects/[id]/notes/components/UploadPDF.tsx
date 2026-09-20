@@ -1,6 +1,8 @@
 import React, { useRef, useState } from "react";
-import Image from "next/image";
 import { useToast } from "@/contexts/ToastContext";
+import Mascot from "@/components/ui/Mascot";
+import Button from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface UploadPDFProps {
   onClose?: () => void;
@@ -10,7 +12,6 @@ interface UploadPDFProps {
 }
 
 const UploadPDF: React.FC<UploadPDFProps> = ({
-  onClose,
   onFileSelect,
   onGoogleDrive,
   subjectId,
@@ -244,7 +245,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
         try {
           data = JSON.parse(responseText);
-        } catch (e) {
+        } catch {
           console.error("Failed to parse server response");
           throw new Error(`Server error: ${responseText.substring(0, 200)}`);
         }
@@ -289,7 +290,7 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
       try {
         data = JSON.parse(responseText);
-      } catch (e) {
+      } catch {
         console.error("Failed to parse server response");
         throw new Error(`Server error: ${responseText.substring(0, 200)}`);
       }
@@ -348,119 +349,71 @@ const UploadPDF: React.FC<UploadPDFProps> = ({
 
   return (
     <div
-      className={`w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-fredoka border-2 border-dashed transition-all duration-200 ${dragActive ? "bg-orange-50 border-orange-400 border-4 scale-[1.02]" : "border-orange-200"}`}
+      className={cn(
+        "relative rounded-3xl border-2 border-dashed p-5 text-center transition-colors sm:p-7",
+        dragActive
+          ? "border-orange-500 bg-orange-100"
+          : "border-[#f3d6ae] bg-sand",
+      )}
       onDragEnter={handleDrag}
       onDragOver={handleDrag}
       onDragLeave={handleDrag}
       onDrop={handleDrop}
     >
-      {/* Drag Overlay */}
-      {dragActive && (
-        <div className="absolute inset-0 bg-orange-400/10 rounded-2xl flex items-center justify-center z-10 pointer-events-none">
-          <div className="bg-white px-6 py-4 rounded-xl shadow-lg border-2 border-orange-400">
-            <span className="text-2xl">📁</span>
-            <span className="text-lg font-bold text-orange-500 ml-2">
-              Drop your files here
-            </span>
-          </div>
-        </div>
-      )}
+      <Mascot name="capture" size={88} className="mx-auto" />
+      <p className="mt-2 font-display text-xl font-semibold text-ink">
+        {dragActive ? "Drop your files here" : "Upload PDF, PowerPoint or images"}
+      </p>
+      <p className="mt-1 text-[15px] font-semibold text-gray-600">
+        Drag and drop them here, or choose from your device.
+      </p>
 
-      {/* Close Button */}
-      {onClose && (
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".pdf,.ppt,.pptx,image/*"
+        multiple
+        className="sr-only"
+        tabIndex={-1}
+        aria-label="Choose files to upload"
+        onChange={handleInputChange}
+        disabled={isUploading}
+      />
+      <Button
+        size="lg"
+        className="mt-5 w-full sm:w-auto"
+        onClick={() => inputRef.current?.click()}
+        isLoading={isUploading}
+      >
+        {isUploading ? "Processing..." : "Choose files"}
+      </Button>
+
+      <div role="status" aria-live="polite" className="min-h-6">
+        {uploadProgress && (
+          <p className="mt-3 animate-pulse text-[15px] font-bold text-orange-700">
+            {uploadProgress}
+          </p>
+        )}
+      </div>
+
+      {!isUploading && (
         <button
-          className="absolute left-4 top-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
-          aria-label="Close"
           type="button"
-          onClick={onClose}
+          onClick={onGoogleDrive}
+          className="link mt-1 min-h-11 text-[15px]"
         >
-          &#10005;
+          Or upload from Google Drive
         </button>
       )}
 
-      {/* Header */}
-      <h2 className="text-2xl font-bold text-center w-full mt-2 mb-2 text-orange-400">
-        Wisker AI File Summarizer
-      </h2>
-
-      {/* Cat Image */}
-      <div className="flex justify-center mb-2">
-        <Image
-          src="/images/wisky-capture.png"
-          alt="Upload PDF cat"
-          width={100}
-          height={100}
-          className="w-24 h-24"
-          draggable={false}
-          priority
-        />
-      </div>
-
-      {/* Upload Section */}
-      <div className="flex flex-col items-center mb-2">
-        <span className="text-xl font-bold text-gray-800 mb-1">
-          Upload PDF, PowerPoint, or Images
-        </span>
-        <label className="w-full flex justify-center">
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".pdf,.ppt,.pptx,image/*"
-            multiple
-            className="hidden"
-            onChange={handleInputChange}
-            disabled={isUploading}
-          />
-          <span
-            className={`bg-orange-400 hover:bg-orange-500 text-white font-semibold px-6 py-2 rounded-xl shadow-md transition-all duration-150 cursor-pointer text-base mt-2 mb-1 ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
-          >
-            {isUploading ? "Processing..." : "select files"}
-          </span>
-        </label>
-        {uploadProgress && (
-          <div className="text-sm text-orange-500 font-medium mt-2 animate-pulse">
-            {uploadProgress}
-          </div>
-        )}
-        {!isUploading && (
-          <>
-            <span className="text-gray-500 text-sm font-medium mt-2 mb-1 flex items-center gap-1">
-              <span className="text-base">📂</span>
-              or drag & drop files here
-            </span>
-            <button
-              className="text-blue-500 underline text-sm mt-1 mb-2 hover:text-blue-700"
-              type="button"
-              onClick={onGoogleDrive}
-              disabled={isUploading}
-            >
-              Or upload from Google Drive
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* File size note */}
-      <div className="text-xs text-gray-500 text-center mb-2">
-        Maximum file size: 10MB (PDF/Images), 50MB (PowerPoint)
-        <br />
-        <span className="text-orange-500 font-medium">
-          PDFs & PowerPoint: Text extraction. Images: AI vision processing
-        </span>
-        <br />
-        <span className="text-blue-500 font-medium">
-          Cost: 1 AI credit per ~100k characters
-        </span>
-      </div>
-
-      {/* Tip */}
-      <div className="flex items-center gap-2 bg-[#f7f6fd] rounded-xl px-3 py-2 mt-2">
-        <span className="text-yellow-400 text-lg">💡</span>
-        <span className="text-xs text-gray-700">
-          Text-based PDFs are processed instantly! Large PDFs (&gt;300k chars)
-          are truncated to manage costs.
-        </span>
-      </div>
+      <ul className="mt-4 space-y-1 border-t border-[#f3d6ae] pt-4 text-left text-sm font-semibold text-gray-600">
+        <li>Up to 10MB for PDFs and images, 50MB for PowerPoint.</li>
+        <li>PDFs and slides use text extraction. Images use AI vision.</li>
+        <li>
+          Cost: 1 AI credit per ~100k characters. PDFs over 300k characters are
+          truncated.
+        </li>
+      </ul>
     </div>
   );
 };

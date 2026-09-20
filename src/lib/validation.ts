@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ValidationError } from "./errors";
 import { LearningToolType, LearningToolSource, PlanType } from "@prisma/client";
 
 // Subject Validation
@@ -161,7 +162,6 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): T {
   } catch (error) {
     if (error instanceof z.ZodError) {
       // Convert Zod errors to ValidationError for better error responses
-      const { ValidationError } = require("./errors");
       const formattedErrors = error.issues.map(err => ({
         path: err.path.join('.'),
         message: err.message,

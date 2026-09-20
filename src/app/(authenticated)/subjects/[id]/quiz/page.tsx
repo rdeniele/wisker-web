@@ -1,4 +1,5 @@
 "use client";
+import PageLoading from "@/components/ui/PageLoading";
 import { notFound, useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import NoteSelector from "./components/NoteSelector";
@@ -65,11 +66,7 @@ function SubjectQuizPage({ params }: SubjectQuizPageProps) {
   }, [id]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!subject) {

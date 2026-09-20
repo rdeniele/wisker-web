@@ -1,672 +1,315 @@
 "use client";
-import React, { useState, useTransition, useEffect } from "react";
-import Image from "next/image";
+import React, { useEffect, useState } from "react";
+import Link, { useLinkStatus } from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { SHOW_SUBSCRIPTION_UI } from "@/lib/subscription-ui-visibility";
+import {
+  LuChevronDown,
+  LuFileText,
+  LuLogOut,
+  LuPanelLeftClose,
+  LuPanelLeftOpen,
+} from "react-icons/lu";
+import { useAuth } from "@/lib/AuthContext";
+import { cn } from "@/lib/utils";
+import Logo from "@/components/ui/Logo";
+import Tooltip from "@/components/ui/Tooltip";
+import Skeleton from "@/components/ui/Skeleton";
+import { Spinner } from "@/components/ui/button";
+import { NAV_ITEMS, type NavItem } from "@/components/shell/nav";
 
-// Example icons (Heroicons SVGs)
-const DashboardIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 13.5V6.75A2.25 2.25 0 015.25 4.5h13.5A2.25 2.25 0 0121 6.75v6.75M3 13.5v3.75A2.25 2.25 0 005.25 19.5h13.5A2.25 2.25 0 0021 17.25V13.5M3 13.5h18"
-    />
-  </svg>
-);
+interface SidebarSubject {
+  id: string;
+  title: string;
+  notes: Array<{ id: string; title: string }>;
+}
 
-const SubjectsIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
-    <rect
-      x="4"
-      y="4"
-      width="16"
-      height="16"
-      rx="2"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-  </svg>
-);
+/** Shows a spinner in the link while its route is loading. Must sit inside <Link>. */
+function PendingSpinner() {
+  const { pending } = useLinkStatus();
+  return pending ? (
+    <Spinner className="absolute right-3 h-4 w-4 text-orange-600" />
+  ) : null;
+}
 
-const UpgradeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"
-    />
-  </svg>
-);
+interface SidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+}
 
-const LogoutIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"
-    />
-  </svg>
-);
-
-const FeedbackIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"
-    />
-  </svg>
-);
-
-const navLinks = [
-  { name: "Dashboard", icon: <DashboardIcon />, href: "/dashboard" },
-  { name: "Notes", icon: <SubjectsIcon />, href: "/subjects" },
-  { name: "Feedback", icon: <FeedbackIcon />, href: "/feedback" },
-  { name: "Upgrade", icon: <UpgradeIcon />, href: "/upgrade" },
-];
-
-const visibleNavLinks = SHOW_SUBSCRIPTION_UI
-  ? navLinks
-  : navLinks.filter((link) => link.href !== "/upgrade");
-
-const MenuIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-    />
-  </svg>
-);
-
-const CloseIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-    stroke="currentColor"
-    className="w-6 h-6"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M6 18L18 6M6 6l12 12"
-    />
-  </svg>
-);
-
-const ChevronDownIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={2}
-    stroke="currentColor"
-    className="w-4 h-4"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-    />
-  </svg>
-);
-
-const NoteIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className="w-4 h-4"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-    />
-  </svg>
-);
-
-function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false);
+/**
+ * Persistent desktop navigation (lg and up). Collapses to an icon rail; the
+ * preference is remembered by the shell. Below lg the bottom navigation takes over.
+ */
+function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [, startTransition] = useTransition();
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
+  const { user, loading: authLoading, logout } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isSubjectsExpanded, setIsSubjectsExpanded] = useState(false);
-  const [subjects, setSubjects] = useState<
-    Array<{
-      id: string;
-      title: string;
-      notes: Array<{ id: string; title: string }>;
-    }>
-  >([]);
+  const [subjectsOpen, setSubjectsOpen] = useState(false);
+  const [subjects, setSubjects] = useState<SidebarSubject[]>([]);
   const [loadingSubjects, setLoadingSubjects] = useState(false);
+  const [subjectsLoaded, setSubjectsLoaded] = useState(false);
+
+  const firstName =
+    (user?.user_metadata?.first_name as string | undefined) || "Student";
+  const initial = firstName.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    const supabase = createClient();
-    await supabase.auth.signOut();
+    await logout();
     router.push("/login");
   };
 
+  // Load the nested subject list the first time it is expanded.
   useEffect(() => {
-    const fetchUser = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        const firstName = user.user_metadata?.first_name;
-
-        // Use only first name
-        setUserName(firstName || "Student");
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  // Fetch subjects and notes
-  useEffect(() => {
-    const fetchSubjects = async () => {
-      if (isSubjectsExpanded && subjects.length === 0 && !loadingSubjects) {
-        setLoadingSubjects(true);
-        try {
-          const response = await fetch("/api/subjects");
-          if (response.ok) {
-            const data = await response.json();
-            // Assuming the API returns { data: { subjects: [...] } }
-            const subjectsData = data.data?.subjects || data.data || [];
-            setSubjects(subjectsData);
-          }
-        } catch (error) {
-          console.error("Failed to fetch subjects:", error);
-        } finally {
+    if (!subjectsOpen || subjectsLoaded || loadingSubjects) return;
+    let cancelled = false;
+    (async () => {
+      setLoadingSubjects(true);
+      try {
+        const response = await fetch("/api/subjects");
+        if (response.ok) {
+          const data = await response.json();
+          const list = data.data?.subjects || data.data || [];
+          if (!cancelled) setSubjects(list);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subjects:", error);
+      } finally {
+        if (!cancelled) {
           setLoadingSubjects(false);
+          setSubjectsLoaded(true);
         }
       }
+    })();
+    return () => {
+      cancelled = true;
     };
+  }, [subjectsOpen, subjectsLoaded, loadingSubjects]);
 
-    fetchSubjects();
-  }, [isSubjectsExpanded, subjects.length, loadingSubjects]);
+  const renderItem = (item: NavItem) => {
+    const active = item.isActive(pathname);
+    const Icon = item.icon;
+    const isSubjects = item.href === "/subjects";
 
-  // Clear loading state when navigation completes
-  useEffect(() => {
-    if (navigatingTo && pathname === navigatingTo) {
-      setTimeout(() => setNavigatingTo(null), 0);
-    }
-  }, [navigatingTo, pathname]);
+    const link = (
+      <Link
+        href={item.href}
+        aria-current={active ? "page" : undefined}
+        aria-label={collapsed ? item.name : undefined}
+        className={cn(
+          "relative flex h-12 min-w-0 flex-1 items-center gap-3 rounded-2xl px-3.5 font-display text-base font-medium transition-colors",
+          collapsed && "justify-center px-0",
+          active
+            ? "bg-orange-100 text-ink shadow-[0_3px_0_#f6d3a4]"
+            : "text-gray-600 hover:bg-sand hover:text-ink",
+        )}
+      >
+        <Icon
+          className={cn("h-6 w-6 shrink-0", active && "text-orange-700")}
+          aria-hidden
+        />
+        {!collapsed && <span className="truncate">{item.name}</span>}
+        {!collapsed && <PendingSpinner />}
+      </Link>
+    );
+
+    return (
+      <li key={item.href}>
+        <div className="flex items-center gap-1">
+          {collapsed ? (
+            <Tooltip label={item.name} className="w-full">
+              {link}
+            </Tooltip>
+          ) : (
+            link
+          )}
+          {isSubjects && !collapsed && (
+            <button
+              type="button"
+              onClick={() => setSubjectsOpen((v) => !v)}
+              aria-expanded={subjectsOpen}
+              aria-controls="sidebar-subjects"
+              aria-label={subjectsOpen ? "Hide subject list" : "Show subject list"}
+              className="btn btn-icon h-10 min-h-0 w-10 min-w-0 shrink-0 text-gray-500"
+            >
+              <LuChevronDown
+                className={cn(
+                  "h-5 w-5 transition-transform duration-200",
+                  subjectsOpen && "rotate-180",
+                )}
+                aria-hidden
+              />
+            </button>
+          )}
+        </div>
+
+        {isSubjects && !collapsed && subjectsOpen && (
+          <div id="sidebar-subjects" className="mb-1 ml-5 mt-1 border-l-2 border-line pl-3">
+            {loadingSubjects ? (
+              <div className="space-y-2 py-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-4/5" />
+              </div>
+            ) : subjects.length === 0 ? (
+              <p className="px-2 py-2 text-sm font-semibold text-gray-500">
+                No subjects yet
+              </p>
+            ) : (
+              <ul className="max-h-72 space-y-0.5 overflow-y-auto pr-1">
+                {subjects.map((subject) => (
+                  <li key={subject.id}>
+                    <Link
+                      href={`/subjects/${subject.id}`}
+                      className={cn(
+                        "flex min-h-9 items-center rounded-xl px-2.5 py-1.5 text-[15px] font-bold transition-colors hover:bg-sand",
+                        pathname === `/subjects/${subject.id}`
+                          ? "text-orange-700"
+                          : "text-gray-700",
+                      )}
+                    >
+                      <span className="truncate">{subject.title}</span>
+                    </Link>
+                    {subject.notes?.length > 0 && (
+                      <ul className="ml-2 space-y-0.5">
+                        {subject.notes.map((note) => (
+                          <li key={note.id}>
+                            <Link
+                              href={`/subjects/${subject.id}?noteId=${note.id}`}
+                              className="flex min-h-8 items-center gap-2 rounded-lg px-2.5 py-1 text-sm font-semibold text-gray-600 hover:bg-sand hover:text-ink"
+                            >
+                              <LuFileText className="h-4 w-4 shrink-0" aria-hidden />
+                              <span className="truncate">{note.title}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </li>
+    );
+  };
+
+  const logoutButton = (
+    <button
+      type="button"
+      onClick={handleLogout}
+      disabled={isLoggingOut}
+      aria-label={collapsed ? "Log out" : undefined}
+      className={cn(
+        "flex h-12 w-full items-center gap-3 rounded-2xl px-3.5 font-display text-base font-medium text-gray-600 transition-colors hover:bg-red-50 hover:text-red-700 disabled:opacity-60",
+        collapsed && "justify-center px-0",
+      )}
+    >
+      {isLoggingOut ? (
+        <Spinner className="h-6 w-6" />
+      ) : (
+        <LuLogOut className="h-6 w-6 shrink-0" aria-hidden />
+      )}
+      {!collapsed && <span>Log out</span>}
+    </button>
+  );
 
   return (
-    <>
-      {/* Desktop Sidebar - hidden on mobile/tablet */}
-      <aside className="hidden lg:flex group/sidebar fixed top-0 left-0 z-50 h-screen w-16 hover:w-56 bg-white flex-col py-6 px-2 hover:px-4 border-r border-gray-200 rounded-br-2xl transition-all duration-300 ease-in-out overflow-x-hidden overflow-y-auto">
-        {/* Logo */}
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex items-center justify-center gap-2 mb-4 transition-all duration-300 hover:opacity-80 cursor-pointer"
-        >
-          <Image
-            src="/images/wisker_text_pic_logo.png"
-            alt="Wisker Logo"
-            width={140}
-            height={32}
-            className="h-8 w-auto group-hover/sidebar:block hidden"
-            priority
-          />
-          <Image
-            src="/images/wisker_text_pic_logo.png"
-            alt="Wisker Logo Mini"
-            width={32}
-            height={32}
-            className="h-8 w-8 group-hover/sidebar:hidden block"
-            priority
-          />
-        </button>
-
-        {/* User Info (moved to top) */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center transition-colors">
-            <span className="text-2xl">🐾</span>
-          </div>
-          <div className="group-hover/sidebar:flex flex-col hidden flex-1 min-w-0">
-            <div className="font-semibold text-gray-800 transition-colors truncate">
-              {userName || "Loading..."}
-            </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-200 mb-6 mx-1" />
-
-        {/* Navigation */}
-        <nav className="flex-1 flex flex-col gap-2 overflow-y-auto">
-          {visibleNavLinks.map((link) => {
-            const isActive = pathname === link.href;
-            const isLoading = navigatingTo === link.href;
-            const isSubjectsLink = link.name === "Notes";
-
-            return (
-              <div key={link.name}>
-                <button
-                  onClick={() => {
-                    if (!isActive) {
-                      setNavigatingTo(link.href);
-                      startTransition(() => {
-                        router.push(link.href);
-                      });
-                    }
-                  }}
-                  disabled={isLoading}
-                  className={`flex items-center gap-3 px-2 py-2 rounded-lg font-medium transition-all duration-200 group/link text-left w-full ${
-                    isActive
-                      ? "bg-orange-50 text-orange-600"
-                      : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <span className="w-6 h-6 shrink-0 transition-colors flex items-center justify-center">
-                    {isLoading ? (
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    ) : (
-                      link.icon
-                    )}
-                  </span>
-                  <span className="ml-2 truncate group-hover/sidebar:inline-block hidden transition-all duration-200 flex-1">
-                    {link.name}
-                  </span>
-                  {isSubjectsLink && (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsSubjectsExpanded(!isSubjectsExpanded);
-                      }}
-                      className={`group-hover/sidebar:inline-block hidden transition-transform duration-200 hover:bg-orange-100 rounded p-1 cursor-pointer ${
-                        isSubjectsExpanded ? "rotate-180" : ""
-                      }`}
-                    >
-                      <ChevronDownIcon />
-                    </span>
-                  )}
-                </button>
-
-                {/* Nested subjects and notes */}
-                {isSubjectsLink && isSubjectsExpanded && (
-                  <div className="ml-8 mt-1 space-y-1 group-hover/sidebar:block hidden">
-                    {loadingSubjects ? (
-                      <div className="text-xs text-gray-500 py-2 px-2">
-                        Loading...
-                      </div>
-                    ) : subjects.length === 0 ? (
-                      <div className="text-xs text-gray-500 py-2 px-2">
-                        No subjects yet
-                      </div>
-                    ) : (
-                      subjects.map((subject) => (
-                        <div key={subject.id} className="space-y-1">
-                          <button
-                            onClick={() => {
-                              router.push(`/subjects/${subject.id}`);
-                            }}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded text-sm text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left"
-                          >
-                            <span className="truncate font-medium">
-                              {subject.title}
-                            </span>
-                          </button>
-                          {subject.notes && subject.notes.length > 0 && (
-                            <div className="ml-4 space-y-0.5">
-                              {subject.notes.map((note) => (
-                                <button
-                                  key={note.id}
-                                  onClick={() => {
-                                    router.push(
-                                      `/subjects/${subject.id}?noteId=${note.id}`,
-                                    );
-                                  }}
-                                  className="flex items-center gap-2 px-2 py-1 rounded text-xs text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left"
-                                >
-                                  <NoteIcon />
-                                  <span className="truncate">{note.title}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Logout Button */}
-        <div className="mt-auto pt-4 border-t border-gray-200">
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className={`flex items-center gap-3 px-2 py-2 rounded-lg font-medium transition-all duration-200 group/link text-left w-full text-gray-700 hover:bg-red-50 hover:text-red-600 ${
-              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <span className="w-6 h-6 shrink-0 transition-colors flex items-center justify-center">
-              {isLoggingOut ? (
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              ) : (
-                <LogoutIcon />
-              )}
-            </span>
-            <span className="ml-2 truncate group-hover/sidebar:inline-block hidden transition-all duration-200">
-              Logout
-            </span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile/Tablet FAB */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="lg:hidden fixed bottom-6 left-6 z-60 w-14 h-14 bg-orange-500 hover:bg-orange-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-200 active:scale-95"
-        aria-label="Open menu"
+    <aside
+      aria-label="Sidebar"
+      className={cn(
+        "fixed inset-y-0 left-0 z-50 hidden flex-col border-r border-line bg-white transition-[width] duration-300 ease-out lg:flex",
+        collapsed ? "w-[var(--sidebar-w-collapsed)]" : "w-[var(--sidebar-w)]",
+      )}
+    >
+      {/* Brand + collapse */}
+      <div
+        className={cn(
+          "flex h-[var(--topbar-h)] shrink-0 items-center border-b border-line px-5",
+          collapsed ? "justify-center px-0" : "justify-between",
+        )}
       >
-        <MenuIcon />
-      </button>
+        <Link
+          href="/dashboard"
+          aria-label="Wisker dashboard"
+          className="rounded-xl"
+        >
+          <Logo variant={collapsed ? "mark" : "full"} size={collapsed ? 34 : 36} />
+        </Link>
+        {!collapsed && (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label="Collapse sidebar"
+            className="btn btn-icon h-10 min-h-0 w-10 min-w-0 text-gray-500"
+          >
+            <LuPanelLeftClose className="h-5 w-5" aria-hidden />
+          </button>
+        )}
+      </div>
 
-      {/* Mobile/Tablet Overlay */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-60 backdrop-blur-sm"
-          onClick={() => setIsOpen(false)}
-        />
+      {collapsed && (
+        <div className="flex justify-center pt-3">
+          <Tooltip label="Expand sidebar">
+            <button
+              type="button"
+              onClick={onToggle}
+              aria-label="Expand sidebar"
+              className="btn btn-icon h-11 w-11 text-gray-500"
+            >
+              <LuPanelLeftOpen className="h-5 w-5" aria-hidden />
+            </button>
+          </Tooltip>
+        </div>
       )}
 
-      {/* Mobile/Tablet Sidebar Drawer */}
-      <aside
-        className={`lg:hidden fixed top-0 left-0 z-60 h-screen w-64 bg-white flex flex-col py-6 px-4 border-r border-gray-200 rounded-br-2xl transform transition-transform duration-300 ease-in-out ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+      {/* Primary navigation */}
+      <nav
+        aria-label="Primary"
+        className={cn("min-h-0 flex-1 overflow-y-auto px-3.5 py-5", collapsed && "px-3")}
       >
-        {/* Close button */}
-        <button
-          onClick={() => setIsOpen(false)}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-          aria-label="Close menu"
-        >
-          <CloseIcon />
-        </button>
+        {!collapsed && (
+          <p className="eyebrow mb-2 px-3.5 text-[12px] text-gray-500">Study</p>
+        )}
+        <ul className="space-y-1.5">{NAV_ITEMS.map(renderItem)}</ul>
+      </nav>
 
-        {/* Logo */}
-        <button
-          onClick={() => {
-            router.push("/dashboard");
-            setIsOpen(false);
-          }}
-          className="flex items-center justify-start gap-2 mb-4 hover:opacity-80 transition-opacity cursor-pointer"
-        >
-          <Image
-            src="/images/wiskyer_icon_text.png"
-            alt="Wisker Logo"
-            width={140}
-            height={32}
-            className="h-8 w-auto"
-            priority
-          />
-        </button>
-
-        {/* User Info */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-            <span className="text-2xl">🐾</span>
-          </div>
-          <div className="flex flex-col flex-1 min-w-0">
-            <div className="font-semibold text-gray-800 truncate">
-              {userName || "Loading..."}
+      {/* Account */}
+      <div className={cn("shrink-0 space-y-2 border-t border-line p-3.5", collapsed && "p-3")}>
+        {!collapsed && (
+          <div className="flex items-center gap-3 rounded-2xl bg-sand p-3">
+            <span
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#fad9a8] bg-white font-display text-lg font-semibold text-orange-700"
+              aria-hidden
+            >
+              {authLoading ? "" : initial}
+            </span>
+            <div className="min-w-0">
+              {authLoading ? (
+                <Skeleton className="h-5 w-24" />
+              ) : (
+                <>
+                  <p className="truncate font-bold leading-tight text-ink">
+                    {firstName}
+                  </p>
+                  <p className="truncate text-[13px] font-semibold text-gray-600">
+                    {user?.email}
+                  </p>
+                </>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-200 mb-6" />
-
-        {/* Navigation */}
-        <nav className="flex-1 flex flex-col gap-2 overflow-y-auto">
-          {visibleNavLinks.map((link) => {
-            const isActive = pathname === link.href;
-            const isLoading = navigatingTo === link.href;
-            const isSubjectsLink = link.name === "Notes";
-
-            return (
-              <div key={link.name}>
-                <button
-                  onClick={() => {
-                    if (!isActive) {
-                      setNavigatingTo(link.href);
-                      startTransition(() => {
-                        router.push(link.href);
-                        setIsOpen(false);
-                      });
-                    } else {
-                      setIsOpen(false);
-                    }
-                  }}
-                  disabled={isLoading}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-all duration-200 text-left w-full ${
-                    isActive
-                      ? "bg-orange-50 text-orange-600"
-                      : "text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                  } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                >
-                  <span className="w-6 h-6 shrink-0 flex items-center justify-center">
-                    {isLoading ? (
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                    ) : (
-                      link.icon
-                    )}
-                  </span>
-                  <span className="ml-2 flex-1">{link.name}</span>
-                  {isSubjectsLink && (
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsSubjectsExpanded(!isSubjectsExpanded);
-                      }}
-                      className={`transition-transform duration-200 hover:bg-orange-100 rounded p-1 cursor-pointer ${
-                        isSubjectsExpanded ? "rotate-180" : ""
-                      }`}
-                    >
-                      <ChevronDownIcon />
-                    </span>
-                  )}
-                </button>
-
-                {/* Nested subjects and notes */}
-                {isSubjectsLink && isSubjectsExpanded && (
-                  <div className="ml-8 mt-1 space-y-1">
-                    {loadingSubjects ? (
-                      <div className="text-xs text-gray-500 py-2 px-2">
-                        Loading...
-                      </div>
-                    ) : subjects.length === 0 ? (
-                      <div className="text-xs text-gray-500 py-2 px-2">
-                        No subjects yet
-                      </div>
-                    ) : (
-                      subjects.map((subject) => (
-                        <div key={subject.id} className="space-y-1">
-                          <button
-                            onClick={() => {
-                              router.push(`/subjects/${subject.id}`);
-                              setIsOpen(false);
-                            }}
-                            className="flex items-center gap-2 px-2 py-1.5 rounded text-sm text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left"
-                          >
-                            <span className="truncate font-medium">
-                              {subject.title}
-                            </span>
-                          </button>
-                          {subject.notes && subject.notes.length > 0 && (
-                            <div className="ml-4 space-y-0.5">
-                              {subject.notes.map((note) => (
-                                <button
-                                  key={note.id}
-                                  onClick={() => {
-                                    router.push(
-                                      `/subjects/${subject.id}?noteId=${note.id}`,
-                                    );
-                                    setIsOpen(false);
-                                  }}
-                                  className="flex items-center gap-2 px-2 py-1 rounded text-xs text-gray-500 hover:bg-orange-50 hover:text-orange-600 transition-colors w-full text-left"
-                                >
-                                  <NoteIcon />
-                                  <span className="truncate">{note.title}</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        {/* Logout Button */}
-        <div className="mt-auto pt-4 border-t border-gray-200">
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className={`flex items-center gap-3 px-3 py-3 rounded-lg font-medium transition-all duration-200 text-left w-full text-gray-700 hover:bg-red-50 hover:text-red-600 ${
-              isLoggingOut ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <span className="w-6 h-6 shrink-0 flex items-center justify-center">
-              {isLoggingOut ? (
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              ) : (
-                <LogoutIcon />
-              )}
-            </span>
-            <span className="ml-2">Logout</span>
-          </button>
-        </div>
-      </aside>
-    </>
+        )}
+        {collapsed ? (
+          <Tooltip label="Log out" className="w-full">
+            {logoutButton}
+          </Tooltip>
+        ) : (
+          logoutButton
+        )}
+      </div>
+    </aside>
   );
 }
 

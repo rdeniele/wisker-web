@@ -1,12 +1,24 @@
 "use client";
 import { notFound, useRouter } from "next/navigation";
+import Link from "next/link";
 import { use, useState, useEffect, useRef, useCallback } from "react";
-import { FiArrowLeft } from "react-icons/fi";
+import {
+  LuArrowLeft,
+  LuBookOpen,
+  LuCheck,
+  LuCircleAlert,
+  LuLayers,
+  LuListChecks,
+  LuLightbulb,
+} from "react-icons/lu";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import EditorToolbar from "@/components/ui/EditorToolbar";
 import BubbleToolbar from "@/components/ui/BubbleToolbar";
+import Button, { Spinner } from "@/components/ui/button";
+import Skeleton from "@/components/ui/Skeleton";
 import { useToast } from "@/contexts/ToastContext";
 import type { Editor } from "@tiptap/react";
+import { cn } from "@/lib/utils";
 
 interface NotePageProps {
   params: Promise<{ id: string; noteId: string }>;
@@ -152,100 +164,59 @@ function NotePage({ params }: NotePageProps) {
     showToast("Note saved successfully!", "success");
   };
 
-  const getSaveStatusDisplay = () => {
-    switch (saveStatus) {
-      case "saving":
-        return (
-          <span className="flex items-center gap-2 text-sm text-gray-500">
-            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-                fill="none"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            Saving...
-          </span>
-        );
-      case "saved":
-        return (
-          <span className="flex items-center gap-2 text-sm text-green-600">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-            Saved
-          </span>
-        );
-      case "error":
-        return (
-          <span className="flex items-center gap-2 text-sm text-red-600">
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-            Save failed
-          </span>
-        );
-      default:
-        return null;
-    }
-  };
+  const saveStatusDisplay = (
+    <span role="status" aria-live="polite" className="min-h-6 text-sm font-bold">
+      {saveStatus === "saving" && (
+        <span className="flex items-center gap-2 text-gray-600">
+          <Spinner className="h-4 w-4" />
+          Saving...
+        </span>
+      )}
+      {saveStatus === "saved" && (
+        <span className="flex items-center gap-1.5 text-green-700">
+          <LuCheck className="h-4 w-4" strokeWidth={3} aria-hidden />
+          Saved
+        </span>
+      )}
+      {saveStatus === "error" && (
+        <span className="flex items-center gap-1.5 text-red-700">
+          <LuCircleAlert className="h-4 w-4" aria-hidden />
+          Save failed
+        </span>
+      )}
+    </span>
+  );
 
   const actionButtons = [
     {
-      id: "summary",
-      label: "Summarize",
-      description: "Get concise summaries of key concepts and main ideas",
-      route: `/subjects/${id}/notes/${noteId}/summary`,
-    },
-    {
       id: "quiz",
-      label: "Quiz Me",
-      description: "Answer multiple-choice questions based on your notes",
+      label: "Quiz me",
       route: `/subjects/${id}/notes/${noteId}/quiz`,
+      icon: LuListChecks,
+      tone: "bg-orange-100 text-orange-700",
     },
     {
       id: "flashcard",
       label: "Flashcards",
-      description: "Review Q&A cards for quick memorization and recall",
       route: `/subjects/${id}/notes/${noteId}/flashcard`,
+      icon: LuLayers,
+      tone: "bg-indigo-100 text-indigo-700",
+    },
+    {
+      id: "summary",
+      label: "Summarize",
+      route: `/subjects/${id}/notes/${noteId}/summary`,
+      icon: LuBookOpen,
+      tone: "bg-green-100 text-green-700",
     },
   ];
 
   if (isLoading) {
     return (
-      <div className="p-4 md:p-8">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
-        </div>
+      <div aria-busy="true" className="mx-auto max-w-5xl space-y-5">
+        <Skeleton className="h-6 w-28" />
+        <Skeleton className="h-10 w-2/3" />
+        <Skeleton className="h-[420px] w-full rounded-[24px]" />
       </div>
     );
   }
@@ -255,126 +226,117 @@ function NotePage({ params }: NotePageProps) {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-8 transition group"
-        >
-          <FiArrowLeft
-            size={20}
-            className="group-hover:-translate-x-1 transition-transform"
-          />
-          <span className="font-medium">Back to Notes</span>
-        </button>
+    <div className="mx-auto max-w-5xl">
+      <Link
+        href={`/subjects/${id}`}
+        className="group -ml-2 mb-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-2 text-[15px] font-bold text-gray-600 hover:text-ink"
+      >
+        <LuArrowLeft
+          className="h-5 w-5 transition-transform group-hover:-translate-x-0.5"
+          aria-hidden
+        />
+        Back to subject
+      </Link>
 
-        {/* Header Section */}
-        <div className="mb-6">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            {title || "Untitled Note"}
-          </h1>
-          <div className="flex items-center gap-4 mt-4">
-            <button
-              onClick={handleManualSave}
-              disabled={saveStatus === "saving"}
-              className="bg-orange-400 hover:bg-orange-500 text-white font-medium py-2.5 px-6 rounded-lg transition-all active:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              style={{
-                boxShadow:
-                  saveStatus === "saving"
-                    ? "none"
-                    : "0 4px 0 0 rgba(251, 146, 60, 0.3)",
-              }}
-            >
-              {saveStatus === "saving" && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              )}
-              Save Now
-            </button>
-            {getSaveStatusDisplay()}
-          </div>
-        </div>
-
-        {/* Action Buttons - Responsive Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
-          {actionButtons.map((action) => (
-            <div key={action.id} className="flex flex-col">
-              <button
-                onClick={() => router.push(action.route)}
-                className="w-full h-12 sm:h-10 rounded-lg transition-all font-medium text-sm text-center flex items-center justify-center gap-2 bg-[#615FFF] text-white hover:bg-[#524CE5] active:translate-y-0.5 active:shadow-none"
-                style={{
-                  boxShadow: "0 4px 0 0 rgba(97, 95, 255, 0.3)",
-                }}
-              >
-                {action.label}
-              </button>
-              <p className="text-xs text-gray-500 mt-2 text-center px-2">
-                {action.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Google Docs style container */}
-        <div className="bg-white shadow-md border border-gray-200 transition-colors rounded-lg overflow-visible">
-          {/* Sticky Title */}
-          <div 
-            className={`sticky top-[57px] z-50 bg-white border-b border-gray-200 transition-all duration-300 ${
-              isScrolled ? 'shadow-md' : 'shadow-none'
-            }`}
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <h1 className="min-w-0 break-words text-[1.75rem] font-semibold leading-[1.1] tracking-tight text-ink sm:text-4xl">
+          {title || "Untitled Note"}
+        </h1>
+        <div className="flex shrink-0 items-center gap-4">
+          {saveStatusDisplay}
+          <Button
+            size="sm"
+            onClick={handleManualSave}
+            disabled={saveStatus === "saving"}
           >
-            {/* Editable Title - Minimizes on scroll */}
-            <div className={`px-8 transition-all duration-300 ${
-              isScrolled ? 'pt-2 pb-1.5' : 'pt-8 pb-4'
-            }`}>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className={`w-full font-extrabold font-fredoka text-gray-900 focus:outline-none bg-transparent border-none transition-all duration-300 ${
-                  isScrolled ? 'text-lg' : 'text-4xl'
-                }`}
-                placeholder="Untitled document"
-              />
-            </div>
-          </div>
-
-          {/* Hidden main toolbar - keeping for reference but not displayed */}
-          <div className="hidden">
-            <EditorToolbar editor={editor} />
-          </div>
-
-          {/* Helpful hint */}
-          <div className="px-8 py-3 bg-orange-50 border-b border-orange-100 text-sm text-gray-600">
-            💡 <span className="font-medium">Tip:</span> Select any text to see formatting options
-          </div>
-
-          {/* Editor Content Area */}
-          <RichTextEditor
-            content={content}
-            onChange={setContent}
-            editable={true}
-            onEditorReady={setEditor}
-          />
-
-          {/* Bubble Toolbar - Appears on text selection with all features */}
-          <BubbleToolbar editor={editor} />
+            Save now
+          </Button>
         </div>
+      </header>
+
+      {/* Study tools */}
+      <ul className="mt-6 grid grid-cols-3 gap-2.5 sm:gap-4">
+        {actionButtons.map((action) => {
+          const Icon = action.icon;
+          return (
+            <li key={action.id}>
+              <button
+                type="button"
+                onClick={() => router.push(action.route)}
+                className="card card-interactive flex min-h-[84px] w-full flex-col items-center justify-center gap-2 rounded-[20px] px-2 py-3 text-center sm:min-h-[72px] sm:flex-row sm:gap-3 sm:px-5"
+              >
+                <span
+                  className={cn(
+                    "grid h-10 w-10 shrink-0 place-items-center rounded-xl",
+                    action.tone,
+                  )}
+                >
+                  <Icon className="h-5 w-5" aria-hidden />
+                </span>
+                <span className="font-display text-[15px] font-semibold leading-tight text-ink sm:text-lg">
+                  {action.label}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+
+      {/* Editor */}
+      <div className="card mt-6 rounded-[24px] shadow-[0_4px_0_#efe0cc]">
+        {/* Sticky title: slides under the app header */}
+        <div
+          className={cn(
+            "sticky top-[calc(var(--mobile-header-h)+env(safe-area-inset-top,0px))] z-30 rounded-t-[24px] border-b border-line bg-white transition-shadow duration-300 lg:top-[var(--topbar-h)]",
+            isScrolled ? "shadow-md" : "shadow-none",
+          )}
+        >
+          <div
+            className={cn(
+              "px-5 transition-all duration-300 sm:px-8",
+              isScrolled ? "pb-2 pt-2" : "pb-4 pt-6 sm:pt-8",
+            )}
+          >
+            <label htmlFor="note-title" className="sr-only">
+              Note title
+            </label>
+            <input
+              id="note-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={cn(
+                "w-full border-none bg-transparent font-display font-semibold text-ink placeholder:text-gray-500 focus:outline-none",
+                isScrolled ? "text-lg" : "text-2xl sm:text-4xl",
+              )}
+              placeholder="Untitled document"
+            />
+          </div>
+        </div>
+
+        {/* Hidden main toolbar - keeping for reference but not displayed */}
+        <div className="hidden">
+          <EditorToolbar editor={editor} />
+        </div>
+
+        <div className="flex items-start gap-2.5 border-b border-[#fad9a8] bg-orange-50 px-5 py-3 text-sm font-semibold text-gray-700 sm:px-8">
+          <LuLightbulb className="mt-0.5 h-4 w-4 shrink-0 text-orange-700" aria-hidden />
+          <p>
+            <span className="font-extrabold">Tip:</span> select any text to see
+            formatting options.
+          </p>
+        </div>
+
+        {/* Editor Content Area */}
+        <RichTextEditor
+          content={content}
+          onChange={setContent}
+          editable={true}
+          onEditorReady={setEditor}
+        />
+
+        {/* Bubble Toolbar - Appears on text selection with all features */}
+        <BubbleToolbar editor={editor} />
       </div>
     </div>
   );

@@ -5,7 +5,8 @@ import { userService } from "@/service/user.service";
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  // const type = requestUrl.searchParams.get("type");
+  // Only a fixed allow-list of in-app destinations is honoured, so this can never redirect off-site.
+  const next = requestUrl.searchParams.get("next");
 
   if (code) {
     const supabase = await createClient();
@@ -43,10 +44,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Handle password recovery flow
-    // if (type === "recovery") {
-    //     return NextResponse.redirect(new URL("/reset-password", requestUrl.origin));
-    // }
+    // Password recovery: the emailed link carries ?next=/reset-password
+    if (next === "/reset-password") {
+      return NextResponse.redirect(new URL("/reset-password", requestUrl.origin));
+    }
 
     // Successful authentication - redirect to dashboard
     return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));

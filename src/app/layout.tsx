@@ -1,20 +1,22 @@
-import type { Metadata } from "next";
-import { Fredoka, Poppins } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Fredoka, Nunito_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import "./editor.css";
 
+// Display face: headings, buttons, numerals.
 const fredoka = Fredoka({
-  variable: "--font-fredoka",
+  variable: "--nf-fredoka",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const poppins = Poppins({
-  variable: "--font-poppins",
+// Body face: paragraphs, labels, form text.
+const nunito = Nunito_Sans({
+  variable: "--nf-nunito",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "600", "700", "800"],
   display: "swap",
 });
 
@@ -27,13 +29,24 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#FFF9F2",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="light">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`light ${fredoka.variable} ${nunito.variable}`}
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -55,7 +68,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${fredoka.variable} ${poppins.variable} antialiased font-fredoka bg-background text-foreground`}
+        className="antialiased font-sans bg-background text-foreground"
         suppressHydrationWarning
       >
         {/* Google Analytics */}

@@ -44,7 +44,7 @@ export default function PromoCodesPage() {
       if (response.ok) {
         setPromoCodes(data.promoCodes);
       }
-    } catch (error) {
+    } catch {
       // Error fetching promo codes
     } finally {
       setIsLoading(false);
@@ -79,7 +79,7 @@ export default function PromoCodesPage() {
         const error = await response.json();
         alert(error.error || "Failed to save promo code");
       }
-    } catch (error) {
+    } catch {
       alert("Failed to save promo code");
     }
   };
@@ -111,7 +111,7 @@ export default function PromoCodesPage() {
       if (response.ok) {
         fetchPromoCodes();
       }
-    } catch (error) {
+    } catch {
       // Error deleting promo code
     }
   };
@@ -130,7 +130,7 @@ export default function PromoCodesPage() {
       if (response.ok) {
         fetchPromoCodes();
       }
-    } catch (error) {
+    } catch {
       // Error toggling promo code
     }
   };
@@ -167,12 +167,12 @@ export default function PromoCodesPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Promo Codes</h1>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+          className="btn btn-primary btn-sm"
         >
           Create New Promo Code
         </button>
@@ -180,8 +180,8 @@ export default function PromoCodesPage() {
 
       {/* Create/Edit Form */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 bg-ink/45 flex items-center justify-center z-[90] p-4">
+          <div className="bg-white rounded-[24px] p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold mb-4">
               {editingPromo ? "Edit" : "Create"} Promo Code
             </h2>
@@ -196,7 +196,7 @@ export default function PromoCodesPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, code: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="field"
                   placeholder="EARLYCAT50"
                   required
                   disabled={!!editingPromo}
@@ -213,7 +213,7 @@ export default function PromoCodesPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full px-3 py-2 border rounded-lg"
+                  className="field"
                   placeholder="3 months free for Product Hunt users"
                   required
                 />
@@ -229,7 +229,7 @@ export default function PromoCodesPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, discountType: e.target.value })
                     }
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="field"
                   >
                     <option value="MONTHS_FREE">Months Free</option>
                     <option value="PERCENTAGE">Percentage Off</option>
@@ -254,7 +254,7 @@ export default function PromoCodesPage() {
                         discountValue: Number(e.target.value),
                       })
                     }
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="field"
                     placeholder={
                       formData.discountType === "MONTHS_FREE"
                         ? "e.g., 3"
@@ -286,7 +286,7 @@ export default function PromoCodesPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, maxUses: e.target.value })
                     }
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="field"
                     placeholder="Unlimited if empty"
                   />
                 </div>
@@ -301,7 +301,7 @@ export default function PromoCodesPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, expiresAt: e.target.value })
                     }
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="field"
                   />
                 </div>
               </div>
@@ -328,13 +328,13 @@ export default function PromoCodesPage() {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                  className="btn btn-secondary btn-sm"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+                  className="btn btn-primary btn-sm"
                 >
                   {editingPromo ? "Update" : "Create"}
                 </button>
@@ -345,8 +345,8 @@ export default function PromoCodesPage() {
       )}
 
       {/* Promo Codes Table */}
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="w-full">
+      <div className="card overflow-x-auto">
+        <table className="w-full min-w-[720px]">
           <thead className="bg-gray-50 border-b">
             <tr>
               <th className="text-left p-4 font-medium">Code</th>

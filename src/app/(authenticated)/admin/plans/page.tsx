@@ -37,7 +37,7 @@ export default function AdminPlansPage() {
       if (data.success) {
         setPlans(data.plans);
       }
-    } catch (error) {
+    } catch {
       // Error fetching plans
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ export default function AdminPlansPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading plans...</p>
@@ -117,7 +117,7 @@ export default function AdminPlansPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Plan Management</h1>
@@ -131,7 +131,7 @@ export default function AdminPlansPage() {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="bg-white rounded-lg shadow-md p-6 border border-gray-200"
+              className="card p-6 border border-gray-200"
             >
               {editingPlan?.id === plan.id ? (
                 // Edit Mode
@@ -147,7 +147,7 @@ export default function AdminPlansPage() {
                         onChange={(e) =>
                           updateEditingPlan("displayName", e.target.value)
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -159,7 +159,7 @@ export default function AdminPlansPage() {
                         type="text"
                         value={editingPlan.planType}
                         disabled
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                        className="field"
                       />
                     </div>
 
@@ -176,7 +176,7 @@ export default function AdminPlansPage() {
                             parseFloat(e.target.value),
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -193,7 +193,7 @@ export default function AdminPlansPage() {
                             parseFloat(e.target.value),
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -210,7 +210,7 @@ export default function AdminPlansPage() {
                             parseInt(e.target.value),
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -227,7 +227,7 @@ export default function AdminPlansPage() {
                             parseInt(e.target.value),
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -244,7 +244,7 @@ export default function AdminPlansPage() {
                             parseInt(e.target.value),
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -261,7 +261,7 @@ export default function AdminPlansPage() {
                             parseInt(e.target.value),
                           )
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -279,7 +279,7 @@ export default function AdminPlansPage() {
                           )
                         }
                         placeholder="e.g., 50 for 50% off"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
 
@@ -297,7 +297,7 @@ export default function AdminPlansPage() {
                           )
                         }
                         placeholder="e.g., 50% OFF for Early Users"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                        className="field"
                       />
                     </div>
                   </div>
@@ -354,12 +354,12 @@ export default function AdminPlansPage() {
                             onChange={(e) =>
                               updateFeature(index, e.target.value)
                             }
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
+                            className="field flex-1"
                             placeholder="Feature description"
                           />
                           <button
                             onClick={() => removeFeature(index)}
-                            className="px-3 py-2 text-red-600 hover:text-red-700"
+                            className="btn btn-danger btn-sm"
                           >
                             Remove
                           </button>
@@ -373,14 +373,14 @@ export default function AdminPlansPage() {
                     <button
                       onClick={handleSave}
                       disabled={saving}
-                      className="px-6 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50"
+                      className="btn btn-primary btn-sm"
                     >
                       {saving ? "Saving..." : "Save Changes"}
                     </button>
                     <button
                       onClick={handleCancel}
                       disabled={saving}
-                      className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
+                      className="btn btn-secondary btn-sm"
                     >
                       Cancel
                     </button>
@@ -394,7 +394,7 @@ export default function AdminPlansPage() {
                       <h3 className="text-xl font-bold text-gray-900">
                         {plan.displayName}
                         {plan.isMostPopular && (
-                          <span className="ml-2 text-xs bg-orange-500 text-white px-2 py-1 rounded">
+                          <span className="ml-2 text-xs bg-orange-500 text-ink px-2 py-1 rounded">
                             Most Popular
                           </span>
                         )}
@@ -408,7 +408,7 @@ export default function AdminPlansPage() {
                     </div>
                     <button
                       onClick={() => handleEdit(plan)}
-                      className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+                      className="btn btn-primary btn-sm"
                     >
                       Edit
                     </button>

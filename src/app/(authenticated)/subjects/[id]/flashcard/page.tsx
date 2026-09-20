@@ -1,4 +1,5 @@
 "use client";
+import PageLoading from "@/components/ui/PageLoading";
 import { notFound, useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import NoteSelector from "./components/NoteSelector";
@@ -60,11 +61,7 @@ function SubjectFlashcardPage({ params }: SubjectFlashcardPageProps) {
   }, [id]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!subject) {
@@ -117,15 +114,11 @@ function SubjectFlashcardPage({ params }: SubjectFlashcardPageProps) {
 
   // Step 3: View flashcards
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        <FlashcardView
-          subjectName={subject.title}
-          config={config}
-          onBack={handleBack}
-        />
-      </div>
-    </div>
+    <FlashcardView
+      subjectName={subject.title}
+      config={config}
+      onBack={handleBack}
+    />
   );
 }
 

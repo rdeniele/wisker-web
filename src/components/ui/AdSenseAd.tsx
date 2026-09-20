@@ -23,10 +23,9 @@ export function AdSenseAd({
     // Wait for the DOM to be ready and the ad element to be in place
     const timer = setTimeout(() => {
       try {
-        if (typeof window !== "undefined" && (window as any).adsbygoogle) {
-          ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push(
-            {},
-          );
+        const w = window as Window & { adsbygoogle?: unknown[] };
+        if (typeof window !== "undefined" && w.adsbygoogle) {
+          (w.adsbygoogle = w.adsbygoogle || []).push({});
         }
       } catch (error) {
         // Silently handle - ad might already be processed

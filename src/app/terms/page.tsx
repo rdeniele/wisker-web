@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LegalLayout from "@/components/layouts/LegalLayout";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -8,19 +9,15 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div
-      className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8"
-      style={{ fontFamily: "Fredoka, Arial, sans-serif" }}
-    >
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+    <LegalLayout>
+        <h1 className="mb-2">
           Terms and Conditions for Wisker
         </h1>
         <p className="text-sm text-gray-500 mb-8">
           Effective Date: January 28, 2026
         </p>
 
-        <div className="prose prose-lg max-w-none space-y-6 text-gray-700">
+        <div className="space-y-6">
           <p>
             Welcome to Wisker, a product of Acqron (&quot;Company,&quot;
             &quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). By accessing or
@@ -201,12 +198,11 @@ export default function TermsPage() {
         <div className="mt-8 pt-6 border-t border-gray-200 text-center">
           <Link
             href="/signup"
-            className="text-orange-500 hover:text-orange-600 font-medium transition-colors inline-block"
+            className="link inline-block"
           >
             ← Back to Sign Up
           </Link>
         </div>
-      </div>
-    </div>
+      </LegalLayout>
   );
 }

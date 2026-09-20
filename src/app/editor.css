@@ -1,12 +1,19 @@
 /* Tiptap Editor Styles */
 .ProseMirror {
-  font-family: "Fredoka", Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
   line-height: 1.75;
-  color: #1f2937;
+  color: var(--ink);
 }
 
 .ProseMirror:focus {
   outline: none;
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3 {
+  font-family: var(--font-display);
 }
 
 .ProseMirror h1 {
@@ -14,7 +21,7 @@
   font-weight: 700;
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
-  color: #111827;
+  color: var(--ink);
 }
 
 .ProseMirror h2 {
@@ -22,7 +29,7 @@
   font-weight: 600;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
-  color: #111827;
+  color: var(--ink);
 }
 
 .ProseMirror h3 {
@@ -30,7 +37,7 @@
   font-weight: 600;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
-  color: #111827;
+  color: var(--ink);
 }
 
 .ProseMirror p {
@@ -85,7 +92,7 @@
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #9ca3af;
+  color: #75695f;
   pointer-events: none;
   height: 0;
 }

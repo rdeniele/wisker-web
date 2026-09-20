@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
     const learningTool = await learningToolService.generateLearningToolWithKB(
       user.id,
       {
-        type: validatedData.type as any,
+        type: validatedData.type,
         source,
         subjectId: validatedData.subjectId,
         noteId: validatedData.noteId,

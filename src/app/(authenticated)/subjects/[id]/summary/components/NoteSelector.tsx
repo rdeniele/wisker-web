@@ -1,249 +1,32 @@
 "use client";
-import { useState, useMemo } from "react";
-import {
-  FiArrowLeft,
-  FiCheckSquare,
-  FiSquare,
-  FiFileText,
-  FiAlertTriangle,
-  FiAlertCircle,
-} from "react-icons/fi";
-
-interface Note {
-  id: string;
-  title: string;
-  rawContent: string;
-  knowledgeBase?: string | null;
-}
+import SharedNoteSelector from "@/components/study/NoteSelector";
 
 interface NoteSelectorProps {
-  subjectId: string;
+  subjectId?: string;
   subjectName: string;
-  notes: Note[];
+  notes: {
+    id: string;
+    title: string;
+    rawContent: string;
+    knowledgeBase?: string | null;
+  }[];
   onNotesSelected: (noteIds: string[]) => void;
   onBack: () => void;
 }
 
-// Content size thresholds (in characters)
-const WARNING_THRESHOLD = 20000; // ~5,000 tokens
-const ERROR_THRESHOLD = 40000; // ~10,000 tokens
-
 export default function NoteSelector({
-  subjectId: _subjectId,
   subjectName,
   notes,
   onNotesSelected,
   onBack,
 }: NoteSelectorProps) {
-  const [selectedNotes, setSelectedNotes] = useState<Set<string>>(new Set());
-
-  // Calculate total content size of selected notes
-  const totalContentSize = useMemo(() => {
-    let total = 0;
-    selectedNotes.forEach((noteId) => {
-      const note = notes.find((n) => n.id === noteId);
-      if (note) {
-        // Use knowledgeBase if available (from PDF uploads), otherwise rawContent
-        const content = note.knowledgeBase || note.rawContent;
-        total += content.length;
-      }
-    });
-    return total;
-  }, [selectedNotes, notes]);
-
-  const getSizeStatus = () => {
-    if (totalContentSize > ERROR_THRESHOLD) {
-      return {
-        level: 'error' as const,
-        message: 'Content size is very large. Generation may take longer or fail. Consider selecting fewer notes.',
-        color: 'text-red-600',
-        bgColor: 'bg-red-50',
-        borderColor: 'border-red-200',
-        icon: FiAlertCircle,
-      };
-    } else if (totalContentSize > WARNING_THRESHOLD) {
-      return {
-        level: 'warning' as const,
-        message: 'Content size is large. Generation may take a bit longer.',
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-50',
-        borderColor: 'border-yellow-200',
-        icon: FiAlertTriangle,
-      };
-    }
-    return null;
-  };
-
-  const sizeStatus = getSizeStatus();
-
-  const formatSize = (size: number) => {
-    if (size < 1000) return `${size} chars`;
-    return `${(size / 1000).toFixed(1)}K chars`;
-  };
-
-  const toggleNote = (noteId: string) => {
-    const newSelected = new Set(selectedNotes);
-    if (newSelected.has(noteId)) {
-      newSelected.delete(noteId);
-    } else {
-      newSelected.add(noteId);
-    }
-    setSelectedNotes(newSelected);
-  };
-
-  const toggleAll = () => {
-    if (selectedNotes.size === notes.length) {
-      setSelectedNotes(new Set());
-    } else {
-      setSelectedNotes(new Set(notes.map((n) => n.id)));
-    }
-  };
-
-  const handleContinue = () => {
-    if (selectedNotes.size > 0) {
-      onNotesSelected(Array.from(selectedNotes));
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition group mb-6"
-        >
-          <FiArrowLeft
-            size={20}
-            className="group-hover:-translate-x-1 transition-transform"
-          />
-          <span className="font-medium">Back to Subject</span>
-        </button>
-
-        {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
-          {/* Title */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-              <FiFileText className="text-blue-600" size={32} />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Select Notes
-            </h1>
-            <p className="text-gray-600">
-              Choose notes from{" "}
-              <span className="font-semibold">{subjectName}</span> to include in
-              your summary
-            </p>
-          </div>
-
-          {/* Select All */}
-          <div className="mb-4 pb-4 border-b border-gray-200">
-            <button
-              onClick={toggleAll}
-              className="flex items-center gap-3 text-blue-600 hover:text-blue-700 font-semibold transition"
-            >
-              {selectedNotes.size === notes.length ? (
-                <FiCheckSquare size={20} className="text-blue-600" />
-              ) : (
-                <FiSquare size={20} className="text-gray-400" />
-              )}
-              <span>
-                {selectedNotes.size === notes.length
-                  ? "Deselect All"
-                  : "Select All"}
-              </span>
-            </button>
-          </div>
-
-          {/* Notes List */}
-          <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
-            {notes.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                No notes available. Create some notes first!
-              </div>
-            ) : (
-              notes.map((note) => {
-                const content = note.knowledgeBase || note.rawContent;
-                return (
-                  <button
-                    key={note.id}
-                    onClick={() => toggleNote(note.id)}
-                    className={`w-full p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                      selectedNotes.has(note.id)
-                        ? "border-blue-500 bg-blue-50 shadow-md"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="mt-1">
-                        {selectedNotes.has(note.id) ? (
-                          <FiCheckSquare className="text-blue-600" size={20} />
-                        ) : (
-                          <FiSquare className="text-gray-400" size={20} />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">
-                          {note.title}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {formatSize(content.length)}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })
-            )}
-          </div>
-
-          {/* Size Status Warning */}
-          {selectedNotes.size > 0 && sizeStatus && (
-            <div
-              className={`mb-6 p-4 rounded-xl border-2 ${sizeStatus.borderColor} ${sizeStatus.bgColor}`}
-            >
-              <div className="flex items-start gap-3">
-                <sizeStatus.icon className={sizeStatus.color} size={20} />
-                <div className="flex-1">
-                  <h4 className={`font-semibold ${sizeStatus.color} mb-1`}>
-                    {sizeStatus.level === 'error'
-                      ? 'Content Size Too Large'
-                      : 'Large Content Size'}
-                  </h4>
-                  <p className="text-sm text-gray-700 mb-2">
-                    {sizeStatus.message}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    Total: {formatSize(totalContentSize)} (Recommended: under{' '}
-                    {formatSize(WARNING_THRESHOLD)})
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Content Size Info */}
-          {selectedNotes.size > 0 && !sizeStatus && (
-            <div className="mb-6 p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <span className="font-semibold">Total content size:</span>{' '}
-                {formatSize(totalContentSize)}
-              </p>
-            </div>
-          )}
-
-          {/* Continue Button */}
-          <button
-            onClick={handleContinue}
-            disabled={selectedNotes.size === 0}
-            className="w-full py-4 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold text-lg shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Continue with {selectedNotes.size} note
-            {selectedNotes.size !== 1 ? "s" : ""}
-          </button>
-        </div>
-      </div>
-    </div>
+    <SharedNoteSelector
+      tool="summary"
+      subjectName={subjectName}
+      notes={notes}
+      onNotesSelected={onNotesSelected}
+      onBack={onBack}
+    />
   );
 }

@@ -56,7 +56,7 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading dashboard...</p>
@@ -67,8 +67,8 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-md">
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="card p-8 max-w-md">
           <div className="text-red-500 text-5xl mb-4 text-center">🚫</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
             Access Denied
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
           <p className="text-gray-600 text-center mb-6">{error}</p>
           <button
             onClick={() => router.push("/dashboard")}
-            className="w-full py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+            className="btn btn-primary btn-sm btn-block"
           >
             Go to Dashboard
           </button>
@@ -90,7 +90,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Link
             href="/admin/users"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-transparent hover:border-orange-500"
+            className="card card-interactive p-6 text-left"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -117,7 +117,7 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/plans"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-transparent hover:border-orange-500"
+            className="card card-interactive p-6 text-left"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
 
           <Link
             href="/admin/promo-codes"
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-transparent hover:border-orange-500"
+            className="card card-interactive p-6 text-left"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={fetchStats}
-            className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow border-2 border-transparent hover:border-blue-500"
+            className="card card-interactive p-6 text-left"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -157,7 +157,7 @@ export default function AdminDashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="card p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-gray-600">Total Users</p>
               <span className="text-2xl">👤</span>
@@ -167,7 +167,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 border-2 border-orange-500">
+          <div className="card p-6 border-2 border-orange-500">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-gray-600">Early Users (50% OFF)</p>
               <span className="text-2xl">⭐</span>
@@ -180,7 +180,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="card p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-gray-600">Active Subscriptions</p>
               <span className="text-2xl">✅</span>
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="card p-6">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-gray-600">Marketing Opt-ins</p>
               <span className="text-2xl">📧</span>
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
 
         {/* Signup Tracking */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+          <div className="card p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-gray-600">Signups (Last 7 Days)</p>
               <span className="text-2xl">📈</span>
@@ -222,7 +222,7 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+          <div className="card p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm text-gray-600">Signups (Last 30 Days)</p>
               <span className="text-2xl">📊</span>
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
 
         {/* Plan Distribution */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="card p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">
               Plan Distribution
             </h3>
@@ -298,7 +298,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="card p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">
               Recent Users
             </h3>
@@ -339,7 +339,7 @@ export default function AdminDashboard() {
 
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6">
             <h3 className="text-lg font-bold text-blue-900 mb-2">
               💡 Early User Program
             </h3>
@@ -355,7 +355,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
-          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-6">
+          <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6">
             <h3 className="text-lg font-bold text-green-900 mb-2">
               📧 Marketing Emails
             </h3>

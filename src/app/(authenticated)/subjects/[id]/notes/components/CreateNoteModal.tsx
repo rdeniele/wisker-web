@@ -1,6 +1,6 @@
 import React from "react";
-import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
+import Mascot, { type MascotName } from "@/components/ui/Mascot";
 
 interface CreateNoteModalProps {
   onClose?: () => void;
@@ -8,8 +8,18 @@ interface CreateNoteModalProps {
   onUpload?: () => void;
 }
 
+interface Option {
+  title: string;
+  body: string;
+  mascot: MascotName;
+  onSelect: () => void;
+}
+
+/**
+ * The two ways to add a note. Rendered inside the page's <Modal>, so it only
+ * owns the choices, not the dialog chrome.
+ */
 const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
-  onClose,
   onCreateNote,
   onUpload,
 }) => {
@@ -25,71 +35,41 @@ const CreateNoteModal: React.FC<CreateNoteModalProps> = ({
     }
   };
 
+  const options: Option[] = [
+    {
+      title: "Write a note",
+      body: "Type or paste your own notes. No AI needed, free to use.",
+      mascot: "answer",
+      onSelect: handleCreateNote,
+    },
+    {
+      title: "Upload a file",
+      body: "PDF, PowerPoint or images. Wisker reads them into a note for you.",
+      mascot: "capture",
+      onSelect: () => onUpload?.(),
+    },
+  ];
+
   return (
-    <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-6 relative font-fredoka">
-      {/* Close Button */}
-      <button
-        className="absolute left-4 top-4 text-2xl text-gray-500 hover:text-gray-700 focus:outline-none"
-        aria-label="Close"
-        type="button"
-        onClick={onClose}
-      >
-        &#10005;
-      </button>
-
-      {/* Header */}
-      <h2 className="text-2xl font-bold text-center w-full mt-2 mb-6 text-orange-400">
-        Create
-      </h2>
-
-      {/* Options */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        {/* Create Notes Button */}
+    <div className="grid gap-3.5 pb-3 sm:grid-cols-2 sm:gap-4">
+      {options.map((o) => (
         <button
-          className="flex-1 min-h-[260px] w-full flex flex-col items-center bg-[#fff7e6] rounded-2xl p-6 shadow-md hover:shadow-lg transition border-2 border-transparent hover:border-orange-300 focus:outline-none"
-          onClick={handleCreateNote}
+          key={o.title}
           type="button"
+          onClick={o.onSelect}
+          className="card card-interactive flex min-h-[112px] items-center gap-4 rounded-[24px] bg-sand p-4 text-left sm:min-h-[220px] sm:flex-col sm:justify-center sm:gap-2 sm:p-6 sm:text-center"
         >
-          <Image
-            src="/images/wisky-answer.png"
-            alt="Create notes cat"
-            width={80}
-            height={80}
-            className="w-20 h-20 mb-2"
-            draggable={false}
-            priority
-          />
-          <span className="text-lg font-bold text-orange-400 mb-1">
-            Create notes
-          </span>
-          <span className="text-gray-600 text-sm text-center">
-            No AI needed, free to use
+          <Mascot name={o.mascot} size={72} className="shrink-0 sm:h-24 sm:w-24" />
+          <span>
+            <span className="block font-display text-xl font-semibold text-ink">
+              {o.title}
+            </span>
+            <span className="mt-0.5 block text-[15px] font-semibold leading-snug text-gray-600">
+              {o.body}
+            </span>
           </span>
         </button>
-
-        {/* Upload PDF/Image Button */}
-        <button
-          className="flex-1 min-h-[260px] w-full flex flex-col items-center bg-[#fff7e6] rounded-2xl p-6 shadow-md hover:shadow-lg transition border-2 border-transparent hover:border-orange-300 focus:outline-none"
-          onClick={onUpload}
-          type="button"
-        >
-          <Image
-            src="/images/wisky-capture.png"
-            alt="Upload PDF cat"
-            width={80}
-            height={80}
-            className="w-20 h-20 mb-2"
-            draggable={false}
-            priority
-          />
-          <span className="text-lg font-bold text-orange-400 mb-1">
-            Upload PDF/Image
-          </span>
-          <span className="text-gray-600 text-sm text-center">
-            Get materials for free without AI
-          </span>
-        </button>
-      </div>
+      ))}
     </div>
   );
 };

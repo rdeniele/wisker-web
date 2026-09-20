@@ -1,4 +1,5 @@
 "use client";
+import PageLoading from "@/components/ui/PageLoading";
 import { notFound, useRouter } from "next/navigation";
 import { use, useState, useEffect } from "react";
 import FlashcardView from "./components/FlashcardView";
@@ -15,7 +16,7 @@ interface Note {
 }
 
 function FlashcardPage({ params }: FlashcardPageProps) {
-  const { id: _id, noteId } = use(params);
+  const { noteId } = use(params);
   const router = useRouter();
   const [config, setConfig] = useState<FlashcardConfig | null>(null);
   const [note, setNote] = useState<Note | null>(null);
@@ -53,11 +54,7 @@ function FlashcardPage({ params }: FlashcardPageProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!note) {
@@ -76,15 +73,11 @@ function FlashcardPage({ params }: FlashcardPageProps) {
   }
 
   return (
-    <div className="p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        <FlashcardView
-          noteTitle={note.title}
-          config={config}
-          onBack={handleBack}
-        />
-      </div>
-    </div>
+    <FlashcardView
+      noteTitle={note.title}
+      config={config}
+      onBack={handleBack}
+    />
   );
 }
 

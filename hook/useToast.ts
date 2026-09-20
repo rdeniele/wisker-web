@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { AlertColor } from "@mui/material";
+import type { ToastSeverity } from "@/components/ui/Toast";
 
 interface ToastState {
   open: boolean;
   message: string;
-  severity: AlertColor;
+  severity: ToastSeverity;
 }
 
 interface UseToastReturn {
   toast: ToastState;
-  showToast: (message: string, severity: AlertColor) => void;
+  showToast: (message: string, severity: ToastSeverity) => void;
   hideToast: () => void;
 }
 
@@ -22,7 +22,7 @@ export function useToast(): UseToastReturn {
     severity: "info",
   });
 
-  const showToast = useCallback((message: string, severity: AlertColor) => {
+  const showToast = useCallback((message: string, severity: ToastSeverity) => {
     setToast({ open: true, message, severity });
   }, []);
 

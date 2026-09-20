@@ -1,4 +1,5 @@
 "use client";
+import PageLoading from "@/components/ui/PageLoading";
 import { use, useState, useEffect } from "react";
 import { useRouter, notFound } from "next/navigation";
 import QuizSetup, { QuizConfig } from "./components/QuizSetup";
@@ -67,11 +68,7 @@ export default function QuizPage({ params }: QuizPageProps) {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    );
+    return <PageLoading />;
   }
 
   if (!note) {
