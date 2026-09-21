@@ -1,54 +1,64 @@
 /**
  * Admin Users API Route
- * Manage users and their subscriptions
+ * Search / filter / sort / paginate users, and manage their subscriptions.
+ * Every change is written to the admin audit log.
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { getAdminUser } from "@/lib/admin-auth";
+import { assertAdmin, getAdminUser } from "@/lib/admin-auth";
+import { errorResponse, successResponse } from "@/lib/api-response";
+import { paginationSchema, validateRequest } from "@/lib/validation";
 import { PlanType } from "@prisma/client";
+import { diffFields, recordAudit } from "@/service/audit.service";
+import { clearAnalyticsCache } from "@/service/analytics.service";
+import {
+  listMarketingEmails,
+  listUsers,
+  USER_SORTS,
+} from "@/service/admin-users.service";
 
-// GET all users
-export async function GET() {
+const listQuerySchema = paginationSchema.extend({
+  q: z.string().trim().max(200).optional(),
+  plan: z.enum(["FREE", "PRO", "PREMIUM"]).optional(),
+  account: z.enum(["active", "suspended"]).optional(),
+  activity: z.enum(["active7", "dormant30", "never"]).optional(),
+  sort: z.enum(USER_SORTS).default("createdAt"),
+  dir: z.enum(["asc", "desc"]).default("desc"),
+  export: z.literal("marketing").optional(),
+});
+
+// GET - Paginated, filtered, sorted users (or ?export=marketing for opt-in emails)
+export async function GET(request: NextRequest) {
   try {
-    // Check admin access
-    const { isAdmin } = await getAdminUser();
-    if (!isAdmin) {
-      return NextResponse.json(
-        { success: false, error: "Unauthorized" },
-        { status: 403 },
-      );
+    const admin = await assertAdmin();
+
+    const params = Object.fromEntries(
+      [...request.nextUrl.searchParams].filter(([, v]) => v !== ""),
+    );
+    const { export: exportKind, ...query } = validateRequest(listQuerySchema, params);
+
+    if (exportKind === "marketing") {
+      const emails = await listMarketingEmails();
+      await recordAudit({
+        actor: admin,
+        action: "users.export_marketing_emails",
+        targetType: "users",
+        metadata: { count: emails.length },
+      });
+      return new NextResponse(emails.join("\n"), {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "private, no-store",
+        },
+      });
     }
 
-    const users = await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        email: true,
-        planType: true,
-        subscriptionStatus: true,
-        dailyCredits: true,
-        creditsUsedToday: true,
-        isEarlyUser: true,
-        earlyUserNumber: true,
-        adminDiscountPercent: true,
-        adminNotes: true,
-        marketingOptIn: true,
-        createdAt: true,
-        subscriptionEndDate: true,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      users,
-    });
+    const result = await listUsers(query);
+    return successResponse(result);
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch users" },
-      { status: 500 },
-    );
+    return errorResponse(error);
   }
 }
 
@@ -56,8 +66,8 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     // Check admin access
-    const { isAdmin } = await getAdminUser();
-    if (!isAdmin) {
+    const { user: actor, isAdmin } = await getAdminUser();
+    if (!isAdmin || !actor) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 },
@@ -81,6 +91,19 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    if (
+      adminDiscountPercent !== null &&
+      adminDiscountPercent !== undefined &&
+      !(typeof adminDiscountPercent === "number" &&
+        adminDiscountPercent >= 0 &&
+        adminDiscountPercent <= 100)
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Discount must be between 0 and 100" },
+        { status: 400 },
+      );
+    }
+
     // Get the plan configuration for the new plan type
     const plan = await prisma.plan.findFirst({
       where: { planType: planType as PlanType },
@@ -93,16 +116,30 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const before = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        email: true,
+        planType: true,
+        subscriptionStatus: true,
+        adminDiscountPercent: true,
+        adminNotes: true,
+        isEarlyUser: true,
+        earlyUserNumber: true,
+      },
+    });
+    if (!before) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 },
+      );
+    }
+
     // If marking as early user, assign the next early user number
     let earlyUserNumber: number | undefined;
     if (isEarlyUser) {
-      const currentUser = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { isEarlyUser: true, earlyUserNumber: true },
-      });
-
       // Only assign number if not already an early user
-      if (!currentUser?.isEarlyUser) {
+      if (!before.isEarlyUser) {
         const maxEarlyUserNumber = await prisma.user.aggregate({
           _max: { earlyUserNumber: true },
           where: { isEarlyUser: true },
@@ -135,6 +172,23 @@ export async function PUT(request: NextRequest) {
       },
     });
 
+    const changes = diffFields(before, {
+      planType: updatedUser.planType,
+      subscriptionStatus: updatedUser.subscriptionStatus,
+      adminDiscountPercent: updatedUser.adminDiscountPercent,
+      adminNotes: updatedUser.adminNotes,
+      isEarlyUser: updatedUser.isEarlyUser,
+    });
+    await recordAudit({
+      actor: { id: actor.id, email: actor.email ?? "" },
+      action: "user.update",
+      targetType: "user",
+      targetId: userId,
+      targetLabel: before.email,
+      metadata: changes,
+    });
+    clearAnalyticsCache();
+
     return NextResponse.json({
       success: true,
       user: updatedUser,
@@ -152,8 +206,8 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check admin access
-    const { isAdmin } = await getAdminUser();
-    if (!isAdmin) {
+    const { user: actor, isAdmin } = await getAdminUser();
+    if (!isAdmin || !actor) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 },
@@ -201,6 +255,16 @@ export async function POST(request: NextRequest) {
         adminNotes: `Free ${planType} subscription granted by admin for ${durationMonths || 1} month(s)`,
       },
     });
+
+    await recordAudit({
+      actor: { id: actor.id, email: actor.email ?? "" },
+      action: "user.grant_subscription",
+      targetType: "user",
+      targetId: userId,
+      targetLabel: updatedUser.email,
+      metadata: { planType, durationMonths: durationMonths || 1, endsAt: endDate.toISOString() },
+    });
+    clearAnalyticsCache();
 
     return NextResponse.json({
       success: true,

@@ -2,6 +2,18 @@ import { createClient } from "@/lib/supabase/server";
 import { validatePassword } from "@/lib/utils/validation";
 import { AuthCredentials, AuthResponse, SignupCredentials } from "@/types/auth";
 
+/**
+ * Supabase's client surfaces a gateway/CDN error page (HTML) as
+ * `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`. Show people
+ * something they can act on instead.
+ */
+function friendlyAuthError(message: string): string {
+  if (/<!DOCTYPE|Unexpected token '<'|is not valid JSON/i.test(message)) {
+    return "Our sign-in service is temporarily unavailable. Please try again in a moment.";
+  }
+  return message;
+}
+
 export async function signUp(
   credentials: SignupCredentials,
 ): Promise<AuthResponse> {
@@ -59,7 +71,7 @@ export async function signUp(
   });
 
   if (error) {
-    let errorMessage = error.message;
+    let errorMessage = friendlyAuthError(error.message);
 
     // Provide more specific error messages
     if (error.message.includes("User already registered")) {
@@ -121,7 +133,7 @@ export async function signIn(
 
   if (error) {
     // Provide more specific error messages
-    let errorMessage = error.message;
+    let errorMessage = friendlyAuthError(error.message);
     console.error("Sign in failed:", error.message);
 
     if (error.message.includes("Email not confirmed")) {

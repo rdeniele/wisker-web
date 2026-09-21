@@ -28,6 +28,24 @@ TOGETHER_AI_MODEL=Qwen/Qwen2.5-72B-Instruct-Turbo
 TOGETHER_AI_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct
 ```
 
+#### AI fallback (recommended): Gemini
+
+If Together AI fails (out of credits, rate-limited, down), chat and vision
+requests automatically fall back to Gemini. Get a key at
+https://aistudio.google.com/apikey and set:
+
+```
+GEMINI_API_KEY=your-gemini-api-key
+# Optional
+GEMINI_MODEL=gemini-3.8-flash          # text model (default)
+GEMINI_VISION_MODEL=gemini-3.8-flash   # defaults to GEMINI_MODEL
+GEMINI_REASONING_EFFORT=low            # "" to omit the parameter
+AI_PROVIDER_ORDER=together,gemini      # "gemini,together" makes Gemini the default
+```
+
+Embeddings stay on Together AI (vectors from different models can't be mixed
+in the same index). Verify the key with `npx tsx scripts/test-gemini-fallback.ts`.
+
 #### Will be set automatically by Vercel:
 
 ```

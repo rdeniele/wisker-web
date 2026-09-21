@@ -26,7 +26,7 @@ function NavBar() {
       {/* Mobile / tablet */}
       <header className="pt-safe sticky top-0 z-40 border-b border-line bg-cream/90 backdrop-blur-md lg:hidden">
         <div className="flex h-[var(--mobile-header-h)] items-center justify-between gap-3 px-4 sm:px-6">
-          <Link href="/dashboard" aria-label="Wisker home" className="rounded-xl">
+          <Link href="/dashboard" aria-label="Wisker home" className="shrink-0 rounded-xl">
             <Logo size={34} />
           </Link>
           <div className="flex items-center gap-2">

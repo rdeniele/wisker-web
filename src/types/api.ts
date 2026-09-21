@@ -28,6 +28,7 @@ export interface UserDto {
   subjectsLimit: number;
   dailyCredits: number;
   creditsUsedToday: number;
+  suspendedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

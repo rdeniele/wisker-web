@@ -7,53 +7,11 @@ import {
 import { LearningToolType } from "@prisma/client";
 import { AIProcessingError } from "@/lib/errors";
 import { marked } from "marked";
-
-interface TogetherAIMessage {
-  role: "system" | "user" | "assistant";
-  content: string | TogetherAIMessageContent[];
-}
-
-interface TogetherAIMessageContent {
-  type: "text" | "image_url";
-  text?: string;
-  image_url?: {
-    url: string;
-  };
-}
-
-interface TogetherAIRequest {
-  model: string;
-  messages: TogetherAIMessage[];
-  max_tokens?: number;
-  temperature?: number;
-  top_p?: number;
-  top_k?: number;
-  repetition_penalty?: number;
-  stop?: string[];
-}
-
-interface TogetherAIResponse {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: {
-    index: number;
-    message: {
-      role: string;
-      content: string;
-    };
-    finish_reason: string;
-  }[];
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
+import { llmService, type LLMMessage } from "./llm.service";
 
 /**
- * AI Service for processing notes and generating learning tools using Together AI
+ * AI Service for processing notes and generating learning tools using Together AI,
+ * with Gemini as an automatic fallback (see llm.service.ts)
  */
 // Helper function to convert Markdown to HTML for TipTap editor
 function markdownToHtml(markdown: string): string {
@@ -74,150 +32,43 @@ function markdownToHtml(markdown: string): string {
 }
 
 export class AIService {
-  private apiKey: string;
   private model: string;
   private visionModel: string;
-  private baseURL = "https://api.together.xyz/v1";
 
   constructor() {
-    this.apiKey = process.env.TOGETHER_API_KEY || "";
+    // Together models. Gemini (fallback) models are configured in llm.service.
     // Use serverless model by default to avoid dedicated endpoint requirement
     this.model =
       process.env.TOGETHER_AI_MODEL ||
       "meta-llama/Llama-3.3-70B-Instruct-Turbo";
     this.visionModel =
       process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3.5-9B";
-
-    // API key will be validated when methods are called
   }
 
   /**
-   * Make a request to Together AI API with retry logic
+   * Send a chat completion via the provider chain (Together AI first, then
+   * Gemini if configured). See llm.service.ts for fallback behaviour.
    */
   private async makeRequest(
-    messages: TogetherAIMessage[],
+    messages: LLMMessage[],
     options: {
       maxTokens?: number;
       temperature?: number;
     } = {},
-    modelOverride?: string,
+    purpose: "text" | "vision" = "text",
   ): Promise<string> {
-    if (!this.apiKey) {
-      throw new AIProcessingError("Together AI API key not configured");
-    }
-
-    const requestBody: TogetherAIRequest = {
-      model: modelOverride || this.model,
-      messages,
-      max_tokens: options.maxTokens || 2000,
-      temperature: options.temperature || 0.7,
-      top_p: 0.7,
-      top_k: 50,
-      repetition_penalty: 1,
-      stop: ["<|eot_id|>", "<|eom_id|>"],
-    };
-
-    // Retry configuration
-    const maxRetries = 3;
-    const baseDelay = 1000; // 1 second
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await fetch(`${this.baseURL}/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        // Check for retryable errors (503 Service Unavailable, 429 Too Many Requests)
-        if (!response.ok) {
-          const errorText = await response.text();
-          const isRetryable =
-            response.status === 503 || response.status === 429;
-
-          if (isRetryable && attempt < maxRetries) {
-            const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
-            console.warn(
-              `Together AI API ${response.status} error. Retrying in ${delay}ms... (Attempt ${attempt + 1}/${maxRetries})`,
-            );
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            continue; // Retry
-          }
-
-          // Non-retryable error or max retries reached
-          if (response.status === 503) {
-            throw new AIProcessingError(
-              "The AI service is temporarily unavailable. Please try again in a few minutes.",
-            );
-          }
-
-          // Try to parse error response to get the actual message
-          let errorMessage = "Failed to process request with AI service";
-          try {
-            const errorData = JSON.parse(errorText);
-            if (errorData.error?.message) {
-              // Extract the core message from Together AI
-              const aiError = errorData.error.message;
-              if (
-                aiError.includes("tokens") &&
-                aiError.includes("must be <=")
-              ) {
-                errorMessage =
-                  "Your note content is too large for AI processing. Please try with fewer notes or shorter content.";
-              } else {
-                errorMessage = aiError;
-              }
-            }
-          } catch {
-            // If parsing fails, use the raw error text
-            errorMessage = errorText.substring(0, 200);
-          }
-
-          throw new AIProcessingError(errorMessage);
-        }
-
-        const data: TogetherAIResponse = await response.json();
-
-        if (!data.choices || data.choices.length === 0) {
-          throw new Error("No response from Together AI");
-        }
-
-        return data.choices[0].message.content as string;
-      } catch (error) {
-        // If this is the last attempt or non-retryable error, throw
-        if (
-          attempt === maxRetries ||
-          (!(error instanceof Error && error.message.includes("503")) &&
-            !(error instanceof Error && error.message.includes("429")))
-        ) {
-          
-          // Preserve AIProcessingError if it's already thrown
-          if (error instanceof AIProcessingError) {
-            throw error;
-          }
-          
-          const errorMessage =
-            error instanceof Error && error.message.includes("503")
-              ? "The AI service is temporarily unavailable. Please try again in a few minutes."
-              : error instanceof Error
-                ? error.message
-                : "Failed to process request with AI service. Please try again.";
-          throw new AIProcessingError(errorMessage, error);
-        }
-
-        // Otherwise, retry with backoff
-        const delay = baseDelay * Math.pow(2, attempt);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-
-    // This should never be reached, but just in case
-    throw new AIProcessingError(
-      "Failed to process request with Together AI after all retries",
-    );
+    return llmService.chat(messages, {
+      maxTokens: options.maxTokens ?? 2000,
+      temperature: options.temperature ?? 0.7,
+      topP: 0.7,
+      purpose,
+      together: {
+        model: purpose === "vision" ? this.visionModel : this.model,
+        topK: 50,
+        repetitionPenalty: 1,
+        stop: ["<|eot_id|>", "<|eom_id|>"],
+      },
+    });
   }
 
   /**
@@ -367,7 +218,7 @@ Return your response as a JSON object with this exact structure:
 
       const userPrompt = `Please organize and structure the following study notes:\n\n${rawContent}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -458,7 +309,7 @@ Guidelines:
 
       const userPrompt = `Create ${questionsForThisChunk} ${difficulty} quiz questions from this content:\n\n${chunks[i]}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -539,7 +390,7 @@ Guidelines:
 
       const userPrompt = `Create ${questionCount} ${difficulty} quiz questions from this content:\n\n${truncatedContent}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -634,7 +485,7 @@ Guidelines:
 
       const userPrompt = `Create ${cardsForThisChunk} flashcards from this content:\n\n${chunks[i]}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -712,7 +563,7 @@ Guidelines:
 
       const userPrompt = `Create ${cardCount} flashcards from this content:\n\n${truncatedContent}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -824,7 +675,7 @@ Guidelines:
 
       const userPrompt = `Create a summary of this content:\n\n${chunks[i]}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -949,7 +800,7 @@ Guidelines:
 
       const userPrompt = `Create a summary of this content:\n\n${truncatedContent}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -1085,7 +936,7 @@ Extract all text content from the provided image, maintaining the structure and 
 If there are diagrams, tables, or other visual elements, describe them clearly.
 Return only the extracted text and descriptions, without any additional commentary.`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         {
           role: "system",
           content: systemPrompt,
@@ -1113,7 +964,7 @@ Return only the extracted text and descriptions, without any additional commenta
           maxTokens: 4000,
           temperature: 0.1,
         },
-        this.visionModel,
+        "vision",
       );
 
       return response;
@@ -1152,7 +1003,7 @@ Extract all text content from every image, maintaining structure and formatting,
 If there are diagrams, tables, or other visual elements, describe them clearly.
 Return only the extracted text and descriptions, without any additional commentary.`;
 
-      const content: TogetherAIMessage["content"] = [
+      const content: LLMMessage["content"] = [
         {
           type: "text",
           text: `Extract all text and describe visual elements from these ${images.length} images. They are parts of the same material, in order:`,
@@ -1163,7 +1014,7 @@ Return only the extracted text and descriptions, without any additional commenta
         })),
       ];
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content },
       ];
@@ -1174,7 +1025,7 @@ Return only the extracted text and descriptions, without any additional commenta
           maxTokens: 6000,
           temperature: 0.1,
         },
-        this.visionModel,
+        "vision",
       );
 
       return response;
@@ -1212,7 +1063,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
       const userPrompt = `Transform this raw extracted content into a well-structured, learning-optimized study note:\n\n${knowledgeBase}`;
 
-      const messages: TogetherAIMessage[] = [
+      const messages: LLMMessage[] = [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ];
@@ -1240,9 +1091,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
     knowledgeBase: string;
     structuredNote: string;
   }> {
-    if (!this.apiKey) {
+    if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
+        "AI service is not configured. Please set TOGETHER_API_KEY or GEMINI_API_KEY.",
       );
     }
 
@@ -1360,9 +1211,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
     knowledgeBase: string;
     structuredNote: string;
   }> {
-    if (!this.apiKey) {
+    if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
+        "AI service is not configured. Please set TOGETHER_API_KEY or GEMINI_API_KEY.",
       );
     }
 
@@ -1409,9 +1260,9 @@ Return a well-formatted markdown text that students can easily learn from.`;
       return this.processImageWithKnowledge(images[0]);
     }
 
-    if (!this.apiKey) {
+    if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "Together AI API key is not configured. Please set TOGETHER_API_KEY environment variable.",
+        "AI service is not configured. Please set TOGETHER_API_KEY or GEMINI_API_KEY.",
       );
     }
 

@@ -2,18 +2,31 @@
  * Admin Plans API Route
  * Manage subscription plans (CRUD operations)
  *
- * NOTE: This should be protected by admin authentication in production!
- * For now, it's open for development purposes.
+ * Every handler requires an admin session, and every change is audit logged.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PlanType } from "@prisma/client";
 import { clearPlanConfigsCache } from "@/service/subscription.service";
+import { getAdminUser } from "@/lib/admin-auth";
+import { recordAudit } from "@/service/audit.service";
+
+async function requireAdminActor() {
+  const { user, isAdmin } = await getAdminUser();
+  return isAdmin && user ? { id: user.id, email: user.email ?? "" } : null;
+}
 
 // GET all plans (including inactive)
 export async function GET() {
   try {
+    const admin = await requireAdminActor();
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
+      );
+    }
     const plans = await prisma.plan.findMany({
       orderBy: { sortOrder: "asc" },
     });
@@ -37,6 +50,13 @@ export async function GET() {
 // POST - Create a new plan
 export async function POST(request: NextRequest) {
   try {
+    const admin = await requireAdminActor();
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
+      );
+    }
     const body = await request.json();
 
     const {
@@ -92,6 +112,15 @@ export async function POST(request: NextRequest) {
     // Clear cache
     clearPlanConfigsCache();
 
+    await recordAudit({
+      actor: admin,
+      action: "plan.create",
+      targetType: "plan",
+      targetId: plan.id,
+      targetLabel: plan.name,
+      metadata: { planType: plan.planType, monthlyPrice: plan.monthlyPrice, yearlyPrice: plan.yearlyPrice },
+    });
+
     return NextResponse.json({
       success: true,
       plan,
@@ -128,6 +157,13 @@ export async function POST(request: NextRequest) {
 // PUT - Update a plan
 export async function PUT(request: NextRequest) {
   try {
+    const admin = await requireAdminActor();
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
+      );
+    }
     const body = await request.json();
     const { id, ...updateData } = body;
 
@@ -148,6 +184,15 @@ export async function PUT(request: NextRequest) {
 
     // Clear cache
     clearPlanConfigsCache();
+
+    await recordAudit({
+      actor: admin,
+      action: "plan.update",
+      targetType: "plan",
+      targetId: plan.id,
+      targetLabel: plan.name,
+      metadata: { changes: updateData },
+    });
 
     return NextResponse.json({
       success: true,
@@ -184,6 +229,13 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete a plan
 export async function DELETE(request: NextRequest) {
   try {
+    const admin = await requireAdminActor();
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 403 },
+      );
+    }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -197,12 +249,24 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const doomed = await prisma.plan.findUnique({
+      where: { id },
+      select: { name: true },
+    });
     await prisma.plan.delete({
       where: { id },
     });
 
     // Clear cache
     clearPlanConfigsCache();
+
+    await recordAudit({
+      actor: admin,
+      action: "plan.delete",
+      targetType: "plan",
+      targetId: id,
+      targetLabel: doomed?.name ?? null,
+    });
 
     return NextResponse.json({
       success: true,

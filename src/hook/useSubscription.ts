@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { PlanType } from "@prisma/client";
+import { fetchJsonOnce } from "@/lib/dedupe-fetch";
 
 export interface SubscriptionInfo {
   planType: PlanType;
@@ -18,13 +19,18 @@ export function useSubscription() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchSubscription = async () => {
+  const fetchSubscription = async (force = false) => {
     try {
       setLoading(true);
-      const response = await fetch("/api/subscription/status");
-      const data = await response.json();
+      // Several components mount this hook at once; share one request.
+      const { json } = await fetchJsonOnce("/api/subscription/status", { force });
+      const data = (json ?? {}) as {
+        success?: boolean;
+        data?: SubscriptionInfo;
+        error?: string;
+      };
 
-      if (data.success) {
+      if (data.success && data.data) {
         setSubscription(data.data);
         setError(null);
       } else {
@@ -43,5 +49,5 @@ export function useSubscription() {
     fetchSubscription();
   }, []);
 
-  return { subscription, loading, error, refresh: fetchSubscription };
+  return { subscription, loading, error, refresh: () => fetchSubscription(true) };
 }

@@ -1,9 +1,11 @@
 /**  
  * Vision Extraction Service
- * Handles document text + image extraction using Qwen3-VL-8B-Instruct multimodal model
+ * Handles document text + image extraction using a multimodal model
+ * (Qwen on Together AI, with Gemini as fallback)
  */
 
 import { AIProcessingError } from "@/lib/errors";
+import { llmService, type LLMContentPart } from "./llm.service";
 
 interface VisionExtractionResult {
   pageNumber?: number;
@@ -32,17 +34,13 @@ interface DocumentPage {
 }
 
 export class VisionExtractionService {
-  private apiKey: string;
+  // Together vision model; the Gemini fallback model is set in llm.service.
   private model: string;
-  private baseURL = "https://api.together.xyz/v1";
   private maxTokens = 4096;
 
   constructor() {
-    this.apiKey = process.env.TOGETHER_API_KEY || "";
     this.model =
       process.env.TOGETHER_AI_VISION_MODEL || "Qwen/Qwen3.5-9B";
-
-    // API key will be validated when methods are called
   }
 
   /**
@@ -53,8 +51,10 @@ export class VisionExtractionService {
     pageNumber?: number,
     ocrText?: string
   ): Promise<VisionExtractionResult> {
-    if (!this.apiKey) {
-      throw new AIProcessingError("Together AI API key not configured");
+    if (!llmService.isConfigured()) {
+      throw new AIProcessingError(
+        "AI service is not configured. Set TOGETHER_API_KEY or GEMINI_API_KEY."
+      );
     }
 
     try {
@@ -84,7 +84,7 @@ Return your analysis as a JSON object with this structure:
 
 Be thorough and accurate. Extract everything visible.`;
 
-      const userMessage: any[] = [
+      const userMessage: LLMContentPart[] = [
         {
           type: "text",
           text: `Extract and analyze all content from this document page:${pageNumber ? ` (Page ${pageNumber})` : ""}`,
@@ -103,36 +103,18 @@ Be thorough and accurate. Extract everything visible.`;
         });
       }
 
-      const response = await fetch(`${this.baseURL}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: this.model,
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userMessage },
-          ],
-          max_tokens: this.maxTokens,
+      const content = await llmService.chat(
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMessage },
+        ],
+        {
+          maxTokens: this.maxTokens,
           temperature: 0.1, // Low temperature for accurate extraction
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new AIProcessingError(
-          `Vision extraction failed: ${response.status} ${errorText}`
-        );
-      }
-
-      const data = await response.json();
-      const content = data.choices[0]?.message?.content;
-
-      if (!content) {
-        throw new AIProcessingError("No content returned from vision model");
-      }
+          purpose: "vision",
+          together: { model: this.model },
+        }
+      );
 
       // Parse JSON response
       const result = this.parseJSONResponse(content);

@@ -4,6 +4,11 @@ import { updateSubscriptionPlan } from "@/service/subscription.service";
 import { applyPromoCodeByCode } from "@/service/promo.service";
 import { PlanType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  recordPaidCheckoutSession,
+  recordFailedPayment,
+  recordRefund,
+} from "@/service/payment-ledger.service";
 
 interface PayMongoEvent {
   data: {
@@ -66,6 +71,16 @@ export async function POST(request: NextRequest) {
       case "qrph.expired":
         await handleQrphExpired(event);
         break;
+      case "payment.refunded":
+        await recordRefund(event.data?.attributes?.data?.id ?? null);
+        break;
+      case "payment.refund.updated": {
+        const refund = event.data?.attributes?.data?.attributes;
+        if (refund?.status === "succeeded") {
+          await recordRefund(refund.payment_id ?? null);
+        }
+        break;
+      }
       default:
         // Unhandled webhook event type
     }
@@ -93,14 +108,17 @@ async function handlePaymentPaid(event: unknown) {
 async function handlePaymentFailed(event: unknown) {
   const paymongoEvent = event as PayMongoEvent;
   const data = paymongoEvent.data.attributes.data;
-  // Payment failed
-  // Implement your business logic here
+  // Payment failed: keep a record so failed payments show up in admin analytics
+  await recordFailedPayment(data);
 }
 
 async function handleCheckoutSessionPaid(event: unknown) {
   const paymongoEvent = event as PayMongoEvent;
   const data = paymongoEvent.data.attributes.data;
   const metadata = data.attributes.metadata;
+
+  // Record the payment in the ledger (idempotent, never throws)
+  await recordPaidCheckoutSession(data);
 
   // Process checkout session payment
 

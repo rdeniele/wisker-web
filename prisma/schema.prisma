@@ -35,29 +35,52 @@ enum ProcessingStatus {
   FAILED
 }
 
+enum FeedbackCategory {
+  BUG
+  FEATURE_REQUEST
+  IMPROVEMENT
+  PRAISE
+  OTHER
+}
+
+// Admin triage pipeline: NEW -> REVIEWED -> PLANNED -> DONE (or DISMISSED)
+enum FeedbackStatus {
+  NEW
+  REVIEWED
+  PLANNED
+  DONE
+  DISMISSED
+}
+
+enum PaymentStatus {
+  PAID
+  FAILED
+  REFUNDED
+}
+
 // Models
 model Plan {
-  id                String    @id @default(uuid())
-  name              String    @unique
-  planType          PlanType  @unique
-  displayName       String    @map("display_name")
-  description       String?
-  monthlyPrice      Float     @map("monthly_price")
-  yearlyPrice       Float     @map("yearly_price")
-  monthlyPriceId    String?   @map("monthly_price_id") // For payment provider reference
-  yearlyPriceId     String?   @map("yearly_price_id") // For payment provider reference
-  dailyCredits      Int       @map("daily_credits")
-  notesLimit        Int       @map("notes_limit") // -1 for unlimited
-  subjectsLimit     Int       @map("subjects_limit") // -1 for unlimited
-  features          String[]  // Array of feature strings
-  isActive          Boolean   @default(true) @map("is_active")
-  sortOrder         Int       @default(0) @map("sort_order") // For display ordering
-  isMostPopular     Boolean   @default(false) @map("is_most_popular")
-  discountPercent   Float?    @map("discount_percent") // Optional promotional discount
-  discountLabel     String?   @map("discount_label") // e.g., "50% OFF for Early Users"
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  
+  id              String   @id @default(uuid())
+  name            String   @unique
+  planType        PlanType @unique
+  displayName     String   @map("display_name")
+  description     String?
+  monthlyPrice    Float    @map("monthly_price")
+  yearlyPrice     Float    @map("yearly_price")
+  monthlyPriceId  String?  @map("monthly_price_id") // For payment provider reference
+  yearlyPriceId   String?  @map("yearly_price_id") // For payment provider reference
+  dailyCredits    Int      @map("daily_credits")
+  notesLimit      Int      @map("notes_limit") // -1 for unlimited
+  subjectsLimit   Int      @map("subjects_limit") // -1 for unlimited
+  features        String[] // Array of feature strings
+  isActive        Boolean  @default(true) @map("is_active")
+  sortOrder       Int      @default(0) @map("sort_order") // For display ordering
+  isMostPopular   Boolean  @default(false) @map("is_most_popular")
+  discountPercent Float?   @map("discount_percent") // Optional promotional discount
+  discountLabel   String?  @map("discount_label") // e.g., "50% OFF for Early Users"
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
   @@map("plans")
 }
 
@@ -91,86 +114,98 @@ model User {
   acceptedPrivacy       Boolean   @default(false) @map("accepted_privacy") // Privacy policy acceptance
   termsAcceptedAt       DateTime? @map("terms_accepted_at") // When T&C was accepted
   privacyAcceptedAt     DateTime? @map("privacy_accepted_at") // When privacy policy was accepted
+  suspendedAt           DateTime? @map("suspended_at") // Set when an admin suspends the account
+  suspendedReason       String?   @map("suspended_reason") @db.Text
   createdAt             DateTime  @default(now()) @map("created_at")
   updatedAt             DateTime  @updatedAt @map("updated_at")
-  
-  subjects              Subject[]
-  
+
+  subjects Subject[]
+  feedback Feedback[]
+  activity UserActivity[]
+  payments PaymentTransaction[]
+
   @@index([isEarlyUser])
   @@index([createdAt])
+  @@index([planType, subscriptionStatus])
+  @@index([subscriptionStartDate])
+  @@index([subscriptionEndDate])
+  @@index([lastActivityDate])
   @@map("users")
 }
 
 model Subject {
-  id              String    @id @default(uuid())
-  userId          String    @map("user_id")
-  title           String
-  description     String?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  notes           Note[]
-  learningTools   LearningTool[]
-  
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  title       String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes         Note[]
+  learningTools LearningTool[]
+
   @@index([userId])
+  @@index([createdAt])
   @@map("subjects")
 }
 
 model Note {
-  id                    String            @id @default(uuid())
-  subjectId             String            @map("subject_id")
-  title                 String
-  rawContent            String            @map("raw_content") @db.Text
-  knowledgeBase         String?           @map("knowledge_base") @db.Text
-  aiProcessedContent    String?           @map("ai_processed_content") @db.Text
-  fileUrl               String?           @map("file_url")
-  fileName              String?           @map("file_name")
-  fileSize              Int?              @map("file_size")
-  fileType              String?           @map("file_type")
-  processingStatus      ProcessingStatus  @default(PENDING) @map("processing_status")
-  processingError       String?           @map("processing_error") @db.Text
-  createdAt             DateTime          @default(now()) @map("created_at")
-  updatedAt             DateTime          @updatedAt @map("updated_at")
-  
-  subject               Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  learningTools         LearningTool[]
-  learningToolNotes     LearningToolNote[]
-  chunks                NoteChunk[]
-  knowledgeBaseData     KnowledgeBase?
-  
+  id                 String           @id @default(uuid())
+  subjectId          String           @map("subject_id")
+  title              String
+  rawContent         String           @map("raw_content") @db.Text
+  knowledgeBase      String?          @map("knowledge_base") @db.Text
+  aiProcessedContent String?          @map("ai_processed_content") @db.Text
+  fileUrl            String?          @map("file_url")
+  fileName           String?          @map("file_name")
+  fileSize           Int?             @map("file_size")
+  fileType           String?          @map("file_type")
+  processingStatus   ProcessingStatus @default(PENDING) @map("processing_status")
+  processingError    String?          @map("processing_error") @db.Text
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  subject           Subject            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  learningTools     LearningTool[]
+  learningToolNotes LearningToolNote[]
+  chunks            NoteChunk[]
+  knowledgeBaseData KnowledgeBase?
+
   @@index([subjectId])
   @@index([processingStatus])
+  @@index([createdAt])
   @@map("notes")
 }
 
 model LearningTool {
-  id                String              @id @default(uuid())
-  type              LearningToolType
-  source            LearningToolSource
-  subjectId         String?             @map("subject_id")
-  noteId            String?             @map("note_id")
-  generatedContent  String              @map("generated_content") @db.Text
-  createdAt         DateTime            @default(now()) @map("created_at")
-  
-  subject           Subject?            @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  note              Note?               @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  notes             LearningToolNote[]
-  
+  id               String             @id @default(uuid())
+  type             LearningToolType
+  source           LearningToolSource
+  subjectId        String?            @map("subject_id")
+  noteId           String?            @map("note_id")
+  generatedContent String             @map("generated_content") @db.Text
+  createdAt        DateTime           @default(now()) @map("created_at")
+
+  subject Subject?           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  note    Note?              @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  notes   LearningToolNote[]
+
   @@index([subjectId])
   @@index([noteId])
+  @@index([createdAt])
   @@map("learning_tools")
 }
 
 // Junction table for many-to-many relationship between LearningTool and Note
 // Used when generating learning tools from multiple selected notes at subject level
 model LearningToolNote {
-  learningToolId  String   @map("learning_tool_id")
-  noteId          String   @map("note_id")
-  
-  learningTool    LearningTool @relation(fields: [learningToolId], references: [id], onDelete: Cascade)
-  note            Note         @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  
+  learningToolId String @map("learning_tool_id")
+  noteId         String @map("note_id")
+
+  learningTool LearningTool @relation(fields: [learningToolId], references: [id], onDelete: Cascade)
+  note         Note         @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
   @@id([learningToolId, noteId])
   @@index([learningToolId])
   @@index([noteId])
@@ -179,30 +214,30 @@ model LearningToolNote {
 
 // Knowledge base chunks with embeddings for semantic search
 model NoteChunk {
-  id              String                     @id @default(uuid())
-  noteId          String                     @map("note_id")
-  knowledgeBaseId String                     @map("knowledge_base_id")
-  chunkIndex      Int                        @map("chunk_index")
-  position        Int                        // Sequential position in document
-  content         String                     @db.Text
+  id              String                       @id @default(uuid())
+  noteId          String                       @map("note_id")
+  knowledgeBaseId String                       @map("knowledge_base_id")
+  chunkIndex      Int                          @map("chunk_index")
+  position        Int // Sequential position in document
+  content         String                       @db.Text
   heading         String?
-  tokens          Int?                       // Token count for this chunk
-  embedding       Unsupported("vector(1024)")?  // pgvector extension
-  
+  tokens          Int? // Token count for this chunk
+  embedding       Unsupported("vector(1024)")? // pgvector extension
+
   // Metadata for source mapping
-  metadata        Json?                      // Flexible metadata storage
-  pageNumber      Int?                       @map("page_number")
-  startPosition   Int?                       @map("start_position")
-  endPosition     Int?                       @map("end_position")
-  sectionType     String?                    @map("section_type")
-  hasImages       Boolean                    @default(false) @map("has_images")
-  keyTerms        String[]                   @map("key_terms")
-  
-  createdAt       DateTime                   @default(now()) @map("created_at")
-  
-  note            Note                       @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  knowledgeBase   KnowledgeBase              @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
-  
+  metadata      Json? // Flexible metadata storage
+  pageNumber    Int?     @map("page_number")
+  startPosition Int?     @map("start_position")
+  endPosition   Int?     @map("end_position")
+  sectionType   String?  @map("section_type")
+  hasImages     Boolean  @default(false) @map("has_images")
+  keyTerms      String[] @map("key_terms")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  note          Note          @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  knowledgeBase KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
   @@index([noteId])
   @@index([knowledgeBaseId])
   @@index([noteId, chunkIndex])
@@ -211,60 +246,60 @@ model NoteChunk {
 
 // Knowledge base metadata and aggregated information
 model KnowledgeBase {
-  id                String          @id @default(uuid())
-  noteId            String          @unique @map("note_id")
-  
+  id     String @id @default(uuid())
+  noteId String @unique @map("note_id")
+
   // Processing metadata
-  embeddingModel    String          @map("embedding_model")
-  chunkingStrategy  String          @map("chunking_strategy")
-  
+  embeddingModel   String @map("embedding_model")
+  chunkingStrategy String @map("chunking_strategy")
+
   // Aggregated metadata
-  totalChunks       Int             @map("total_chunks")
-  totalTokens       Int             @map("total_tokens")
-  extractedConcepts String[]        @map("extracted_concepts")
-  topicSummary      String?         @map("topic_summary") @db.Text
-  
+  totalChunks       Int      @map("total_chunks")
+  totalTokens       Int      @map("total_tokens")
+  extractedConcepts String[] @map("extracted_concepts")
+  topicSummary      String?  @map("topic_summary") @db.Text
+
   // AI-generated knowledge graph
-  keyEntities       Json?           @map("key_entities")      // {name, type, description}[]
-  relationships     Json?           @map("relationships")     // {from, to, type}[]
-  
+  keyEntities   Json? @map("key_entities") // {name, type, description}[]
+  relationships Json? @map("relationships") // {from, to, type}[]
+
   // Status and usage tracking
-  processedAt       DateTime        @default(now()) @map("processed_at")
-  lastUsedAt        DateTime        @default(now()) @map("last_used_at")
-  usageCount        Int             @default(0) @map("usage_count")
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
-  
-  note              Note            @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  chunks            NoteChunk[]
-  aiOperations      AIOperationLog[]
-  
+  processedAt DateTime @default(now()) @map("processed_at")
+  lastUsedAt  DateTime @default(now()) @map("last_used_at")
+  usageCount  Int      @default(0) @map("usage_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  note         Note             @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  chunks       NoteChunk[]
+  aiOperations AIOperationLog[]
+
   @@map("knowledge_bases")
 }
 
 // AI operation logging for monitoring and analytics
 model AIOperationLog {
-  id              String         @id @default(uuid())
-  userId          String         @map("user_id")
-  knowledgeBaseId String?        @map("knowledge_base_id")
-  operationType   String         @map("operation_type") // 'EXTRACT', 'EMBED', 'GENERATE', etc.
-  operation       String         // legacy: 'extract', 'embed', 'generate', etc.
-  model           String         // 'qwen', 'e5', 'kimi', 'llama'
-  status          String         // 'SUCCESS', 'FAILED', 'PENDING'
-  inputTokens     Int            @map("input_tokens")
-  outputTokens    Int            @map("output_tokens")
-  tokensUsed      Int?           @map("tokens_used") // Total tokens
-  durationMs      Int            @map("duration_ms")
-  responseTime    Int?           @map("response_time") // Response time in ms
-  creditCost      Float          @map("credit_cost")
-  cost            Float?         // Cost in credits
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  knowledgeBaseId String?  @map("knowledge_base_id")
+  operationType   String   @map("operation_type") // 'EXTRACT', 'EMBED', 'GENERATE', etc.
+  operation       String // legacy: 'extract', 'embed', 'generate', etc.
+  model           String // 'qwen', 'e5', 'kimi', 'llama'
+  status          String // 'SUCCESS', 'FAILED', 'PENDING'
+  inputTokens     Int      @map("input_tokens")
+  outputTokens    Int      @map("output_tokens")
+  tokensUsed      Int?     @map("tokens_used") // Total tokens
+  durationMs      Int      @map("duration_ms")
+  responseTime    Int?     @map("response_time") // Response time in ms
+  creditCost      Float    @map("credit_cost")
+  cost            Float? // Cost in credits
   success         Boolean
-  errorMessage    String?        @map("error_message") @db.Text
-  metadata        Json?          // Additional context
-  createdAt       DateTime       @default(now()) @map("created_at")
-  
-  knowledgeBase   KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
-  
+  errorMessage    String?  @map("error_message") @db.Text
+  metadata        Json? // Additional context
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  knowledgeBase KnowledgeBase? @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
   @@index([userId, createdAt])
   @@index([knowledgeBaseId])
   @@index([operation, model])
@@ -272,21 +307,103 @@ model AIOperationLog {
   @@map("ai_operation_logs")
 }
 
+// User feedback submitted from the app, triaged by admins to plan the roadmap
+model Feedback {
+  id         String           @id @default(uuid())
+  userId     String?          @map("user_id") // null if the user was later deleted
+  email      String // Snapshot of the submitter's email, survives user deletion
+  category   FeedbackCategory
+  rating     Int? // Optional 1-5 satisfaction score
+  message    String           @db.Text
+  userAgent  String?          @map("user_agent") // Browser/device, useful for bug reports
+  status     FeedbackStatus   @default(NEW)
+  adminNotes String?          @map("admin_notes") @db.Text
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([category])
+  @@index([userId, createdAt])
+  @@map("feedback")
+}
+
+// One row per user per UTC hour in which the user made an authenticated
+// request. Feeds DAU/WAU/MAU and retention in the admin dashboard.
+model UserActivity {
+  userId    String   @map("user_id")
+  hourStart DateTime @map("hour_start") // truncated to the hour, UTC
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hourStart])
+  @@index([hourStart])
+  @@map("user_activity")
+}
+
+// Ledger of real payment events reported by the payment provider. This is the
+// only source the dashboard uses for revenue, failed payments and refunds.
+model PaymentTransaction {
+  id            String        @id @default(uuid())
+  userId        String?       @map("user_id") // null if the user was later deleted
+  email         String? // Snapshot, survives user deletion
+  provider      String        @default("paymongo")
+  externalId    String        @unique @map("external_id") // provider payment id (or checkout session id)
+  checkoutId    String?       @map("checkout_id")
+  status        PaymentStatus
+  amount        Int // Smallest currency unit (centavos)
+  currency      String        @default("PHP")
+  planType      PlanType?     @map("plan_type")
+  billingPeriod String?       @map("billing_period")
+  promoCode     String?       @map("promo_code")
+  failureReason String?       @map("failure_reason")
+  occurredAt    DateTime      @default(now()) @map("occurred_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([occurredAt])
+  @@index([status, occurredAt])
+  @@index([userId, occurredAt])
+  @@map("payment_transactions")
+}
+
+// Who did what in the admin area. Append-only.
+model AdminAuditLog {
+  id          String   @id @default(uuid())
+  actorId     String?  @map("actor_id")
+  actorEmail  String   @map("actor_email")
+  action      String // e.g. "user.update", "user.suspend", "promo.create"
+  targetType  String?  @map("target_type") // "user" | "plan" | "promo_code" | ...
+  targetId    String?  @map("target_id")
+  targetLabel String?  @map("target_label") // Human readable, e.g. the user's email
+  metadata    Json? // { before, after } or other context
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([targetType, targetId, createdAt])
+  @@index([actorEmail, createdAt])
+  @@index([action, createdAt])
+  @@map("admin_audit_logs")
+}
+
 // Promo codes for special offers (e.g., Product Hunt, early adopters)
 model PromoCode {
-  id                String    @id @default(uuid())
-  code              String    @unique // e.g., "EARLYCAT50", "PRODUCTHUNT"
-  description       String    // e.g., "3 months free for Product Hunt users"
-  discountType      String    // "MONTHS_FREE", "PERCENTAGE", "FIXED_AMOUNT"
-  discountValue     Float     // Months, percentage, or amount depending on type
-  maxUses           Int?      @map("max_uses") // null for unlimited
-  currentUses       Int       @default(0) @map("current_uses")
-  expiresAt         DateTime? @map("expires_at")
-  isActive          Boolean   @default(true) @map("is_active")
-  applicablePlans   String[]  @map("applicable_plans") // Array of plan types: ["PRO", "PREMIUM"] or empty for all
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
-  
+  id              String    @id @default(uuid())
+  code            String    @unique // e.g., "EARLYCAT50", "PRODUCTHUNT"
+  description     String // e.g., "3 months free for Product Hunt users"
+  discountType    String // "MONTHS_FREE", "PERCENTAGE", "FIXED_AMOUNT"
+  discountValue   Float // Months, percentage, or amount depending on type
+  maxUses         Int?      @map("max_uses") // null for unlimited
+  currentUses     Int       @default(0) @map("current_uses")
+  expiresAt       DateTime? @map("expires_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  applicablePlans String[]  @map("applicable_plans") // Array of plan types: ["PRO", "PREMIUM"] or empty for all
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
   @@index([code])
   @@index([isActive])
   @@map("promo_codes")

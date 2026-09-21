@@ -169,14 +169,19 @@ export default function BubbleToolbar({ editor }: BubbleToolbarProps) {
   return (
     <div
       ref={toolbarRef}
-      className="fixed z-[100] bg-gray-800 text-white rounded-lg shadow-2xl p-1.5 flex items-center gap-0.5 transition-all duration-100"
-      style={{
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        transform: 'translateX(-50%)',
-        pointerEvents: 'auto',
-        willChange: 'transform, top, left',
-      }}
+      // Wraps onto extra rows and never exceeds the screen width, so every tool
+      // stays reachable on phones. `left` follows the selection but is clamped so
+      // the toolbar (whose width is at most 2 × --tb-half) can't leave the viewport.
+      className="fixed left-[clamp(var(--tb-half),var(--tb-left),calc(100%_-_var(--tb-half)))] z-[100] flex w-max max-w-[calc(100%_-_1rem)] flex-wrap items-center justify-center gap-0.5 rounded-lg bg-gray-800 p-1.5 text-white shadow-2xl transition-all duration-100 [--tb-half:min(300px,calc(50%_-_0.5rem))]"
+      style={
+        {
+          top: `${position.top}px`,
+          "--tb-left": `${position.left}px`,
+          transform: "translateX(-50%)",
+          pointerEvents: "auto",
+          willChange: "transform, top, left",
+        } as React.CSSProperties
+      }
       onMouseDown={(e) => e.preventDefault()}
     >
       {/* Text Formatting */}
@@ -242,7 +247,7 @@ export default function BubbleToolbar({ editor }: BubbleToolbarProps) {
       <div className="w-px h-5 bg-gray-600 mx-1" />
 
       {/* Font Family */}
-      <div className="relative" ref={fontMenuRef}>
+      <div className="sm:relative" ref={fontMenuRef}>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -285,7 +290,7 @@ export default function BubbleToolbar({ editor }: BubbleToolbarProps) {
       <div className="w-px h-5 bg-gray-600 mx-1" />
 
       {/* Text Color */}
-      <div className="relative" ref={colorPickerRef}>
+      <div className="sm:relative" ref={colorPickerRef}>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -322,7 +327,7 @@ export default function BubbleToolbar({ editor }: BubbleToolbarProps) {
       </div>
 
       {/* Highlight */}
-      <div className="relative" ref={highlightPickerRef}>
+      <div className="sm:relative" ref={highlightPickerRef}>
         <button
           onClick={(e) => {
             e.stopPropagation();

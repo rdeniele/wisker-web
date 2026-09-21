@@ -201,7 +201,7 @@ export default function FlashcardPlayer({
             style={{ visibility: flipped ? "hidden" : "visible" }}
           >
             <span className="eyebrow">Question</span>
-            <span className="mt-4 text-[1.5rem] font-medium leading-snug text-ink sm:text-[1.9rem]">
+            <span className="mt-4 max-w-full break-words text-[1.5rem] font-medium leading-snug text-ink sm:text-[1.9rem]">
               {card.front}
             </span>
             <span className="mt-8 text-sm font-bold text-gray-500">Tap to flip</span>
@@ -218,7 +218,7 @@ export default function FlashcardPlayer({
             <span className="font-display text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-indigo-100">
               Answer
             </span>
-            <span className="mt-4 text-[1.4rem] font-medium leading-snug sm:text-[1.75rem]">
+            <span className="mt-4 max-w-full break-words text-[1.4rem] font-medium leading-snug sm:text-[1.75rem]">
               {card.back}
             </span>
             <span className="mt-8 text-sm font-bold text-indigo-100">Tap to flip back</span>

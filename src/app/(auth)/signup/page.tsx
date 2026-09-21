@@ -9,6 +9,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Toast from "@/components/ui/Toast";
 import { useToast } from "../../../../hook/useToast";
+import { readJson, SERVICE_UNAVAILABLE_MESSAGE } from "@/lib/http";
+
+interface AuthApiResult {
+  success: boolean;
+  message: string;
+  error?: string;
+}
 import PasswordChecklist, {
   usePasswordRequirements,
 } from "@/components/auth/PasswordChecklist";
@@ -71,7 +78,11 @@ export default function SignupPage() {
         }),
       });
 
-      const result = await res.json();
+      const result = await readJson<AuthApiResult>(res);
+      if (!result) {
+        showToast(SERVICE_UNAVAILABLE_MESSAGE, "error");
+        return;
+      }
 
       if (result.success) {
         showToast(result.message, "success");

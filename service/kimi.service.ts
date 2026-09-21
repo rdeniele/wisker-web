@@ -1,10 +1,11 @@
 /**
- * Kimi K2.5 Service (via Together AI)
+ * Kimi K2.5 Service (via Together AI, with Gemini fallback)
  * Handles advanced content generation with multimodal reasoning
  * Used for: Structured notes, Flashcards, Quizzes, Summaries
  */
 
 import { AIProcessingError } from "@/lib/errors";
+import { llmService, type LLMMessage } from "./llm.service";
 import {
   OrganizedNoteContent,
   QuizContent,
@@ -12,136 +13,41 @@ import {
   SummaryContent,
 } from "@/types/api";
 
-interface KimiMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
-}
-
-interface KimiRequest {
-  model: string;
-  messages: KimiMessage[];
-  temperature?: number;
-  max_tokens?: number;
-  top_p?: number;
-  repetition_penalty?: number;
-  stop?: string[];
-}
-
-interface KimiResponse {
-  id: string;
-  object: string;
-  created: number;
-  model: string;
-  choices: {
-    index: number;
-    message: {
-      role: string;
-      content: string;
-    };
-    finish_reason: string;
-  }[];
-  usage: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-  };
-}
-
 export class KimiService {
-  private apiKey: string;
   private model: string;
-  private baseURL: string = "https://api.together.xyz/v1";
   private maxContextTokens: number = 128000;
 
   constructor() {
-    this.apiKey = process.env.TOGETHER_API_KEY || "";
     this.model = process.env.TOGETHER_AI_KIMI_MODEL || "moonshotai/Kimi-K2.5";
 
-    if (!this.apiKey) {
+    if (!llmService.isConfigured()) {
       console.warn(
-        "TOGETHER_API_KEY not found in environment variables. Kimi K2.5 will not be available."
+        "No AI provider configured (TOGETHER_API_KEY / GEMINI_API_KEY). Kimi K2.5 generation will not be available."
       );
     }
   }
 
   /**
-   * Make request to Kimi API (via Together AI) with retry logic
+   * Send a chat completion via the provider chain: Kimi K2.5 on Together AI
+   * first, then Gemini if configured (see llm.service.ts).
    */
   private async makeRequest(
-    messages: KimiMessage[],
+    messages: LLMMessage[],
     options: {
       temperature?: number;
       maxTokens?: number;
     } = {}
   ): Promise<string> {
-    if (!this.apiKey) {
-      throw new AIProcessingError("Together AI API key not configured");
-    }
-
-    const requestBody: KimiRequest = {
-      model: this.model,
-      messages,
-      temperature: options.temperature || 0.3,
-      max_tokens: options.maxTokens || 8000,
-      top_p: 0.95,
-      repetition_penalty: 1.0,
-      stop: ["<|im_end|>", "<|endoftext|>"],
-    };
-
-    const maxRetries = 3;
-    const baseDelay = 1000;
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        const response = await fetch(`${this.baseURL}/chat/completions`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${this.apiKey}`,
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          const isRetryable =
-            response.status === 503 || response.status === 429;
-
-          if (isRetryable && attempt < maxRetries) {
-            const delay = baseDelay * Math.pow(2, attempt);
-            console.warn(
-              `Kimi K2.5 API ${response.status} error. Retrying in ${delay}ms...`
-            );
-            await new Promise((resolve) => setTimeout(resolve, delay));
-            continue;
-          }
-
-          throw new AIProcessingError(
-            `Kimi K2.5 API error: ${response.status} ${errorText}`
-          );
-        }
-
-        const data: KimiResponse = await response.json();
-
-        if (!data.choices || data.choices.length === 0) {
-          throw new AIProcessingError("No response from Kimi K2.5");
-        }
-
-        return data.choices[0].message.content;
-      } catch (error) {
-        if (
-          attempt === maxRetries ||
-          !(error instanceof Error && error.message.includes("503"))
-        ) {
-          throw error;
-        }
-
-        const delay = baseDelay * Math.pow(2, attempt);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
-    }
-
-    throw new AIProcessingError("Failed to get response from Kimi K2.5");
+    return llmService.chat(messages, {
+      maxTokens: options.maxTokens ?? 8000,
+      temperature: options.temperature ?? 0.3,
+      topP: 0.95,
+      together: {
+        model: this.model,
+        repetitionPenalty: 1.0,
+        stop: ["<|im_end|>", "<|endoftext|>"],
+      },
+    });
   }
 
   /**
@@ -230,7 +136,7 @@ Return JSON format:
 
 ${aggregatedContent}`;
 
-    const messages: KimiMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ];
@@ -289,7 +195,7 @@ Return JSON format:
 
 ${content}`;
 
-    const messages: KimiMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ];
@@ -346,7 +252,7 @@ Return JSON format:
 
 ${content}`;
 
-    const messages: KimiMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ];
@@ -390,7 +296,7 @@ Return JSON format:
 
 ${content}`;
 
-    const messages: KimiMessage[] = [
+    const messages: LLMMessage[] = [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ];
@@ -408,7 +314,7 @@ ${content}`;
    * Check if API is configured
    */
   isConfigured(): boolean {
-    return !!this.apiKey;
+    return llmService.isConfigured();
   }
 
   /**

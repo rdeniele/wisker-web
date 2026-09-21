@@ -20,9 +20,20 @@ if (
 }
 
 // Create a shared pool for the default Prisma client (admin access)
+//
+// The Supabase pooler only has a handful of client slots (15 on the session
+// pooler) shared by every instance of the app, so keep each instance's pool
+// small and let idle connections go instead of hoarding slots. Override with
+// DB_POOL_MAX when running against a bigger pooler.
+const poolMax = Number.parseInt(process.env.DB_POOL_MAX ?? "", 10) || 5;
 const pool =
   globalForPrisma.pool ??
-  new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    max: poolMax,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 15_000,
+  });
 if (process.env.NODE_ENV !== "production") globalForPrisma.pool = pool;
 
 const adapter = new PrismaPg(pool);

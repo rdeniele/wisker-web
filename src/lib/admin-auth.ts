@@ -4,6 +4,7 @@
  */
 
 import { createClient } from "@/lib/supabase/server";
+import { ForbiddenError } from "@/lib/errors";
 
 // Allowed admin emails and domains
 const ADMIN_EMAILS = ["rondenielep13@gmail.com"];
@@ -41,9 +42,23 @@ export async function getAdminUser() {
     return { user: null, isAdmin: false };
   }
 
-  const isAdmin = isAdminEmail(user.email || "");
+  // Admin access is granted by email, so the address must be verified;
+  // otherwise anyone could sign up as someone@<admin domain>.
+  const isAdmin = isAdminEmail(user.email || "") && !!user.email_confirmed_at;
 
   return { user, isAdmin };
+}
+
+/**
+ * Admin gate for API routes: returns the admin's identity for audit logging
+ * or throws a ForbiddenError.
+ */
+export async function assertAdmin(): Promise<{ id: string; email: string }> {
+  const { user, isAdmin } = await getAdminUser();
+  if (!user || !isAdmin) {
+    throw new ForbiddenError("Admin access required");
+  }
+  return { id: user.id, email: user.email ?? "" };
 }
 
 /**

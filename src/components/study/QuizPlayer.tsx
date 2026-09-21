@@ -177,7 +177,7 @@ export default function QuizPlayer({
           </div>
         }
       >
-        <h2 className="text-[1.45rem] font-medium leading-[1.25] text-ink sm:text-[1.9rem]">
+        <h2 className="break-words text-[1.45rem] font-medium leading-[1.25] text-ink sm:text-[1.9rem]">
           {question.question}
         </h2>
 
@@ -224,7 +224,7 @@ export default function QuizPlayer({
                     KEYS[index]
                   )}
                 </span>
-                <span className="flex-1">{option}</span>
+                <span className="min-w-0 flex-1 break-words">{option}</span>
                 {showCorrect && <span className="sr-only">Correct answer</span>}
                 {showWrong && <span className="sr-only">Your answer, incorrect</span>}
               </button>
@@ -244,7 +244,7 @@ export default function QuizPlayer({
                 {isCorrect ? "Correct!" : "Not quite."}
               </p>
               {question.explanation && (
-                <p className="mt-1 text-[15px] font-semibold leading-relaxed text-gray-700">
+                <p className="mt-1 break-words text-[15px] font-semibold leading-relaxed text-gray-700">
                   {question.explanation}
                 </p>
               )}

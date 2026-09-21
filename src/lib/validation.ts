@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { ValidationError } from "./errors";
-import { LearningToolType, LearningToolSource, PlanType } from "@prisma/client";
+import {
+  LearningToolType,
+  LearningToolSource,
+  PlanType,
+  FeedbackCategory,
+  FeedbackStatus,
+} from "@prisma/client";
 
 // Subject Validation
 export const createSubjectSchema = z.object({
@@ -127,6 +133,38 @@ export const updateUserPlanSchema = z.object({
   }),
 });
 
+// Feedback Validation
+export const createFeedbackSchema = z.object({
+  category: z.nativeEnum(FeedbackCategory, {
+    message: "Please choose a feedback type",
+  }),
+  rating: z
+    .number()
+    .int()
+    .min(1, "Rating must be between 1 and 5")
+    .max(5, "Rating must be between 1 and 5")
+    .optional(),
+  message: z
+    .string()
+    .trim()
+    .min(10, "Please write at least 10 characters")
+    .max(2000, "Feedback must be 2000 characters or less"),
+});
+
+export const updateFeedbackSchema = z
+  .object({
+    id: z.string().uuid("Invalid feedback ID"),
+    status: z.nativeEnum(FeedbackStatus, { message: "Invalid status" }).optional(),
+    adminNotes: z
+      .string()
+      .max(5000, "Notes must be 5000 characters or less")
+      .nullable()
+      .optional(),
+  })
+  .refine((data) => data.status !== undefined || data.adminNotes !== undefined, {
+    message: "Nothing to update",
+  });
+
 // Query Params Validation
 export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
@@ -146,7 +184,13 @@ export const noteQuerySchema = paginationSchema.extend({
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
-export const learningToolQuerySchema = paginationSchema.extend({
+export const feedbackQuerySchema = paginationSchema.extend({
+  status: z.nativeEnum(FeedbackStatus).optional(),
+  category: z.nativeEnum(FeedbackCategory).optional(),
+  search: z.string().trim().max(200).optional(),
+});
+
+export const learningToolQuerySchema =paginationSchema.extend({
   subjectId: z.string().uuid("Invalid subject ID").optional(),
   noteId: z.string().uuid("Invalid note ID").optional(),
   type: z.nativeEnum(LearningToolType).optional(),

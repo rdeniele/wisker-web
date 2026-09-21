@@ -48,6 +48,10 @@ TOGETHER_API_KEY=your-together-ai-key-here
 # Optional - AI Models (use defaults if not specified)
 TOGETHER_AI_MODEL=Qwen/Qwen2.5-72B-Instruct-Turbo
 TOGETHER_AI_VISION_MODEL=Qwen/Qwen3-VL-8B-Instruct
+
+# Gemini - automatic fallback when Together AI fails (out of credits, etc.)
+# Key from https://aistudio.google.com/apikey
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
 **Important**:

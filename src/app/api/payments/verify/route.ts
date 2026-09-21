@@ -3,6 +3,7 @@ import { retrieveCheckoutSession } from "@/service/payment.service";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { updateSubscriptionPlan } from "@/service/subscription.service";
 import { PlanType } from "@prisma/client";
+import { recordPaidCheckoutSession } from "@/service/payment-ledger.service";
 
 /**
  * GET /api/payments/verify?session_id=xxx
@@ -47,6 +48,9 @@ export async function GET(request: NextRequest) {
 
       // Update user subscription using the subscription service
       await updateSubscriptionPlan(user.id, planType, billingPeriod, true);
+
+      // Ledger entry for admin analytics (idempotent; the webhook may also report it)
+      await recordPaidCheckoutSession(checkoutSession, user.id);
 
       return NextResponse.json({
         success: true,

@@ -11,6 +11,7 @@ import {
 import { useAuth } from "@/lib/AuthContext";
 import Skeleton from "@/components/ui/Skeleton";
 import { cn } from "@/lib/utils";
+import { fetchJsonOnce } from "@/lib/dedupe-fetch";
 
 interface Notification {
   id: string;
@@ -76,9 +77,12 @@ export default function NotificationsMenu({ className }: { className?: string })
     let cancelled = false;
     (async () => {
       try {
-        const response = await fetch("/api/learning-tools?pageSize=5");
-        const result = await response.json();
-        if (!cancelled && response.ok && result.data?.learningTools) {
+        // The header renders this menu twice (desktop + mobile): share one request.
+        const { ok, json } = await fetchJsonOnce("/api/learning-tools?pageSize=5");
+        const result = (json ?? {}) as {
+          data?: { learningTools?: LearningToolResponse[] };
+        };
+        if (!cancelled && ok && result.data?.learningTools) {
           setItems(
             result.data.learningTools.map((tool: LearningToolResponse) => ({
               id: tool.id,

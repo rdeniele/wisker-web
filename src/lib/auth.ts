@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { userService } from "@/service/user.service";
-import { NotFoundError, UnauthorizedError } from "@/lib/errors";
+import { NotFoundError, UnauthorizedError, ForbiddenError } from "@/lib/errors";
+import { trackActivity } from "@/lib/activity";
 import { User } from "@supabase/supabase-js";
 
 /**
@@ -35,8 +36,12 @@ export async function getAuthenticatedUser(): Promise<User> {
 
   // Ensure user exists in Prisma database (sync if needed)
   try {
-    await userService.getUserById(user.id);
+    const profile = await userService.getUserById(user.id);
+    if (profile.suspendedAt) {
+      throw new ForbiddenError("This account has been suspended");
+    }
   } catch (error) {
+    if (error instanceof ForbiddenError) throw error;
     if (error instanceof NotFoundError) {
       // User doesn't exist in Prisma, create them
       try {
@@ -58,6 +63,8 @@ export async function getAuthenticatedUser(): Promise<User> {
       throw new Error(`Database error: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }
+
+  trackActivity(user.id);
 
   return user;
 }

@@ -61,7 +61,11 @@ export function CreditsDisplay({ compact = false }: { compact?: boolean }) {
       </svg>
       <span className="font-display text-[15px] font-semibold leading-none text-ink">
         {subscription.creditsRemaining}
-        <span className="text-gray-500">/{subscription.dailyCredits}</span>
+        {/* On very narrow phones the ring + remaining count is enough; the full
+            "x of y" stays in the aria-label. Keeps the header from colliding. */}
+        <span className={cn("text-gray-500", compact && "max-[359px]:hidden")}>
+          /{subscription.dailyCredits}
+        </span>
       </span>
       {!compact && (
         <span className="hidden text-[13px] font-bold leading-none text-gray-600 xl:inline">

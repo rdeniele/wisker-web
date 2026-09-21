@@ -10,6 +10,35 @@
   outline: none;
 }
 
+/* Note content is pasted / imported from PDFs and can hold long URLs, emails,
+   code and wide media. Wrap words and keep wide blocks inside the editor column
+   so they never stretch the page sideways on a phone. */
+.ProseMirror {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.ProseMirror pre {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-wrap: normal;
+}
+
+.ProseMirror img,
+.ProseMirror video,
+.ProseMirror iframe,
+.ProseMirror svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.ProseMirror table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .ProseMirror h1,
 .ProseMirror h2,
 .ProseMirror h3 {

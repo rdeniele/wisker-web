@@ -608,6 +608,22 @@ button:not(:disabled),
     color: var(--ink);
     font-size: 1.0625rem;
     line-height: 1.7;
+    /* Generated text can contain long URLs / identifiers: wrap them rather than
+       letting one word widen the page. */
+    overflow-wrap: anywhere;
+  }
+  .prose-wisker pre,
+  .prose-wisker table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-wrap: normal;
+  }
+  .prose-wisker img,
+  .prose-wisker video,
+  .prose-wisker svg {
+    max-width: 100%;
+    height: auto;
   }
   .prose-wisker h1,
   .prose-wisker h2,

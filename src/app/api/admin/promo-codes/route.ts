@@ -7,6 +7,7 @@ import {
   PromoCodeData,
 } from "@/service/promo.service";
 import { getAdminUser } from "@/lib/admin-auth";
+import { recordAudit } from "@/service/audit.service";
 
 // GET - Get all promo codes
 export async function GET() {
@@ -30,7 +31,7 @@ export async function GET() {
 // POST - Create new promo code
 export async function POST(request: NextRequest) {
   try {
-    const { isAdmin } = await getAdminUser();
+    const { user, isAdmin } = await getAdminUser();
     if (!isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -66,6 +67,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
+    await recordAudit({
+      actor: { id: user?.id, email: user?.email ?? "" },
+      action: "promo.create",
+      targetType: "promo_code",
+      targetId: result.promoCode?.id,
+      targetLabel: promoData.code,
+      metadata: {
+        discountType: promoData.discountType,
+        discountValue: promoData.discountValue,
+        maxUses: promoData.maxUses ?? null,
+      },
+    });
+
     return NextResponse.json({ promoCode: result.promoCode }, { status: 201 });
   } catch (error) {
     console.error("Error creating promo code:", error);
@@ -79,7 +93,7 @@ export async function POST(request: NextRequest) {
 // PATCH - Update promo code
 export async function PATCH(request: NextRequest) {
   try {
-    const { isAdmin } = await getAdminUser();
+    const { user, isAdmin } = await getAdminUser();
     if (!isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -104,6 +118,15 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
+    await recordAudit({
+      actor: { id: user?.id, email: user?.email ?? "" },
+      action: "promo.update",
+      targetType: "promo_code",
+      targetId: id,
+      targetLabel: result.promoCode?.code ?? null,
+      metadata: { changes: data },
+    });
+
     return NextResponse.json({ promoCode: result.promoCode });
   } catch (error) {
     console.error("Error updating promo code:", error);
@@ -117,7 +140,7 @@ export async function PATCH(request: NextRequest) {
 // DELETE - Delete promo code
 export async function DELETE(request: NextRequest) {
   try {
-    const { isAdmin } = await getAdminUser();
+    const { user, isAdmin } = await getAdminUser();
     if (!isAdmin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -137,6 +160,13 @@ export async function DELETE(request: NextRequest) {
     if (!result.success) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await recordAudit({
+      actor: { id: user?.id, email: user?.email ?? "" },
+      action: "promo.delete",
+      targetType: "promo_code",
+      targetId: id,
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
