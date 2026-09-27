@@ -42,7 +42,9 @@ export function AdSenseAd({
   }, []);
 
   return (
-    <div className={`ad-container ${className}`}>
+    <div
+      className={`ad-container relative isolate z-0 overflow-hidden ${className}`}
+    >
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
