@@ -1093,7 +1093,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
   }> {
     if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "AI service is not configured. Please set TOGETHER_API_KEY or GEMINI_API_KEY.",
+        "AI service is not available right now. Please try again later.",
       );
     }
 
@@ -1213,7 +1213,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
   }> {
     if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "AI service is not configured. Please set TOGETHER_API_KEY or GEMINI_API_KEY.",
+        "AI service is not available right now. Please try again later.",
       );
     }
 
@@ -1262,7 +1262,7 @@ Return a well-formatted markdown text that students can easily learn from.`;
 
     if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "AI service is not configured. Please set TOGETHER_API_KEY or GEMINI_API_KEY.",
+        "AI service is not available right now. Please try again later.",
       );
     }
 

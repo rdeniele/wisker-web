@@ -1,6 +1,17 @@
 import { NextResponse } from "next/server";
-import { ApiResponse } from "@/types/api";
+import { ApiResponse, ErrorCode } from "@/types/api";
 import { AppError } from "./errors";
+
+const AI_VENDOR_PATTERN =
+  /https?:\/\/\S+|\b(together(\.ai|\.xyz)?( ai)?|gemini|anthropic|claude|googleapis|moonshot(ai)?|kimi|qwen|llama|BAAI)\b/gi;
+const AI_ENV_VAR_PATTERN = /\b[A-Z_]*(TOGETHER|GEMINI|ANTHROPIC)[A-Z_]*\b/g;
+
+/** Strip AI vendor names, endpoints and env var names from client-facing text. */
+function scrubAIVendor(message: string): string {
+  return message
+    .replace(AI_ENV_VAR_PATTERN, "AI service")
+    .replace(AI_VENDOR_PATTERN, "AI service");
+}
 
 export function successResponse<T>(
   data: T,
@@ -33,13 +44,15 @@ export function errorResponse(
   }
 
   if (errorObj instanceof AppError) {
+    const isAI = errorObj.code === ErrorCode.AI_PROCESSING_ERROR;
     return NextResponse.json(
       {
         success: false,
         error: {
           code: errorObj.code,
-          message: errorObj.message || "An error occurred",
-          details: errorObj.details,
+          message: scrubAIVendor(errorObj.message || "An error occurred"),
+          // AI error details carry upstream provider responses; never expose.
+          details: isAI ? undefined : errorObj.details,
         },
       },
       { status: errorObj.statusCode },
@@ -52,7 +65,7 @@ export function errorResponse(
       success: false,
       error: {
         code: "INTERNAL_ERROR",
-        message: errorObj.message || "An unexpected error occurred",
+        message: scrubAIVendor(errorObj.message || "An unexpected error occurred"),
       },
     },
     { status: status || 500 },

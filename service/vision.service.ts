@@ -53,7 +53,7 @@ export class VisionExtractionService {
   ): Promise<VisionExtractionResult> {
     if (!llmService.isConfigured()) {
       throw new AIProcessingError(
-        "AI service is not configured. Set TOGETHER_API_KEY or GEMINI_API_KEY."
+        "AI service is not available right now. Please try again later."
       );
     }
 

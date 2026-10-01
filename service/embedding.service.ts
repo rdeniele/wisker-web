@@ -70,7 +70,7 @@ export class EmbeddingService {
     instruction?: string
   ): Promise<number[]> {
     if (!this.apiKey) {
-      throw new AIProcessingError("Together AI API key not configured");
+      throw new AIProcessingError("Embedding service is not available right now");
     }
 
     try {
@@ -100,15 +100,14 @@ export class EmbeddingService {
           );
         }
 
-        throw new AIProcessingError(
-          `Failed to generate embedding: ${response.status} ${errorText}`
-        );
+        console.error(`[embedding] upstream ${response.status}: ${errorText.slice(0, 300)}`);
+        throw new AIProcessingError("Failed to generate embedding");
       }
 
       const data: EmbeddingResponse = await response.json();
 
       if (!data.data || data.data.length === 0) {
-        throw new AIProcessingError("No embedding returned from API");
+        throw new AIProcessingError("Failed to generate embedding");
       }
 
       const embedding = data.data[0].embedding;
@@ -144,7 +143,7 @@ export class EmbeddingService {
     instruction?: string
   ): Promise<number[][]> {
     if (!this.apiKey) {
-      throw new AIProcessingError("Together AI API key not configured");
+      throw new AIProcessingError("Embedding service is not available right now");
     }
 
     if (texts.length === 0) {
@@ -173,15 +172,14 @@ export class EmbeddingService {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new AIProcessingError(
-          `Failed to generate batch embeddings: ${response.status} ${errorText}`
-        );
+        console.error(`[embedding] upstream ${response.status}: ${errorText.slice(0, 300)}`);
+        throw new AIProcessingError("Failed to generate batch embeddings");
       }
 
       const data: EmbeddingResponse = await response.json();
 
       if (!data.data || data.data.length === 0) {
-        throw new AIProcessingError("No embeddings returned from API");
+        throw new AIProcessingError("Failed to generate batch embeddings");
       }
 
       // Sort by index to ensure correct order

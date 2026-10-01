@@ -2,23 +2,24 @@
  * LLM provider layer with automatic fallback.
  *
  * Chat / vision completions go to each configured provider in order
- * (AI_PROVIDER_ORDER, default "together,gemini"). If a provider fails (out of
+ * (AI_PROVIDER_ORDER, default "together,gemini,anthropic"). If a provider fails (out of
  * budget, rate-limited, down) the request moves on to the next one, so a spent
  * Together AI balance doesn't take the app down.
  *
- * Both providers speak the OpenAI chat-completions format; Gemini via its
- * OpenAI-compatible endpoint. Embeddings are NOT handled here: vectors from
+ * All providers speak the OpenAI chat-completions format; Gemini and Anthropic
+ * via their OpenAI-compatible endpoints. Embeddings are NOT handled here: vectors from
  * different models can't be mixed in the same pgvector index.
  *
  * Env:
  *   TOGETHER_API_KEY, TOGETHER_AI_MODEL, TOGETHER_AI_VISION_MODEL
  *   GEMINI_API_KEY, GEMINI_MODEL, GEMINI_VISION_MODEL, GEMINI_REASONING_EFFORT
- *   AI_PROVIDER_ORDER  e.g. "together,gemini" (default) or "gemini,together"
+ *   ANTHROPIC_API_KEY, ANTHROPIC_MODEL (default claude-haiku-4-5-20251001)
+ *   AI_PROVIDER_ORDER  e.g. "together,gemini,anthropic" (default)
  */
 
 import { AIProcessingError } from "@/lib/errors";
 
-export type LLMProviderName = "together" | "gemini";
+export type LLMProviderName = "together" | "gemini" | "anthropic";
 
 export interface LLMContentPart {
   type: "text" | "image_url";
@@ -119,8 +120,15 @@ function getProviders(
         : geminiText,
   };
 
-  const byName = { together, gemini };
-  const order = (process.env.AI_PROVIDER_ORDER || "together,gemini")
+  const anthropic: ProviderConfig = {
+    name: "anthropic",
+    baseURL: process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com/v1",
+    apiKey: process.env.ANTHROPIC_API_KEY || "",
+    model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
+  };
+
+  const byName = { together, gemini, anthropic };
+  const order = (process.env.AI_PROVIDER_ORDER || "together,gemini,anthropic")
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter((s): s is LLMProviderName => s in byName);
@@ -141,7 +149,7 @@ function extractErrorMessage(body: string): string {
   return body.slice(0, 200) || "Unknown error";
 }
 
-/** Gemini's OpenAI endpoint wants inline base64 images; fetch remote ones ourselves. */
+/** Gemini's and Anthropic's OpenAI endpoints want inline base64 images; fetch remote ones ourselves. */
 async function inlineRemoteImages(
   messages: LLMMessage[],
 ): Promise<LLMMessage[]> {
@@ -188,7 +196,9 @@ async function requestOnce(
   const body: Record<string, unknown> = {
     model: provider.model,
     messages:
-      provider.name === "gemini" ? await inlineRemoteImages(messages) : messages,
+      provider.name === "together"
+        ? messages
+        : await inlineRemoteImages(messages),
     max_tokens: options.maxTokens ?? 2000,
     temperature: options.temperature ?? 0.7,
   };
@@ -201,7 +211,7 @@ async function requestOnce(
       body.repetition_penalty = t.repetitionPenalty;
     }
     if (t?.stop) body.stop = t.stop;
-  } else {
+  } else if (provider.name === "gemini") {
     // Gemini 3 models always think; keep it light so thinking tokens don't
     // eat the max_tokens budget and truncate the JSON we ask for.
     // Set GEMINI_REASONING_EFFORT="" to omit the parameter entirely.
@@ -284,7 +294,9 @@ function toUserMessage(error: ProviderRequestError): string {
   if (error.message.includes("tokens") && error.message.includes("must be <=")) {
     return "Your note content is too large for AI processing. Please try with fewer notes or shorter content.";
   }
-  return error.message || "Failed to process request with AI service";
+  // Provider error text can name the vendor, endpoint or account; keep it in
+  // the server log (see chat()) and never send it to the client.
+  return "Failed to process request with AI service";
 }
 
 export const llmService = {
@@ -306,7 +318,7 @@ export const llmService = {
 
     if (configured.length === 0) {
       throw new AIProcessingError(
-        "AI service is not configured. Set TOGETHER_API_KEY or GEMINI_API_KEY.",
+        "AI service is not available right now. Please try again later.",
       );
     }
 
